@@ -218,10 +218,20 @@ const extractAllReviewPageUrls = async () => {
         // Replace the url page count till the last page
         while (counter < totalReviewCount) {
             counter++
-            url = url.replace(/or[0-9]*/g, `or${counter * 5}`)
+            url = url.replace(/-or[0-9]*/g, `-or${counter * 5}`)
             allUrls.push(url)
-
         }
+
+
+        // JSON structure
+        const data = {
+            count: allUrls.length * 5,
+            pageCount: count * 5,
+            urls: allUrls
+        };
+
+        // Write the data to a json file
+        writeFileSync('reviewUrl.json', JSON.stringify(data));
 
         return allUrls
 
@@ -231,15 +241,16 @@ const extractAllReviewPageUrls = async () => {
 }
 
 
-// const start = async () => {
-//     try {
-//         const allReviewsUrl = await extractAllReviewPageUrls();
-//         const results = await scrap(allReviewsUrl);
+const start = async () => {
+    try {
+        const allReviewsUrl = await extractAllReviewPageUrls();
+        console.log(allReviewsUrl)
+        const results = await scrap(allReviewsUrl);
 
-//         console.log(results);
-//     } catch (err) {
-//         throw err;
-//     }
-// }
-// start().catch(err => console.log(err));
+        console.log(results);
+    } catch (err) {
+        throw err;
+    }
+}
+start().catch(err => console.log(err));
 
