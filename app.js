@@ -74,7 +74,7 @@ const scrap = async () => {
                 urlList.push(commentBlocks[index].children[0].innerHTML);
             }
 
-            return urlList;
+            return titles;
         });
 
 
