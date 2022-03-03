@@ -194,19 +194,36 @@ const extractAllReviewPageUrls = async () => {
         // In browser code
         const reviewPageUrls = await page.evaluate(() => {
 
-            const urls = document.getElementsByClassName('pageNum')
+            // let totalReviewCount = parseInt(document.querySelectorAll("a[href='#REVIEWS']")[1].innerText.split('\n')[1].split(' ')[0].replace(',', ''))
+            let totalReviewCount = parseInt(document.getElementsByClassName('ui_radio dQNlC')[1].innerText.split('(')[1].split(')')[0].replace(',', ''))
 
-            const urlList = []
+            // Calculate the last review page
+            totalReviewCount = (totalReviewCount - totalReviewCount % 5) / 5
 
-            for (let index = 1; index < urls.length; index++) {
-                urlList.push(urls[index].href)
-            }
+            // Get the url format
+            const url = document.getElementsByClassName('pageNum')[1].href
 
-            return urlList
+            return { totalReviewCount, url }
+
         })
 
-        await browser.close();
-        return reviewPageUrls
+        // Destructure function outputs
+        let { totalReviewCount, url } = reviewPageUrls;
+
+        console.log(reviewPageUrls)
+        // Array to hold all the review urls
+        const allUrls = []
+
+        let counter = 0
+        // Replace the url page count till the last page
+        while (counter < totalReviewCount) {
+            counter++
+            url = url.replace(/or[0-9]*/g, `or${counter * 5}`)
+            allUrls.push(url)
+
+        }
+
+        return allUrls
 
     } catch (err) {
         throw err
@@ -214,14 +231,15 @@ const extractAllReviewPageUrls = async () => {
 }
 
 
-const start = async () => {
-    try {
-        const allReviewsUrl = await extractAllReviewPageUrls();
-        const results = await scrap(allReviewsUrl);
+// const start = async () => {
+//     try {
+//         const allReviewsUrl = await extractAllReviewPageUrls();
+//         const results = await scrap(allReviewsUrl);
 
-        console.log(results);
-    } catch (err) {
-        throw err;
-    }
-}
-start().catch(err => console.log(err));
+//         console.log(results);
+//     } catch (err) {
+//         throw err;
+//     }
+// }
+// start().catch(err => console.log(err));
+
