@@ -131,10 +131,11 @@ const scrap = async (urlList) => {
             })
 
             reviewInfo.push({ titles: commentTitle, content: commentContent })
-
+            console.log(reviewInfo)
 
         }
 
+        await browser.close();
 
         return reviewInfo
 
@@ -248,11 +249,23 @@ const extractAllReviewPageUrls = async () => {
 
 const start = async () => {
     try {
-
+        // Extract review page urls
         const allReviewsUrl = await extractAllReviewPageUrls();
+
+        // Scrape the review page
         const results = await scrap(allReviewsUrl);
+
+        // Convert JSON to CSV
         const csv = parse(results, opts);
+
+        // Write the CSV to a file
         writeFileSync('./review.csv', csv);
+
+        // Exit the process
+        console.log('Done');
+
+        process.exit(0);
+
     } catch (err) {
         throw err;
     }
