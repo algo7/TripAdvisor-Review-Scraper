@@ -209,7 +209,7 @@ const extractAllReviewPageUrls = async () => {
             return urlList
         })
 
-        return urlList
+        return reviewPageUrls
 
     } catch (err) {
         throw err
