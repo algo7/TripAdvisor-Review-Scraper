@@ -64,14 +64,14 @@ const scrap = async () => {
         const commentTitle = await page.evaluate(async () => {
 
             // Extract a tags
-            const urls = document.getElementsByClassName('fCitC')[0].children[0].innerHTML
+            const commentBlocks = document.getElementsByClassName('fCitC')
 
             // Array to store the urls on the page
-            const urlList = [];
+            const titles = [];
 
             // Higher order functions don't work in the browser
-            for (let index = 0; index < urls.length; index++) {
-                urlList.push(urls[index].href);
+            for (let index = 0; index < commentBlocks.length; index++) {
+                urlList.push(commentBlocks[index].children[0].innerHTML);
             }
 
             return urlList;
