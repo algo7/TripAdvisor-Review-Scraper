@@ -187,7 +187,10 @@ const extractAllReviewPageUrls = async () => {
             writeFileSync('cookies.json', cookieJson);
 
             // Close the browser
-            return await browser.close();
+            await browser.close();
+
+            // Exit the process
+            process.exit(0);
         }
 
         // Set Cookies
@@ -248,6 +251,9 @@ const extractAllReviewPageUrls = async () => {
 
         // Write the data to a json file
         writeFileSync('reviewUrl.json', JSON.stringify(data));
+
+        // Close the browser
+        await browser.close();
 
         return allUrls
 
