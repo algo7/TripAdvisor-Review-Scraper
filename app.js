@@ -85,7 +85,7 @@ const scrap = async (urlList) => {
             // Determin current URL
             const currentURL = page.url();
 
-            console.log(`Scraping: ${currentURL}`);
+            console.log(`Scraping: ${currentURL} | ${urlList.length - index} Pages Left`);
 
             // In browser code
             // Extract comments title
@@ -194,7 +194,10 @@ const extractAllReviewPageUrls = async () => {
         // In browser code
         const reviewPageUrls = await page.evaluate(() => {
 
+            // All review count
             // let totalReviewCount = parseInt(document.querySelectorAll("a[href='#REVIEWS']")[1].innerText.split('\n')[1].split(' ')[0].replace(',', ''))
+
+            // English review count
             let totalReviewCount = parseInt(document.getElementsByClassName('ui_radio dQNlC')[1].innerText.split('(')[1].split(')')[0].replace(',', ''))
 
             // Calculate the last review page
@@ -226,7 +229,7 @@ const extractAllReviewPageUrls = async () => {
         // JSON structure
         const data = {
             count: allUrls.length * 5,
-            pageCount: count * 5,
+            pageCount: allUrls.length,
             urls: allUrls
         };
 
