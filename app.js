@@ -90,12 +90,12 @@ const scrap = async (urlList) => {
         for (let index = 0; index < urlList.length; index++) {
             // Navigate to the page below
             await page.goto(urlList[index]);
-            await page.waitForTimeout(1000);
+            await page.waitForTimeout(2000);
 
             // Determin current URL
             const currentURL = page.url();
 
-            console.log(`Scraping: ${currentURL} | ${urlList.length - index} Pages Left`);
+            console.log(`Scraping: ${currentURL} | ${urlList.length - 1 - index} Pages Left`);
 
             // In browser code
             // Extract comments title
