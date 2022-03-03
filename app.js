@@ -10,6 +10,11 @@ if (!myArgs[0]) {
     process.exit(1);
 }
 
+/**
+ * Check if the given file exists
+ * @param {String} filePath 
+ * @returns {Promise<Boolean>}
+ */
 const fileExists = async (filePath) => {
     try {
         await access(filePath)
@@ -19,7 +24,7 @@ const fileExists = async (filePath) => {
     }
 }
 
-
+// Scrape the page
 const scrap = async () => {
     try {
 
