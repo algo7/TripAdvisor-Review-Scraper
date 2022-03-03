@@ -90,7 +90,7 @@ const scrap = async (urlList) => {
         for (let index = 0; index < urlList.length; index++) {
             // Navigate to the page below
             await page.goto(urlList[index]);
-            await page.waitForTimeout(2000);
+            await page.waitForTimeout(3000);
 
             // Determin current URL
             const currentURL = page.url();
