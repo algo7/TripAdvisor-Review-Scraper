@@ -89,23 +89,38 @@ const scrap = async () => {
 
 
         // In browser code
+
+        // Extract comments title
         const commentTitle = await page.evaluate(async () => {
 
             // Extract a tags
-            const commentBlocks = document.getElementsByClassName('fCitC')
+            const commentTitleBlocks = document.getElementsByClassName('fCitC')
 
             // Array to store the urls on the page
             const titles = [];
 
             // Higher order functions don't work in the browser
-            for (let index = 0; index < commentBlocks.length; index++) {
-                titles.push(commentBlocks[index].children[0].innerText);
+            for (let index = 0; index < commentTitleBlocks.length; index++) {
+                titles.push(commentTitleBlocks[index].children[0].innerText);
             }
 
             return titles;
         });
 
-        console.log(commentTitle)
+        // Extract comments text
+        const commentContent = await page.evaluate(async () => {
+
+            const commentContentBlocks = document.getElementsByTagName('q')
+
+            const comments = []
+
+            for (let index = 0; index < commentContentBlocks.length; index++) {
+                comments.push(commentContentBlocks[index].children[0].innerText)
+
+            }
+
+            return comments
+        })
 
 
         // Write the data to a json file
