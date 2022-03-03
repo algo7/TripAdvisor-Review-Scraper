@@ -5,7 +5,7 @@ const { writeFileSync, readFileSync, } = require('fs');
 // Command line args
 const myArgs = process.argv.slice(2);
 
-if (!myArgs[3]) {
+if (!myArgs[0]) {
     console.log('Missing URL')
     process.exit(1);
 }
@@ -34,7 +34,7 @@ const scrap = async () => {
 
         // Go to the home page
         // Navigate to the page below
-        await page.goto(myArgs[3], {
+        await page.goto(myArgs[0], {
             waitUntil: 'networkidle0',
         });
 
@@ -77,14 +77,14 @@ const scrap = async () => {
             return titles;
         });
 
-
+        console.log(commentBlocks)
 
 
         // Write the data to a json file
-        writeFileSync('x.csv', JSON.stringify(data));
+        // writeFileSync('x.csv', JSON.stringify(data));
 
         // Close the browser
-        await browser.close();
+        // await browser.close();
 
     } catch (err) {
         throw err;
