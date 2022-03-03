@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/algo7/TripAdvisor-Review-Scraper#readme",
   "dependencies": {
+    "json2csv": "^5.0.7",
     "puppeteer": "^13.4.1"
   },
   "devDependencies": {

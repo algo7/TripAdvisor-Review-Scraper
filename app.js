@@ -1,10 +1,16 @@
 // Dependencies
 const puppeteer = require('puppeteer');
 const { writeFileSync, readFileSync, promises: { access } } = require('fs');
+const { parse } = require('json2csv');
+
+// Global vars for csv parser
+const fields = ['title', 'content'];
+const opts = { fields };
 
 // Command line args
 const myArgs = process.argv.slice(2);
 
+// Check if the url is missing
 if (!myArgs[0]) {
     console.log('Missing URL')
     process.exit(1);
@@ -128,13 +134,6 @@ const scrap = async (urlList) => {
 
         return reviewInfo
 
-
-
-
-        // // Write the data to a json file
-        // // writeFileSync('x.csv', JSON.stringify(data));
-
-
     } catch (err) {
         throw err;
     }
@@ -246,14 +245,13 @@ const extractAllReviewPageUrls = async () => {
 
 const start = async () => {
     try {
-        const allReviewsUrl = await extractAllReviewPageUrls();
-        console.log(allReviewsUrl)
-        const results = await scrap(allReviewsUrl);
 
-        console.log(results);
+        const allReviewsUrl = await extractAllReviewPageUrls();
+        const results = await scrap(allReviewsUrl);
+        const csv = parse(myData, opts);
+        writeFileSync('./review.csv', csv);
     } catch (err) {
         throw err;
     }
 }
-start().catch(err => console.log(err));
-
+start().catch(err => console.error(err));
