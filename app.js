@@ -130,14 +130,24 @@ const scrap = async (urlList) => {
                 return comments
             })
 
-            reviewInfo.push({ titles: commentTitle, content: commentContent })
-            console.log(reviewInfo)
+            // Format (for CSV processing) the reviews so each review of each page is in an object
+            const formatted = commentContent.map((comment, index) => {
+                return {
+                    title: commentTitle[index],
+                    content: comment
+                }
+            })
+
+            // Push the formmated review to the  array
+            reviewInfo.push(formatted);
 
         }
 
+        // Close the browser
         await browser.close();
 
-        return reviewInfo
+        // Convert 2D array to 1D
+        return reviewInfo.flat();
 
     } catch (err) {
         throw err;
