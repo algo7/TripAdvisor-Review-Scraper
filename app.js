@@ -24,8 +24,12 @@ const fileExists = async (filePath) => {
     }
 }
 
-// Scrape the page
-const scrap = async () => {
+/**
+ * Scrape the page
+ * @param {Array<String>} urlList 
+ * @returns {Promise<Undefined | Error>}
+ */
+const scrap = async (urlList) => {
     try {
 
         // Launch the browser
@@ -45,14 +49,8 @@ const scrap = async () => {
 
         if (!cookiesAvailable) {
 
-
             // Navigate to the page below
             await page.goto(myArgs[0]);
-
-            // Navigate to the page below
-            await page.goto(myArgs[0], {
-                waitUntil: 'networkidle0',
-            });
 
             // Log the cookies
             const cookies = await page.cookies();
@@ -73,75 +71,79 @@ const scrap = async () => {
 
         await page.waitForTimeout(1000);
 
-        // Determin current URL
-        const currentURL = page.url();
-
-        console.log(`Scraping: ${currentURL}`);
+        // Add 1st review page to the urlList
+        urlList.unshift(myArgs[0]);
 
 
+        const reviewInfo = []
 
-        // In browser code
+        for (let index = 0; index < urlList.length; index++) {
+            // Navigate to the page below
+            await page.goto(urlList[index]);
+            await page.waitForTimeout(1000);
 
-        // Determine if the page is scrolled to the bottom
-        let scrollToBottom = await page.evaluate(() => window.innerHeight + window.scrollY >= document.body.offsetHeight);
+            // Determin current URL
+            const currentURL = page.url();
 
-        // Scroll to the bottom
-        while (!scrollToBottom) {
+            console.log(`Scraping: ${currentURL}`);
 
-            scrollToBottom = await page.evaluate(() => window.innerHeight + window.scrollY >= document.body.offsetHeight);
-            await page.mouse.wheel({ deltaY: 3000, });
+            // In browser code
+            // Extract comments title
+            const commentTitle = await page.evaluate(async () => {
+
+                // Extract a tags
+                const commentTitleBlocks = document.getElementsByClassName('fCitC')
+
+                // Array to store the comment titles
+                const titles = [];
+
+                // Higher order functions don't work in the browser
+                for (let index = 0; index < commentTitleBlocks.length; index++) {
+                    titles.push(commentTitleBlocks[index].children[0].innerText);
+                }
+
+                return titles;
+            });
+
+            // Extract comments text
+            const commentContent = await page.evaluate(async () => {
+
+                const commentContentBlocks = document.getElementsByTagName('q')
+
+                // Array use to store the comments
+                const comments = []
+
+                for (let index = 0; index < commentContentBlocks.length; index++) {
+                    comments.push(commentContentBlocks[index].children[0].innerText)
+                }
+
+                return comments
+            })
+
+            reviewInfo.push({ titles: commentTitle, content: commentContent })
+
+
         }
 
 
-        // In browser code
-
-        // Extract comments title
-        const commentTitle = await page.evaluate(async () => {
-
-            // Extract a tags
-            const commentTitleBlocks = document.getElementsByClassName('fCitC')
-
-            // Array to store the comment titles
-            const titles = [];
-
-            // Higher order functions don't work in the browser
-            for (let index = 0; index < commentTitleBlocks.length; index++) {
-                titles.push(commentTitleBlocks[index].children[0].innerText);
-            }
-
-            return titles;
-        });
-
-        // Extract comments text
-        const commentContent = await page.evaluate(async () => {
-
-            const commentContentBlocks = document.getElementsByTagName('q')
-
-            // Array use to store the comments
-            const comments = []
-
-            for (let index = 0; index < commentContentBlocks.length; index++) {
-                comments.push(commentContentBlocks[index].children[0].innerText)
-
-            }
-
-            return comments
-        })
+        return reviewInfo
 
 
-        // Write the data to a json file
-        // writeFileSync('x.csv', JSON.stringify(data));
 
-        // Close the browser
-        // await browser.close();
+
+        // // Write the data to a json file
+        // // writeFileSync('x.csv', JSON.stringify(data));
+
 
     } catch (err) {
         throw err;
     }
 };
 
-// scrap().catch(err => console.error(err));
-
+/**
+ * Extract review page url
+ * @returns {Promise<Undefined | Error>}
+ */
 const extractAllReviewPageUrls = async () => {
     try {
 
@@ -162,14 +164,8 @@ const extractAllReviewPageUrls = async () => {
 
         if (!cookiesAvailable) {
 
-
             // Navigate to the page below
             await page.goto(myArgs[0]);
-
-            // Navigate to the page below
-            await page.goto(myArgs[0], {
-                waitUntil: 'networkidle0',
-            });
 
             // Log the cookies
             const cookies = await page.cookies();
@@ -188,12 +184,12 @@ const extractAllReviewPageUrls = async () => {
         // Navigate to the page below
         await page.goto(myArgs[0]);
 
-        await page.waitForTimeout(1000);
+        await page.waitForTimeout(5000);
 
         // Determin current URL
         const currentURL = page.url();
 
-        console.log(`Scraping: ${currentURL}`);
+        console.log(`Gathering Info: ${currentURL}`);
 
         // In browser code
         const reviewPageUrls = await page.evaluate(() => {
@@ -209,9 +205,23 @@ const extractAllReviewPageUrls = async () => {
             return urlList
         })
 
+        await browser.close();
         return reviewPageUrls
 
     } catch (err) {
         throw err
     }
 }
+
+
+const start = async () => {
+    try {
+        const allReviewsUrl = await extractAllReviewPageUrls();
+        const results = await scrap(allReviewsUrl);
+
+        console.log(results);
+    } catch (err) {
+        throw err;
+    }
+}
+start().catch(err => console.log(err));
