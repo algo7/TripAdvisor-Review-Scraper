@@ -1,6 +1,6 @@
 // Dependencies
 const puppeteer = require('puppeteer');
-const { writeFileSync, readFileSync, } = require('fs');
+const { writeFileSync, readFileSync, promises: { access } } = require('fs');
 
 // Command line args
 const myArgs = process.argv.slice(2);
@@ -8,6 +8,15 @@ const myArgs = process.argv.slice(2);
 if (!myArgs[0]) {
     console.log('Missing URL')
     process.exit(1);
+}
+
+const fileExists = async (filePath) => {
+    try {
+        await access(filePath)
+        return true
+    } catch {
+        return false
+    }
 }
 
 
@@ -27,16 +36,35 @@ const scrap = async () => {
         // Open a new page
         const page = await browser.newPage();
 
+        const cookiesAvailable = await fileExists('./cookies.json');
+
+        if (!cookiesAvailable) {
+
+
+            // Navigate to the page below
+            await page.goto(myArgs[0]);
+
+            // Navigate to the page below
+            await page.goto(myArgs[0], {
+                waitUntil: 'networkidle0',
+            });
+
+            // Log the cookies
+            const cookies = await page.cookies();
+            const cookieJson = JSON.stringify(cookies);
+            writeFileSync('cookies.json', cookieJson);
+
+            // Close the browser
+            return await browser.close();
+        }
+
         // Set Cookies
         const cookies = readFileSync('cookies.json', 'utf8');
         const deserializedCookies = JSON.parse(cookies);
         await page.setCookie(...deserializedCookies);
 
-        // Go to the home page
         // Navigate to the page below
-        await page.goto(myArgs[0], {
-            waitUntil: 'networkidle0',
-        });
+        await page.goto(myArgs[0]);
 
         await page.waitForTimeout(1000);
 
@@ -54,9 +82,9 @@ const scrap = async () => {
 
         // Scroll to the bottom
         while (!scrollToBottom) {
+
             scrollToBottom = await page.evaluate(() => window.innerHeight + window.scrollY >= document.body.offsetHeight);
             await page.mouse.wheel({ deltaY: 3000, });
-            await page.waitForTimeout(2000);
         }
 
 
@@ -71,13 +99,13 @@ const scrap = async () => {
 
             // Higher order functions don't work in the browser
             for (let index = 0; index < commentBlocks.length; index++) {
-                urlList.push(commentBlocks[index].children[0].innerHTML);
+                titles.push(commentBlocks[index].children[0].innerText);
             }
 
             return titles;
         });
 
-        console.log(commentBlocks)
+        console.log(commentTitle)
 
 
         // Write the data to a json file
@@ -90,3 +118,5 @@ const scrap = async () => {
         throw err;
     }
 };
+
+scrap().catch(err => console.error(err));
