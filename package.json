@@ -1,0 +1,22 @@
+{
+  "name": "tripadvisor-review-scraper",
+  "version": "1.0.0",
+  "description": "Scrape TripAdvisor reviews",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/algo7/TripAdvisor-Review-Scraper.git"
+  },
+  "keywords": [
+    "tripadvisor"
+  ],
+  "author": "Aviv Lo",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/algo7/TripAdvisor-Review-Scraper/issues"
+  },
+  "homepage": "https://github.com/algo7/TripAdvisor-Review-Scraper#readme"
+}
