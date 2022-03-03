@@ -101,7 +101,7 @@ const scrap = async () => {
             // Extract a tags
             const commentTitleBlocks = document.getElementsByClassName('fCitC')
 
-            // Array to store the urls on the page
+            // Array to store the comment titles
             const titles = [];
 
             // Higher order functions don't work in the browser
@@ -117,6 +117,7 @@ const scrap = async () => {
 
             const commentContentBlocks = document.getElementsByTagName('q')
 
+            // Array use to store the comments
             const comments = []
 
             for (let index = 0; index < commentContentBlocks.length; index++) {
@@ -139,4 +140,78 @@ const scrap = async () => {
     }
 };
 
-scrap().catch(err => console.error(err));
+// scrap().catch(err => console.error(err));
+
+const extractAllReviewPageUrls = async () => {
+    try {
+
+        // Launch the browser
+        const browser = await puppeteer.launch({
+            headless: false,
+            devtools: false,
+            defaultViewport: {
+                width: 1920,
+                height: 1080,
+            },
+        });
+
+        // Open a new page
+        const page = await browser.newPage();
+
+        const cookiesAvailable = await fileExists('./cookies.json');
+
+        if (!cookiesAvailable) {
+
+
+            // Navigate to the page below
+            await page.goto(myArgs[0]);
+
+            // Navigate to the page below
+            await page.goto(myArgs[0], {
+                waitUntil: 'networkidle0',
+            });
+
+            // Log the cookies
+            const cookies = await page.cookies();
+            const cookieJson = JSON.stringify(cookies);
+            writeFileSync('cookies.json', cookieJson);
+
+            // Close the browser
+            return await browser.close();
+        }
+
+        // Set Cookies
+        const cookies = readFileSync('cookies.json', 'utf8');
+        const deserializedCookies = JSON.parse(cookies);
+        await page.setCookie(...deserializedCookies);
+
+        // Navigate to the page below
+        await page.goto(myArgs[0]);
+
+        await page.waitForTimeout(1000);
+
+        // Determin current URL
+        const currentURL = page.url();
+
+        console.log(`Scraping: ${currentURL}`);
+
+        // In browser code
+        const reviewPageUrls = await page.evaluate(() => {
+
+            const urls = document.getElementsByClassName('pageNum')
+
+            const urlList = []
+
+            for (let index = 1; index < urls.length; index++) {
+                urlList.push(urls[index].href)
+            }
+
+            return urlList
+        })
+
+        return urlList
+
+    } catch (err) {
+        throw err
+    }
+}
