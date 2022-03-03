@@ -38,6 +38,10 @@ const fileExists = async (filePath) => {
 const scrap = async (urlList) => {
     try {
 
+        if (!urlList || urlList.length === 0) {
+            throw new Error('No url to scrape');
+        }
+
         // Launch the browser
         const browser = await puppeteer.launch({
             headless: false,
@@ -80,7 +84,7 @@ const scrap = async (urlList) => {
         // Add 1st review page to the urlList
         urlList.unshift(myArgs[0]);
 
-
+        // Array to hold the review info
         const reviewInfo = []
 
         for (let index = 0; index < urlList.length; index++) {
@@ -212,7 +216,6 @@ const extractAllReviewPageUrls = async () => {
         // Destructure function outputs
         let { totalReviewCount, url } = reviewPageUrls;
 
-        console.log(reviewPageUrls)
         // Array to hold all the review urls
         const allUrls = []
 
@@ -248,7 +251,7 @@ const start = async () => {
 
         const allReviewsUrl = await extractAllReviewPageUrls();
         const results = await scrap(allReviewsUrl);
-        const csv = parse(myData, opts);
+        const csv = parse(results, opts);
         writeFileSync('./review.csv', csv);
     } catch (err) {
         throw err;
