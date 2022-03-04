@@ -50,6 +50,12 @@ const scrap = async (urlList) => {
                 width: 1920,
                 height: 1080,
             },
+            args: [
+                "--disable-gpu",
+                "--disable-dev-shm-usage",
+                "--disable-setuid-sandbox",
+                "--no-sandbox",
+            ]
         });
 
         // Open a new page
@@ -169,6 +175,12 @@ const extractAllReviewPageUrls = async () => {
                 width: 1920,
                 height: 1080,
             },
+            args: [
+                "--disable-gpu",
+                "--disable-dev-shm-usage",
+                "--disable-setuid-sandbox",
+                "--no-sandbox",
+            ]
         });
 
         // Open a new page
@@ -195,7 +207,6 @@ const extractAllReviewPageUrls = async () => {
 
         // Set Cookies
         const cookies = readFileSync('cookies.json', 'utf8');
-        console.log('sss', cookies);
         const deserializedCookies = JSON.parse(cookies);
         await page.setCookie(...deserializedCookies);
 
