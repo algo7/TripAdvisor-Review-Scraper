@@ -44,7 +44,7 @@ const scrap = async (urlList) => {
 
         // Launch the browser
         const browser = await puppeteer.launch({
-            headless: false,
+            headless: true,
             devtools: false,
             defaultViewport: {
                 width: 1920,
@@ -163,7 +163,7 @@ const extractAllReviewPageUrls = async () => {
 
         // Launch the browser
         const browser = await puppeteer.launch({
-            headless: false,
+            headless: true,
             devtools: false,
             defaultViewport: {
                 width: 1920,
@@ -190,11 +190,12 @@ const extractAllReviewPageUrls = async () => {
             await browser.close();
 
             // Exit the process
-            process.exit(0);
+            return await extractAllReviewPageUrls();
         }
 
         // Set Cookies
         const cookies = readFileSync('cookies.json', 'utf8');
+        console.log('sss', cookies);
         const deserializedCookies = JSON.parse(cookies);
         await page.setCookie(...deserializedCookies);
 
