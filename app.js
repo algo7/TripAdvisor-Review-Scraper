@@ -243,15 +243,14 @@ const extractAllReviewPageUrls = async () => {
 
             // English review count
             let totalReviewCount = null
-
+            let isResto = false
             // For restaurant reviews
             if (document.getElementsByClassName('ui_radio dQNlC')[1]) {
                 totalReviewCount = parseInt(document.getElementsByClassName('ui_radio dQNlC')[1].innerText.split('(')[1].split(')')[0].replace(',', ''))
+                isResto = true
             }
             // For hotel reviews
             totalReviewCount = parseInt(document.getElementsByClassName("filterLabel")[18].innerText.split('(')[1].split(')')[0].replace(',', ''))
-
-
 
 
             // Calculate the last review page
@@ -260,12 +259,12 @@ const extractAllReviewPageUrls = async () => {
             // Get the url format
             const url = document.getElementsByClassName('pageNum')[1].href
 
-            return { totalReviewCount, url }
+            return { totalReviewCount, url, isResto }
 
         })
 
         // Destructure function outputs
-        let { totalReviewCount, url } = reviewPageUrls;
+        let { totalReviewCount, url, isResto } = reviewPageUrls;
 
         // Array to hold all the review urls
         const allUrls = []
@@ -292,7 +291,7 @@ const extractAllReviewPageUrls = async () => {
         // Close the browser
         await browser.close();
 
-        return allUrls
+        return { allUrls, isResto }
 
     } catch (err) {
         throw err
