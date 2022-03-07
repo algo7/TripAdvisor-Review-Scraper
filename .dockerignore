@@ -1,3 +1,11 @@
 **node_modules
 **env
-*reviewUrl.json
+**reviewUrl.json
+**.DS_Store
+**.git
+**.gitignore
+**.github
+**Dockerfile
+**.yml
+**LICENSE
+**.eslint.js
