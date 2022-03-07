@@ -6,8 +6,6 @@ services:
     build: .
     # Image name
     image: ghcr.io/algo7/tripadvisor-review-scraper/scrap:latest
-    # Env file
-    env_file: env
     volumes:
       - type: bind
         source: ./reviews
