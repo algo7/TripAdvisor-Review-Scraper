@@ -1,5 +1,6 @@
 # Base image
 FROM node:slim AS BASE
+LABEL "org.opencontainers.image.source" = "https://github.com/algo7/TripAdvisor-Review-Scraper"
 
 # Set the working directory
 WORKDIR /puppeteer
