@@ -9,3 +9,5 @@
 **.yml
 **LICENSE
 **.eslint.js
+**.dockerignore
+**README.md
