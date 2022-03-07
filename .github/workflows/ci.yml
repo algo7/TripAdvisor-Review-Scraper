@@ -27,8 +27,6 @@ jobs:
       # Build the image
       - name: Build Image
         run: |
-          REPO_LOWER=$(echo $REPOSITORY | tr '[A-Z]' '[a-z]')
-          echo "IMAGE_NAME=ghcr.io/$REPO_LOWER/scrap:latest> env
           docker-compose build && docker images
       # Login to GitHub Container Registry
       - name: Registry Login
