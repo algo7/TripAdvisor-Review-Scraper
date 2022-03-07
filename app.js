@@ -11,7 +11,7 @@ const opts = { fields };
 const myArgs = process.argv.slice(2);
 
 // Check if the url is missing
-if (!myArgs[0]) {
+if (!myArgs[0] && !process.env.URL) {
     console.log('Missing URL')
     process.exit(1);
 }
@@ -66,7 +66,7 @@ const scrap = async (urlList) => {
         if (!cookiesAvailable) {
 
             // Navigate to the page below
-            await page.goto(myArgs[0]);
+            await page.goto(myArgs[0] || process.env.URL);
 
             // Log the cookies
             const cookies = await page.cookies();
@@ -83,12 +83,12 @@ const scrap = async (urlList) => {
         await page.setCookie(...deserializedCookies);
 
         // Navigate to the page below
-        await page.goto(myArgs[0]);
+        await page.goto(myArgs[0] || process.env.URL);
 
         await page.waitForTimeout(1000);
 
         // Add 1st review page to the urlList
-        urlList.unshift(myArgs[0]);
+        urlList.unshift(myArgs[0] || process.env.URL);
 
         // Array to hold the review info
         const reviewInfo = []
@@ -191,7 +191,7 @@ const extractAllReviewPageUrls = async () => {
         if (!cookiesAvailable) {
 
             // Navigate to the page below
-            await page.goto(myArgs[0]);
+            await page.goto(myArgs[0] || process.env.URL);
 
             // Log the cookies
             const cookies = await page.cookies();
@@ -211,7 +211,7 @@ const extractAllReviewPageUrls = async () => {
         await page.setCookie(...deserializedCookies);
 
         // Navigate to the page below
-        await page.goto(myArgs[0]);
+        await page.goto(myArgs[0] || process.env.URL);
 
         await page.waitForTimeout(5000);
 
