@@ -5,7 +5,7 @@ services:
     # Build directory
     build: .
     # Image name
-    image: scrap:latest
+    image: ghcr.io/tripadvisor-review-scraper/scrap:latest
     # Env file
     env_file: env
     volumes:
