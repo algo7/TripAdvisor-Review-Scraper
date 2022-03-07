@@ -6,7 +6,6 @@ on:
 
 # Global variables
 env:
-  REPOSITORY: ${{ github.REPOSITORY}}
   GITHUB_ACTOR: ${{ github.actor }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
