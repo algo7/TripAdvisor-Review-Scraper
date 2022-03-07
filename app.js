@@ -1,7 +1,11 @@
 // Dependencies
 const puppeteer = require('puppeteer');
-const { writeFileSync, readFileSync, promises: { access } } = require('fs');
+const { writeFileSync, readFileSync, promises: { access }, existsSync } = require('fs');
 const { parse } = require('json2csv');
+
+
+// Data Directory
+const dataDir = './data';
 
 // Global vars for csv parser
 const fields = ['title', 'content'];
@@ -14,6 +18,16 @@ const myArgs = process.argv.slice(2);
 if (!myArgs[0] && !process.env.URL) {
     console.log('Missing URL')
     process.exit(1);
+}
+
+// Check if the data directory exists, otherwise create it
+if (!existsSync(dataDir)) {
+    try {
+        mkdirSync(dataDir);
+    } catch (err) {
+        console.error(err)
+        process.exit(1);
+    }
 }
 
 /**
@@ -29,6 +43,7 @@ const fileExists = async (filePath) => {
         return false
     }
 }
+
 
 /**
  * Scrape the page
@@ -61,7 +76,7 @@ const scrap = async (urlList) => {
         // Open a new page
         const page = await browser.newPage();
 
-        const cookiesAvailable = await fileExists('./cookies.json');
+        const cookiesAvailable = await fileExists('./data/cookies.json');
 
         if (!cookiesAvailable) {
 
@@ -71,14 +86,14 @@ const scrap = async (urlList) => {
             // Log the cookies
             const cookies = await page.cookies();
             const cookieJson = JSON.stringify(cookies);
-            writeFileSync('cookies.json', cookieJson);
+            writeFileSync('./data/cookies.json', cookieJson);
 
             // Close the browser
             return await browser.close();
         }
 
         // Set Cookies
-        const cookies = readFileSync('cookies.json', 'utf8');
+        const cookies = readFileSync('./data/cookies.json', 'utf8');
         const deserializedCookies = JSON.parse(cookies);
         await page.setCookie(...deserializedCookies);
 
@@ -186,7 +201,7 @@ const extractAllReviewPageUrls = async () => {
         // Open a new page
         const page = await browser.newPage();
 
-        const cookiesAvailable = await fileExists('./cookies.json');
+        const cookiesAvailable = await fileExists('./data/cookies.json');
 
         if (!cookiesAvailable) {
 
@@ -196,7 +211,7 @@ const extractAllReviewPageUrls = async () => {
             // Log the cookies
             const cookies = await page.cookies();
             const cookieJson = JSON.stringify(cookies);
-            writeFileSync('cookies.json', cookieJson);
+            writeFileSync('./data/cookies.json', cookieJson);
 
             // Close the browser
             await browser.close();
@@ -206,7 +221,7 @@ const extractAllReviewPageUrls = async () => {
         }
 
         // Set Cookies
-        const cookies = readFileSync('cookies.json', 'utf8');
+        const cookies = readFileSync('./data/cookies.json', 'utf8');
         const deserializedCookies = JSON.parse(cookies);
         await page.setCookie(...deserializedCookies);
 
@@ -262,7 +277,7 @@ const extractAllReviewPageUrls = async () => {
         };
 
         // Write the data to a json file
-        writeFileSync('reviewUrl.json', JSON.stringify(data));
+        writeFileSync('./data/reviewUrl.json', JSON.stringify(data));
 
         // Close the browser
         await browser.close();
