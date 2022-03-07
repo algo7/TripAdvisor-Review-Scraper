@@ -242,7 +242,17 @@ const extractAllReviewPageUrls = async () => {
             // let totalReviewCount = parseInt(document.querySelectorAll("a[href='#REVIEWS']")[1].innerText.split('\n')[1].split(' ')[0].replace(',', ''))
 
             // English review count
-            let totalReviewCount = parseInt(document.getElementsByClassName('ui_radio dQNlC')[1].innerText.split('(')[1].split(')')[0].replace(',', ''))
+            let totalReviewCount = null
+
+            // For restaurant reviews
+            if (document.getElementsByClassName('ui_radio dQNlC')[1]) {
+                totalReviewCount = parseInt(document.getElementsByClassName('ui_radio dQNlC')[1].innerText.split('(')[1].split(')')[0].replace(',', ''))
+            }
+            // For hotel reviews
+            totalReviewCount = parseInt(document.getElementsByClassName("filterLabel")[18].innerText.split('(')[1].split(')')[0].replace(',', ''))
+
+
+
 
             // Calculate the last review page
             totalReviewCount = (totalReviewCount - totalReviewCount % 5) / 5
