@@ -6,7 +6,6 @@ on:
 
 # Global variables
 env:
-  GITHUB_SHA: ${{ github.SHA }}
   REPOSITORY: ${{ github.REPOSITORY}}
   GITHUB_ACTOR: ${{ github.actor }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -28,9 +27,8 @@ jobs:
       # Build the image
       - name: Build Image
         run: |
-          VERSION=$(echo "${GITHUB_SHA:0:6}")
           REPO_LOWER=$(echo $REPOSITORY | tr '[A-Z]' '[a-z]')
-          echo "IMAGE_NAME=ghcr.io/$REPO_LOWER/$VERSION > env
+          echo "IMAGE_NAME=ghcr.io/$REPO_LOWER/scrap:latest> env
           docker-compose build && docker images
       # Login to GitHub Container Registry
       - name: Registry Login

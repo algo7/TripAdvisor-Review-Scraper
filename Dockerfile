@@ -4,4 +4,5 @@ RUN apt update && apt upgrade -y && apt-get install -y libnss3 libxss1 libasound
 COPY *.json app.js ./
 RUN npm ci
 RUN chmod -R o+rwx node_modules/puppeteer/.local-chromium
+USER node
 CMD ["npm","run","start:prod"]

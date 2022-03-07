@@ -287,7 +287,7 @@ const start = async () => {
         const csv = parse(results, opts);
 
         // Write the CSV to a file
-        writeFileSync('./review.csv', csv);
+        writeFileSync('./data/review.csv', csv);
 
         // Exit the process
         console.log('Done');

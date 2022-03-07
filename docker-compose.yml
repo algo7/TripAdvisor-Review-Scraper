@@ -1,11 +1,14 @@
 version: '3.9'
 services:
   # Service name
-  backend_production: 
+  scraper: 
     # Build directory
     build: .
     # Image name
-    image: ${IMAGE_NAME}
+    image: scrap:latest
     # Env file
     env_file: env
-
+    volumes:
+      - type: bind
+        source: ./reviews
+        target: /puppeteer/data
