@@ -1,0 +1,46 @@
+name: Build & Push
+on:
+  push:
+    branches:
+      - main
+
+# Global variables
+env:
+  GITHUB_SHA: ${{ github.SHA }}
+  REPOSITORY: ${{ github.REPOSITORY}}
+  GITHUB_ACTOR: ${{ github.actor }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+# Jobs
+jobs:
+  # Continuous integration
+  Build:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      # Clone the repo
+      - name: Check Out Repo
+        uses: actions/checkout@v2
+
+      # Build the image
+      - name: Build Image
+        run: |
+          VERSION=$(echo "${GITHUB_SHA:0:6}")
+          REPO_LOWER=$(echo $REPOSITORY | tr '[A-Z]' '[a-z]')
+          echo "IMAGE_NAME=ghcr.io/$REPO_LOWER/$VERSION > env
+          docker-compose build && docker images
+      # Login to GitHub Container Registry
+      - name: Registry Login
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          logout: true
+
+      # Push the image to the registry
+      - name: Push Image
+        run: docker-compose push

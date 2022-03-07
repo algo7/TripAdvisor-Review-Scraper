@@ -1,0 +1,11 @@
+version: '3.9'
+services:
+  # Service name
+  backend_production: 
+    # Build directory
+    build: .
+    # Image name
+    image: ${IMAGE_NAME}
+    # Env file
+    env_file: env
+
