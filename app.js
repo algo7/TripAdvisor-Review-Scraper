@@ -1,6 +1,6 @@
 // Dependencies
 const puppeteer = require('puppeteer');
-const { writeFileSync, readFileSync, promises: { access }, existsSync } = require('fs');
+const { writeFileSync, readFileSync, promises: { access }, existsSync, mkdirSync } = require('fs');
 const { parse } = require('json2csv');
 
 
