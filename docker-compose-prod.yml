@@ -1,0 +1,11 @@
+services:
+  scraper:
+    environment:
+      URL: https://www.tripadvisor.com/Hotel_Review-g188107-d231860-Reviews-or920-Beau_Rivage_Palace-Lausanne_Canton_of_Vaud.html
+    image: ghcr.io/algo7/tripadvisor-review-scraper/scrap:latest
+    volumes:
+    - source: ./reviews
+      target: /puppeteer/data
+      type: bind
+version: '3.9'
+
