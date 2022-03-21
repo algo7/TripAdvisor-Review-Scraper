@@ -244,14 +244,13 @@ const extractAllReviewPageUrls = async () => {
             // English review count
             let totalReviewCount = null
 
-            // For restaurant reviews
+
+            // For hotel reviews
             if (document.getElementsByClassName('ui_radio dQNlC')[1]) {
                 totalReviewCount = parseInt(document.getElementsByClassName('ui_radio dQNlC')[1].innerText.split('(')[1].split(')')[0].replace(',', ''))
             }
-            // For hotel reviews
+            // For restaurant reviews
             totalReviewCount = parseInt(document.getElementsByClassName("filterLabel")[18].innerText.split('(')[1].split(')')[0].replace(',', ''))
-
-
 
 
             // Calculate the last review page
