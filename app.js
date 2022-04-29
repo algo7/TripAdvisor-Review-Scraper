@@ -1,23 +1,22 @@
 // Dependencies
 const puppeteer = require('puppeteer');
-const { writeFileSync, readFileSync, existsSync, mkdirSync } = require('fs');
-const { parse } = require('json2csv');
-const { fileExists } = require('./utils/misc')
-const { default: axios } = require('axios');
+const { writeFileSync, readFileSync, existsSync, mkdirSync, } = require('fs');
+const { parse, } = require('json2csv');
+const { fileExists, } = require('./utils/misc');
 
 // Data Directory
 const dataDir = './data';
 
 // Global vars for csv parser
 const fields = ['title', 'content'];
-const opts = { fields };
+const opts = { fields, };
 
 // Command line args
 const myArgs = process.argv.slice(2);
 
 // Check if the url is missing
 if (!myArgs[0] && !process.env.URL) {
-    console.log('Missing URL')
+    console.log('Missing URL');
     process.exit(1);
 }
 
@@ -26,7 +25,7 @@ if (!existsSync(dataDir)) {
     try {
         mkdirSync(dataDir);
     } catch (err) {
-        console.error(err)
+        console.error(err);
         process.exit(1);
     }
 }
@@ -47,11 +46,11 @@ const extractAllReviewPageUrls = async () => {
                 height: 1080,
             },
             args: [
-                "--disable-gpu",
-                "--disable-dev-shm-usage",
-                "--disable-setuid-sandbox",
-                "--no-sandbox",
-            ]
+                '--disable-gpu',
+                '--disable-dev-shm-usage',
+                '--disable-setuid-sandbox',
+                '--no-sandbox'
+            ],
         });
 
         // Open a new page
@@ -98,39 +97,36 @@ const extractAllReviewPageUrls = async () => {
             // let totalReviewCount = parseInt(document.querySelectorAll("a[href='#REVIEWS']")[1].innerText.split('\n')[1].split(' ')[0].replace(',', ''))
 
             // English review count
-            let totalReviewCount = null
-            let isResto = false
-            // For restaurant reviews
-            if (document.getElementsByClassName('ui_radio dQNlC')[1]) {
-                totalReviewCount = parseInt(document.getElementsByClassName('ui_radio dQNlC')[1].innerText.split('(')[1].split(')')[0].replace(',', ''))
-                isResto = true
-            }
+            let totalReviewCount = null;
+            let isResto = false;
             // For hotel reviews
-            totalReviewCount = parseInt(document.getElementsByClassName("filterLabel")[18].innerText.split('(')[1].split(')')[0].replace(',', ''))
+            totalReviewCount = parseInt(document.getElementsByClassName('ui_radio dQNlC')[1].innerText.split('(')[1].split(')')[0].replace(',', ''));
+            // 
+            // totalReviewCount = parseInt(document.getElementsByClassName("filterLabel")[18].innerText.split('(')[1].split(')')[0].replace(',', ''))
 
 
             // Calculate the last review page
-            totalReviewCount = (totalReviewCount - totalReviewCount % 5) / 5
+            totalReviewCount = (totalReviewCount - totalReviewCount % 5) / 5;
 
             // Get the url format
-            const url = document.getElementsByClassName('pageNum')[1].href
+            const url = document.getElementsByClassName('pageNum')[1].href;
 
-            return { totalReviewCount, url, isResto }
+            return { totalReviewCount, url, isResto, };
 
-        })
+        });
 
         // Destructure function outputs
-        let { totalReviewCount, url, isResto } = reviewPageUrls;
+        let { totalReviewCount, url, isResto, } = reviewPageUrls;
 
         // Array to hold all the review urls
-        const allUrls = []
+        const allUrls = [];
 
-        let counter = 0
+        let counter = 0;
         // Replace the url page count till the last page
         while (counter < totalReviewCount) {
-            counter++
-            url = url.replace(/-or[0-9]*/g, `-or${counter * 5}`)
-            allUrls.push(url)
+            counter++;
+            url = url.replace(/-or[0-9]*/g, `-or${counter * 5}`);
+            allUrls.push(url);
         }
 
 
@@ -138,7 +134,7 @@ const extractAllReviewPageUrls = async () => {
         const data = {
             count: allUrls.length * 5,
             pageCount: allUrls.length,
-            urls: allUrls
+            urls: allUrls,
         };
 
         // Write the data to a json file
@@ -147,12 +143,12 @@ const extractAllReviewPageUrls = async () => {
         // Close the browser
         await browser.close();
 
-        return { allUrls, isResto }
+        return { allUrls, isResto, };
 
     } catch (err) {
-        throw err
+        throw err;
     }
-}
+};
 
 /**
  * Scrape the page
@@ -175,11 +171,11 @@ const scrap = async (urlList) => {
                 height: 1080,
             },
             args: [
-                "--disable-gpu",
-                "--disable-dev-shm-usage",
-                "--disable-setuid-sandbox",
-                "--no-sandbox",
-            ]
+                '--disable-gpu',
+                '--disable-dev-shm-usage',
+                '--disable-setuid-sandbox',
+                '--no-sandbox'
+            ],
         });
 
         // Open a new page
@@ -215,7 +211,7 @@ const scrap = async (urlList) => {
         urlList.unshift(myArgs[0] || process.env.URL);
 
         // Array to hold the review info
-        const reviewInfo = []
+        const reviewInfo = [];
 
         for (let index = 0; index < urlList.length; index++) {
             // Navigate to the page below
@@ -232,7 +228,7 @@ const scrap = async (urlList) => {
             const commentTitle = await page.evaluate(async () => {
 
                 // Extract a tags
-                const commentTitleBlocks = document.getElementsByClassName('fCitC')
+                const commentTitleBlocks = document.getElementsByClassName('fCitC');
 
                 // Array to store the comment titles
                 const titles = [];
@@ -248,25 +244,25 @@ const scrap = async (urlList) => {
             // Extract comments text
             const commentContent = await page.evaluate(async () => {
 
-                const commentContentBlocks = document.getElementsByTagName('q')
+                const commentContentBlocks = document.getElementsByTagName('q');
 
                 // Array use to store the comments
-                const comments = []
+                const comments = [];
 
                 for (let index = 0; index < commentContentBlocks.length; index++) {
-                    comments.push(commentContentBlocks[index].children[0].innerText)
+                    comments.push(commentContentBlocks[index].children[0].innerText);
                 }
 
-                return comments
-            })
+                return comments;
+            });
 
             // Format (for CSV processing) the reviews so each review of each page is in an object
             const formatted = commentContent.map((comment, index) => {
                 return {
                     title: commentTitle[index],
-                    content: comment
-                }
-            })
+                    content: comment,
+                };
+            });
 
             // Push the formmated review to the  array
             reviewInfo.push(formatted);
@@ -309,7 +305,6 @@ const start = async () => {
     } catch (err) {
         throw err;
     }
-}
+};
 
 // start().catch(err => console.error(err));
-axios.get('https://www.tripadvisor.com/Restaurant_Review-g652156-d17621567-Reviews-or15-Kalasin-Bulle_La_Gruyere_Canton_of_Fribourg.html').then(x => console.log(x.data))
