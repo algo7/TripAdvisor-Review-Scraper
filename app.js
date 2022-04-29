@@ -3,7 +3,7 @@ const puppeteer = require('puppeteer');
 const { writeFileSync, readFileSync, existsSync, mkdirSync } = require('fs');
 const { parse } = require('json2csv');
 const { fileExists } = require('./utils/misc')
-
+const { default: axios } = require('axios');
 
 // Data Directory
 const dataDir = './data';
@@ -311,4 +311,5 @@ const start = async () => {
     }
 }
 
-start().catch(err => console.error(err));
+// start().catch(err => console.error(err));
+axios.get('https://www.tripadvisor.com/Restaurant_Review-g652156-d17621567-Reviews-or15-Kalasin-Bulle_La_Gruyere_Canton_of_Fribourg.html').then(x => console.log(x.data))
