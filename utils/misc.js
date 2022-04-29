@@ -1,5 +1,5 @@
 // Dependencies
-const { promises: { access } } = require('fs');
+const { promises: { access, }, } = require('fs');
 
 /**
  * Check if the given file exists
@@ -8,11 +8,11 @@ const { promises: { access } } = require('fs');
  */
 const fileExists = async (filePath) => {
     try {
-        await access(filePath)
-        return true
-    } catch {
-        return false
+        await access(filePath);
+        return true;
+    } catch (err) {
+        return false;
     }
-}
+};
 
-module.exports = { fileExists }
+module.exports = { fileExists, };

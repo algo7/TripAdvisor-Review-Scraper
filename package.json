@@ -4,8 +4,9 @@
   "description": "Scrape TripAdvisor reviews",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app.js --ignore reviewUrl.json --ignore cookies.json --ignore ./data/",
+    "start": "nodemon app.js --ignore reviewUrl.json --ignore data/",
     "start:prod": "node app.js",
+    "start:resto": "nodemon api.js --ignore data/",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
