@@ -31,6 +31,128 @@ if (!existsSync(dataDir)) {
     }
 }
 
+/**
+ * Extract review page url
+ * @returns {Promise<Undefined | Error>}
+ */
+const extractAllReviewPageUrls = async () => {
+    try {
+
+        // Launch the browser
+        const browser = await puppeteer.launch({
+            headless: true,
+            devtools: false,
+            defaultViewport: {
+                width: 1920,
+                height: 1080,
+            },
+            args: [
+                "--disable-gpu",
+                "--disable-dev-shm-usage",
+                "--disable-setuid-sandbox",
+                "--no-sandbox",
+            ]
+        });
+
+        // Open a new page
+        const page = await browser.newPage();
+
+        const cookiesAvailable = await fileExists('./data/cookies.json');
+
+        if (!cookiesAvailable) {
+
+            // Navigate to the page below
+            await page.goto(myArgs[0] || process.env.URL);
+
+            // Log the cookies
+            const cookies = await page.cookies();
+            const cookieJson = JSON.stringify(cookies);
+            writeFileSync('./data/cookies.json', cookieJson);
+
+            // Close the browser
+            await browser.close();
+
+            // Exit the process
+            return await extractAllReviewPageUrls();
+        }
+
+        // Set Cookies
+        const cookies = readFileSync('./data/cookies.json', 'utf8');
+        const deserializedCookies = JSON.parse(cookies);
+        await page.setCookie(...deserializedCookies);
+
+        // Navigate to the page below
+        await page.goto(myArgs[0] || process.env.URL);
+
+        await page.waitForTimeout(5000);
+
+        // Determin current URL
+        const currentURL = page.url();
+
+        console.log(`Gathering Info: ${currentURL}`);
+
+        // In browser code
+        const reviewPageUrls = await page.evaluate(() => {
+
+            // All review count
+            // let totalReviewCount = parseInt(document.querySelectorAll("a[href='#REVIEWS']")[1].innerText.split('\n')[1].split(' ')[0].replace(',', ''))
+
+            // English review count
+            let totalReviewCount = null
+            let isResto = false
+            // For restaurant reviews
+            if (document.getElementsByClassName('ui_radio dQNlC')[1]) {
+                totalReviewCount = parseInt(document.getElementsByClassName('ui_radio dQNlC')[1].innerText.split('(')[1].split(')')[0].replace(',', ''))
+                isResto = true
+            }
+            // For hotel reviews
+            totalReviewCount = parseInt(document.getElementsByClassName("filterLabel")[18].innerText.split('(')[1].split(')')[0].replace(',', ''))
+
+
+            // Calculate the last review page
+            totalReviewCount = (totalReviewCount - totalReviewCount % 5) / 5
+
+            // Get the url format
+            const url = document.getElementsByClassName('pageNum')[1].href
+
+            return { totalReviewCount, url, isResto }
+
+        })
+
+        // Destructure function outputs
+        let { totalReviewCount, url, isResto } = reviewPageUrls;
+
+        // Array to hold all the review urls
+        const allUrls = []
+
+        let counter = 0
+        // Replace the url page count till the last page
+        while (counter < totalReviewCount) {
+            counter++
+            url = url.replace(/-or[0-9]*/g, `-or${counter * 5}`)
+            allUrls.push(url)
+        }
+
+
+        // JSON structure
+        const data = {
+            count: allUrls.length * 5,
+            pageCount: allUrls.length,
+            urls: allUrls
+        };
+
+        // Write the data to a json file
+        writeFileSync('./data/reviewUrl.json', JSON.stringify(data));
+
+        // Close the browser
+        await browser.close();
+
+        return { allUrls, isResto }
+
+    } catch (err) {
+        throw err
+    }
+}
 
 /**
  * Scrape the page
@@ -162,130 +284,9 @@ const scrap = async (urlList) => {
     }
 };
 
-/**
- * Extract review page url
- * @returns {Promise<Undefined | Error>}
- */
-const extractAllReviewPageUrls = async () => {
-    try {
-
-        // Launch the browser
-        const browser = await puppeteer.launch({
-            headless: true,
-            devtools: false,
-            defaultViewport: {
-                width: 1920,
-                height: 1080,
-            },
-            args: [
-                "--disable-gpu",
-                "--disable-dev-shm-usage",
-                "--disable-setuid-sandbox",
-                "--no-sandbox",
-            ]
-        });
-
-        // Open a new page
-        const page = await browser.newPage();
-
-        const cookiesAvailable = await fileExists('./data/cookies.json');
-
-        if (!cookiesAvailable) {
-
-            // Navigate to the page below
-            await page.goto(myArgs[0] || process.env.URL);
-
-            // Log the cookies
-            const cookies = await page.cookies();
-            const cookieJson = JSON.stringify(cookies);
-            writeFileSync('./data/cookies.json', cookieJson);
-
-            // Close the browser
-            await browser.close();
-
-            // Exit the process
-            return await extractAllReviewPageUrls();
-        }
-
-        // Set Cookies
-        const cookies = readFileSync('./data/cookies.json', 'utf8');
-        const deserializedCookies = JSON.parse(cookies);
-        await page.setCookie(...deserializedCookies);
-
-        // Navigate to the page below
-        await page.goto(myArgs[0] || process.env.URL);
-
-        await page.waitForTimeout(5000);
-
-        // Determin current URL
-        const currentURL = page.url();
-
-        console.log(`Gathering Info: ${currentURL}`);
-
-        // In browser code
-        const reviewPageUrls = await page.evaluate(() => {
-
-            // All review count
-            // let totalReviewCount = parseInt(document.querySelectorAll("a[href='#REVIEWS']")[1].innerText.split('\n')[1].split(' ')[0].replace(',', ''))
-
-            // English review count
-            let totalReviewCount = null
-            let isResto = false
-            // For restaurant reviews
-            if (document.getElementsByClassName('ui_radio dQNlC')[1]) {
-                totalReviewCount = parseInt(document.getElementsByClassName('ui_radio dQNlC')[1].innerText.split('(')[1].split(')')[0].replace(',', ''))
-                isResto = true
-            }
-            // For hotel reviews
-            totalReviewCount = parseInt(document.getElementsByClassName("filterLabel")[18].innerText.split('(')[1].split(')')[0].replace(',', ''))
 
 
-            // Calculate the last review page
-            totalReviewCount = (totalReviewCount - totalReviewCount % 5) / 5
-
-            // Get the url format
-            const url = document.getElementsByClassName('pageNum')[1].href
-
-            return { totalReviewCount, url, isResto }
-
-        })
-
-        // Destructure function outputs
-        let { totalReviewCount, url, isResto } = reviewPageUrls;
-
-        // Array to hold all the review urls
-        const allUrls = []
-
-        let counter = 0
-        // Replace the url page count till the last page
-        while (counter < totalReviewCount) {
-            counter++
-            url = url.replace(/-or[0-9]*/g, `-or${counter * 5}`)
-            allUrls.push(url)
-        }
-
-
-        // JSON structure
-        const data = {
-            count: allUrls.length * 5,
-            pageCount: allUrls.length,
-            urls: allUrls
-        };
-
-        // Write the data to a json file
-        writeFileSync('./data/reviewUrl.json', JSON.stringify(data));
-
-        // Close the browser
-        await browser.close();
-
-        return { allUrls, isResto }
-
-    } catch (err) {
-        throw err
-    }
-}
-
-
+// Start the scraper
 const start = async () => {
     try {
         // Extract review page urls
@@ -309,4 +310,5 @@ const start = async () => {
         throw err;
     }
 }
+
 start().catch(err => console.error(err));
