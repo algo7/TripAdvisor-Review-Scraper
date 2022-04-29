@@ -46,7 +46,15 @@ const scrap = async (restoUrl) => {
         document.getElementsByClassName('choices')[0].querySelectorAll('.row_num').forEach(el => reviewCount.push(el.innerText));
 
         // Sum them to get the total review count
-        return reviewCount.map(count => parseInt(count)).reduce((a, b) => a + b);
+        const totalReviewCount = reviewCount.map(count => parseInt(count)).reduce((a, b) => a + b);
+
+        let noReviewPages = totalReviewCount / 15;
+        // Calculate the last review page
+        if (totalReviewCount % 15 !== 0) {
+            noReviewPages = ((totalReviewCount - totalReviewCount % 15) / 15) + 1;
+        }
+
+        return noReviewPages;
 
         // const items = document.body.querySelectorAll('.review-container');
         // items.forEach(item => {
