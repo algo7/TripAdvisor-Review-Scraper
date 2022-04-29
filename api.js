@@ -106,7 +106,7 @@ const scrap = async (restoUrl) => {
 
             // Get the url of the 2nd page of review. The 1st page is the input link
             let url = false;
-            if (document.getElementsByClassName('pageNum') > 0) {
+            if (document.getElementsByClassName('pageNum').length > 0) {
                 url = document.getElementsByClassName('pageNum')[1].href;
             }
 
