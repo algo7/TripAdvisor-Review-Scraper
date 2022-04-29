@@ -5,7 +5,7 @@ const scrap = async (restoUrl) => {
 
     // Launch the browser
     const browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
         devtools: false,
         defaultViewport: {
             width: 1920,
@@ -36,17 +36,12 @@ const scrap = async (restoUrl) => {
     await page.waitForFunction('document.querySelector("body").innerText.includes("Show less")');
 
 
-    const reviews = await page.evaluate(() => {
+    const reviewPageUrls = await page.evaluate(() => {
 
         const results = [];
-        // The review count array based in the "Traveler rating info"
-        const reviewCount = [];
 
-        // Extract the review count for each rating
-        document.getElementsByClassName('choices')[0].querySelectorAll('.row_num').forEach(el => reviewCount.push(el.innerText));
 
-        // Sum them to get the total review count
-        const totalReviewCount = reviewCount.map(count => parseInt(count)).reduce((a, b) => a + b);
+        const totalReviewCount = parseInt(document.getElementsByClassName('reviews_header_count')[0].innerText.split('(')[1].split(')')[0].replace(',', ''));
 
         let noReviewPages = totalReviewCount / 15;
         // Calculate the last review page
@@ -54,9 +49,48 @@ const scrap = async (restoUrl) => {
             noReviewPages = ((totalReviewCount - totalReviewCount % 15) / 15) + 1;
         }
 
-        return noReviewPages;
+        // Get the url of the 2nd page of review. The 1st page is the input link
+        const url = document.getElementsByClassName('pageNum')[1].href;
 
-        // const items = document.body.querySelectorAll('.review-container');
+        return {
+            noReviewPages,
+            url,
+            totalReviewCount,
+        };
+
+
+    });
+    // Destructure function outputs
+    let { noReviewPages, url, totalReviewCount, } = reviewPageUrls;
+
+    // Array to hold all the review urls
+    const allUrls = [];
+
+    let counter = 0;
+    // Replace the url page count till the last page
+    while (counter < noReviewPages - 1) {
+        counter++;
+        url = url.replace(/-or[0-9]*/g, `-or${counter * 15}`);
+        allUrls.push(url);
+    }
+
+    // Add the first page url
+    allUrls.unshift(restoUrl);
+
+    // JSON structure
+    const data = {
+        count: totalReviewCount,
+        pageCount: allUrls.length,
+        urls: allUrls,
+    };
+    console.log(data);
+};
+
+scrap('https://www.tripadvisor.com/Restaurant_Review-g652156-d17621567-Reviews-Kalasin-Bulle_La_Gruyere_Canton_of_Fribourg.html');
+
+
+
+ // const items = document.body.querySelectorAll('.review-container');
         // items.forEach(item => {
 
         //     /* Get and format Rating */
@@ -81,8 +115,14 @@ const scrap = async (restoUrl) => {
 
         // });
         // return results;
-    });
-    console.log(reviews);
-};
 
-scrap('https://www.tripadvisor.com/Restaurant_Review-g652156-d7285961-Reviews-L_Indus_Bar-Bulle_La_Gruyere_Canton_of_Fribourg.html');
+
+
+  // The review count array based in the "Traveler rating info"
+//   const reviewCount = [];
+
+        // // Extract the review count for each rating
+        // document.getElementsByClassName('choices')[0].querySelectorAll('.row_num').forEach(el => reviewCount.push(el.innerText));
+
+        // // Sum them to get the total review count
+        // const totalReviewCount = reviewCount.map(count => parseInt(count)).reduce((a, b) => a + b);
