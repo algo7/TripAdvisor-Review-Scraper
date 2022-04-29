@@ -36,14 +36,18 @@ const scrap = async (restoUrl) => {
     await page.waitForFunction('document.querySelector("body").innerText.includes("Show less")');
 
 
-
-
     const reviews = await page.evaluate(() => {
-        // document.getElementById('filters_detail_language_filterLang_ALL').click()
+
         const results = [];
+        // The review count array based in the "Traveler rating info"
         const reviewCount = [];
+
+        // Extract the review count for each rating
         document.getElementsByClassName('choices')[0].querySelectorAll('.row_num').forEach(el => reviewCount.push(el.innerText));
-        return reviewCount;
+
+        // Sum them to get the total review count
+        return reviewCount.map(count => parseInt(count)).reduce((a, b) => a + b);
+
         // const items = document.body.querySelectorAll('.review-container');
         // items.forEach(item => {
 
