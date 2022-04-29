@@ -1,7 +1,8 @@
 // Dependencies
 const puppeteer = require('puppeteer');
-const { writeFileSync, readFileSync, promises: { access }, existsSync, mkdirSync } = require('fs');
+const { writeFileSync, readFileSync, existsSync, mkdirSync } = require('fs');
 const { parse } = require('json2csv');
+const { fileExists } = require('./utils/misc')
 
 
 // Data Directory
@@ -27,20 +28,6 @@ if (!existsSync(dataDir)) {
     } catch (err) {
         console.error(err)
         process.exit(1);
-    }
-}
-
-/**
- * Check if the given file exists
- * @param {String} filePath 
- * @returns {Promise<Boolean>}
- */
-const fileExists = async (filePath) => {
-    try {
-        await access(filePath)
-        return true
-    } catch {
-        return false
     }
 }
 
