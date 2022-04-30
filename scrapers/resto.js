@@ -6,7 +6,7 @@ const puppeteer = require('puppeteer');
  * @param {String} restoUrl - The url of the restaurant page
  * @returns {Promise<Object | Error>} - The object containing the review count, page count, and the review page urls
  */
-const extractUrls = async (restoUrl) => {
+const extractAllReviewPageUrls = async (restoUrl) => {
     try {
 
         // Launch the browser
@@ -235,7 +235,7 @@ const scrap = async (totalReviewCount, reviewPageUrls, position, restoName, rest
 const start = async (restoUrl, restoName, restoId, position) => {
     try {
 
-        const { urls, count, } = await extractUrls(restoUrl);
+        const { urls, count, } = await extractAllReviewPageUrls(restoUrl);
 
         const finalData = await scrap(count, urls, position, restoName, restoId);
 
@@ -273,7 +273,7 @@ module.exports = start;
 // })().catch(err => console.log(err));
 
 
-// extractUrls('https://www.tripadvisor.com/Restaurant_Review-g652156-d17621567-Reviews-Kalasin-Bulle_La_Gruyere_Canton_of_Fribourg.html').then(x => console.log(x)).catch(err => console.log(err));
+// extractAllReviewPageUrls('https://www.tripadvisor.com/Restaurant_Review-g652156-d17621567-Reviews-Kalasin-Bulle_La_Gruyere_Canton_of_Fribourg.html').then(x => console.log(x)).catch(err => console.log(err));
 // const a = require('./data/Kalasin.json');
 // a.allReviews.forEach(x => console.log(x.title));
 
