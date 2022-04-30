@@ -15,6 +15,8 @@ const sourceDir = path.join(__dirname, './source/');
 // Environment variables
 const { SCRAPE_MODE, } = process.env;
 
+console.log(`The Scraper is Running in ${SCRAPE_MODE} Mode`);
+
 // Check if the required directories exist, otherwise create them
 if (!fileExists(dataDir)) {
     mkdirSync(dataDir);
@@ -90,7 +92,7 @@ const restoScraperInit = async () => {
         if (!sourceFileAvailable) {
             throw Error('Source file does not exist');
         }
-      
+
         // Convert the csv to json
         const rawData = await csvToJSON(dataSourceResto);
         console.log(`Scraping ${rawData.length} restaurants`);
