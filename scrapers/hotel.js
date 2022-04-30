@@ -21,7 +21,7 @@ if (!myArgs[0] && !process.env.URL) {
  * Extract review page url
  * @returns {Promise<Undefined | Error>}
  */
-const extractAllReviewPageUrls = async () => {
+const extractAllReviewPageUrls = async (hotelUrl) => {
     try {
 
         // Launch the browser
@@ -44,7 +44,7 @@ const extractAllReviewPageUrls = async () => {
         const page = await browser.newPage();
 
         // Navigate to the page below
-        await page.goto(myArgs[0] || process.env.URL);
+        await page.goto(hotelUrl);
 
         await page.waitForTimeout(5000);
 
@@ -57,56 +57,65 @@ const extractAllReviewPageUrls = async () => {
         const reviewPageUrls = await page.evaluate(() => {
 
             // All review count
-            // let totalReviewCount = parseInt(document.querySelectorAll("a[href='#REVIEWS']")[1].innerText.split('\n')[1].split(' ')[0].replace(',', ''))
+            const totalReviewCount = parseInt(document
+                .querySelector('[for=LanguageFilter_1]')
+                .innerText.split('(')[1]
+                .split(')')[0]
+                .replace(',', ''));
 
-            // English review count
-            let totalReviewCount = null;
-            let isResto = false;
-            // For hotel reviews
-            totalReviewCount = parseInt(document.querySelector('[for=LanguageFilter_0]').innerText.split('(')[1].split(')')[0].replace(',', ''));
-            // 
-            // totalReviewCount = parseInt(document.getElementsByClassName("filterLabel")[18].innerText.split('(')[1].split(')')[0].replace(',', ''))
 
+            // Default review page count
+            let noReviewPages = totalReviewCount / 10;
 
             // Calculate the last review page
-            totalReviewCount = (totalReviewCount - totalReviewCount % 5) / 5;
+            if (totalReviewCount % 10 !== 0) {
+                noReviewPages = ((totalReviewCount - totalReviewCount % 10) / 10) + 1;
+            }
 
-            // Get the url format
-            const url = document.getElementsByClassName('pageNum')[1].href;
+            // Get the url of the 2nd page of review. The 1st page is the input link
+            let url = false;
 
-            return { totalReviewCount, url, isResto, };
+            // If there is more than 1 review page
+            if (document.getElementsByClassName('pageNum').length > 0) {
+                url = document.getElementsByClassName('pageNum')[1].href;
+            }
+
+            return { noReviewPages, url, totalReviewCount, };
 
         });
 
         // Destructure function outputs
-        let { totalReviewCount, url, isResto, } = reviewPageUrls;
+        let { noReviewPages, url, totalReviewCount, } = reviewPageUrls;
 
         // Array to hold all the review urls
         const allUrls = [];
 
-        let counter = 0;
-        // Replace the url page count till the last page
-        while (counter < totalReviewCount) {
-            counter++;
-            url = url.replace(/-or[0-9]*/g, `-or${counter * 5}`);
-            allUrls.push(url);
+        // If there is more than 1 review page, create the review page url base on the rule below
+        if (url) {
+            let counter = 0;
+            // Replace the url page count till the last page
+            while (counter < noReviewPages) {
+                counter++;
+                url = url.replace(/-or[0-9]*/g, `-or${counter * 5}`);
+                allUrls.push(url);
+            }
         }
 
+        // Add the first page url
+        allUrls.unshift(hotelUrl);
 
-        // JSON structure
+        // Information for logging
         const data = {
-            count: allUrls.length * 5,
+            count: totalReviewCount,
             pageCount: allUrls.length,
             urls: allUrls,
         };
-
-        // Write the data to a json file
-        writeFileSync('./data/reviewUrl.json', JSON.stringify(data));
+        console.log(data);
 
         // Close the browser
         await browser.close();
 
-        return { allUrls, isResto, };
+        return data;
 
     } catch (err) {
         throw err;

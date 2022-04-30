@@ -100,7 +100,7 @@ const extractUrls = async (restoUrl) => {
         // Add the first page url
         allUrls.unshift(restoUrl);
 
-        // Information for loggin
+        // Information for logging
         const data = {
             count: totalReviewCount,
             pageCount: allUrls.length,
