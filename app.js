@@ -1,174 +1,78 @@
 // Dependencies
-const puppeteer = require('puppeteer');
-const { writeFileSync, readFileSync, promises: { access }, existsSync, mkdirSync } = require('fs');
-const { parse } = require('json2csv');
+const path = require('path');
+const { mkdirSync, } = require('fs');
+const { writeFile, } = require('fs/promises');
 
+// Custom Modules
+const hotelScraper = require('./scrapers/hotel');
+const restoScraper = require('./scrapers/resto');
+const { csvToJSON, fileExists, combine, reviewJSONToCsv, } = require('./utils');
 
-// Data Directory
-const dataDir = './data';
+// Data path
+const dataDir = path.join(__dirname, './reviews/');
+const sourceDir = path.join(__dirname, './source/');
 
-// Global vars for csv parser
-const fields = ['title', 'content'];
-const opts = { fields };
+// Environment variables
+const { SCRAPE_MODE, } = process.env;
 
-// Command line args
-const myArgs = process.argv.slice(2);
-
-// Check if the url is missing
-if (!myArgs[0] && !process.env.URL) {
-    console.log('Missing URL')
-    process.exit(1);
+// Check if the required directories exist, otherwise create them
+if (!fileExists(dataDir)) {
+    mkdirSync(dataDir);
 }
 
-// Check if the data directory exists, otherwise create it
-if (!existsSync(dataDir)) {
-    try {
-        mkdirSync(dataDir);
-    } catch (err) {
-        console.error(err)
-        process.exit(1);
-    }
+if (!fileExists(sourceDir)) {
+    mkdirSync(sourceDir);
 }
+
+// Data source
+const dataSourceResto = path.join(__dirname, './source/restos.csv');
+const dataSourceHotel = path.join(__dirname, './source/hotels.csv');
 
 /**
- * Check if the given file exists
- * @param {String} filePath 
- * @returns {Promise<Boolean>}
+ * Scrape the hotel pages
+ * @returns {Promise<String | Error>} - The done message or error message
  */
-const fileExists = async (filePath) => {
+const hotelScraperInit = async () => {
     try {
-        await access(filePath)
-        return true
-    } catch {
-        return false
-    }
-}
-
-
-/**
- * Scrape the page
- * @param {Array<String>} urlList 
- * @returns {Promise<Undefined | Error>}
- */
-const scrap = async (urlList) => {
-    try {
-
-        if (!urlList || urlList.length === 0) {
-            throw new Error('No url to scrape');
+        // Check if the source file exists
+        const sourceFileAvailable = await fileExists(dataSourceHotel);
+        if (!sourceFileAvailable) {
+            throw Error('Source file does not exist');
         }
 
-        // Launch the browser
-        const browser = await puppeteer.launch({
-            headless: true,
-            devtools: false,
-            defaultViewport: {
-                width: 1920,
-                height: 1080,
-            },
-            args: [
-                "--disable-gpu",
-                "--disable-dev-shm-usage",
-                "--disable-setuid-sandbox",
-                "--no-sandbox",
-            ]
-        });
+        // Convert the csv to json
+        const rawData = await csvToJSON(dataSourceHotel);
+        console.log(`Scraping ${rawData.length} hotels`);
 
-        // Open a new page
-        const page = await browser.newPage();
+        await Promise.all(
+            rawData.map(async (item, index) => {
+                // Extract resto info
+                const { webUrl: hotelUrl, name: hotelName, id: hotelId, } = item;
 
-        const cookiesAvailable = await fileExists('./data/cookies.json');
+                // Start the scraping process
+                const finalData = await hotelScraper(hotelUrl, hotelName, hotelId, index);
+                const { fileName, } = finalData;
+                delete finalData.fileName;
 
-        if (!cookiesAvailable) {
-
-            // Navigate to the page below
-            await page.goto(myArgs[0] || process.env.URL);
-
-            // Log the cookies
-            const cookies = await page.cookies();
-            const cookieJson = JSON.stringify(cookies);
-            writeFileSync('./data/cookies.json', cookieJson);
-
-            // Close the browser
-            return await browser.close();
-        }
-
-        // Set Cookies
-        const cookies = readFileSync('./data/cookies.json', 'utf8');
-        const deserializedCookies = JSON.parse(cookies);
-        await page.setCookie(...deserializedCookies);
-
-        // Navigate to the page below
-        await page.goto(myArgs[0] || process.env.URL);
-
-        await page.waitForTimeout(1000);
-
-        // Add 1st review page to the urlList
-        urlList.unshift(myArgs[0] || process.env.URL);
-
-        // Array to hold the review info
-        const reviewInfo = []
-
-        for (let index = 0; index < urlList.length; index++) {
-            // Navigate to the page below
-            await page.goto(urlList[index]);
-            await page.waitForTimeout(3000);
-
-            // Determin current URL
-            const currentURL = page.url();
-
-            console.log(`Scraping: ${currentURL} | ${urlList.length - 1 - index} Pages Left`);
-
-            // In browser code
-            // Extract comments title
-            const commentTitle = await page.evaluate(async () => {
-
-                // Extract a tags
-                const commentTitleBlocks = document.getElementsByClassName('fCitC')
-
-                // Array to store the comment titles
-                const titles = [];
-
-                // Higher order functions don't work in the browser
-                for (let index = 0; index < commentTitleBlocks.length; index++) {
-                    titles.push(commentTitleBlocks[index].children[0].innerText);
-                }
-
-                return titles;
-            });
-
-            // Extract comments text
-            const commentContent = await page.evaluate(async () => {
-
-                const commentContentBlocks = document.getElementsByTagName('q')
-
-                // Array use to store the comments
-                const comments = []
-
-                for (let index = 0; index < commentContentBlocks.length; index++) {
-                    comments.push(commentContentBlocks[index].children[0].innerText)
-                }
-
-                return comments
+                // Write the data to file
+                const dataToWrite = JSON.stringify(finalData, null, 2);
+                await writeFile(`${dataDir}${fileName}.json`, dataToWrite);
             })
+        );
 
-            // Format (for CSV processing) the reviews so each review of each page is in an object
-            const formatted = commentContent.map((comment, index) => {
-                return {
-                    title: commentTitle[index],
-                    content: comment
-                }
-            })
+        // Combine all the reviews into an array of objects
+        const combinedData = combine(SCRAPE_MODE, dataDir);
 
-            // Push the formmated review to the  array
-            reviewInfo.push(formatted);
+        // Write the combined JSON data to file
+        const dataToWrite = JSON.stringify(combinedData, null, 2);
+        await writeFile(`${dataDir}All.json`, dataToWrite);
 
-        }
+        // Convert the combined JSON data to csv
+        const csvData = reviewJSONToCsv(combinedData);
+        await writeFile(`${dataDir}All.csv`, csvData);
 
-        // Close the browser
-        await browser.close();
 
-        // Convert 2D array to 1D
-        return reviewInfo.flat();
+        return 'Scraping Done';
 
     } catch (err) {
         throw err;
@@ -176,150 +80,76 @@ const scrap = async (urlList) => {
 };
 
 /**
- * Extract review page url
- * @returns {Promise<Undefined | Error>}
+ * Scrape the resto pages
+ * @returns {Promise<String | Error>} - The done message or error message
  */
-const extractAllReviewPageUrls = async () => {
+const restoScraperInit = async () => {
     try {
-
-        // Launch the browser
-        const browser = await puppeteer.launch({
-            headless: true,
-            devtools: false,
-            defaultViewport: {
-                width: 1920,
-                height: 1080,
-            },
-            args: [
-                "--disable-gpu",
-                "--disable-dev-shm-usage",
-                "--disable-setuid-sandbox",
-                "--no-sandbox",
-            ]
-        });
-
-        // Open a new page
-        const page = await browser.newPage();
-
-        const cookiesAvailable = await fileExists('./data/cookies.json');
-
-        if (!cookiesAvailable) {
-
-            // Navigate to the page below
-            await page.goto(myArgs[0] || process.env.URL);
-
-            // Log the cookies
-            const cookies = await page.cookies();
-            const cookieJson = JSON.stringify(cookies);
-            writeFileSync('./data/cookies.json', cookieJson);
-
-            // Close the browser
-            await browser.close();
-
-            // Exit the process
-            return await extractAllReviewPageUrls();
+        // Check if the source file exists
+        const sourceFileAvailable = await fileExists(dataSourceResto);
+        if (!sourceFileAvailable) {
+            throw Error('Source file does not exist');
         }
+      
+        // Convert the csv to json
+        const rawData = await csvToJSON(dataSourceResto);
+        console.log(`Scraping ${rawData.length} restaurants`);
 
-        // Set Cookies
-        const cookies = readFileSync('./data/cookies.json', 'utf8');
-        const deserializedCookies = JSON.parse(cookies);
-        await page.setCookie(...deserializedCookies);
+        await Promise.all(
+            rawData.map(async (item, index) => {
+                // Extract resto info
+                const { webUrl: restoUrl, name: restoName, id: restoId, } = item;
+                // Start the scraping process
+                const finalData = await restoScraper(restoUrl, restoName, restoId, index);
+                const { fileName, } = finalData;
+                delete finalData.fileName;
+                // Write the data to file
+                const dataToWrite = JSON.stringify(finalData, null, 2);
+                await writeFile(`${dataDir}${fileName}.json`, dataToWrite);
+            })
+        );
 
-        // Navigate to the page below
-        await page.goto(myArgs[0] || process.env.URL);
+        // Combine all the reviews into an array of objects
+        const combinedData = combine(SCRAPE_MODE, dataDir);
 
-        await page.waitForTimeout(5000);
+        // Write the combined JSON data to file
+        const dataToWrite = JSON.stringify(combinedData, null, 2);
+        await writeFile(`${dataDir}All.json`, dataToWrite);
 
-        // Determin current URL
-        const currentURL = page.url();
-
-        console.log(`Gathering Info: ${currentURL}`);
-
-        // In browser code
-        const reviewPageUrls = await page.evaluate(() => {
-
-            // All review count
-            // let totalReviewCount = parseInt(document.querySelectorAll("a[href='#REVIEWS']")[1].innerText.split('\n')[1].split(' ')[0].replace(',', ''))
-
-            // English review count
-            let totalReviewCount = null
-
-
-            // For hotel reviews
-            if (document.getElementsByClassName('ui_radio dQNlC')[1]) {
-                totalReviewCount = parseInt(document.getElementsByClassName('ui_radio dQNlC')[1].innerText.split('(')[1].split(')')[0].replace(',', ''))
-            }
-            // For restaurant reviews
-            // totalReviewCount = parseInt(document.getElementsByClassName("filterLabel")[18].innerText.split('(')[1].split(')')[0].replace(',', ''))
+        // Convert the combined JSON data to csv
+        const csvData = reviewJSONToCsv(combinedData);
+        await writeFile(`${dataDir}All.csv`, csvData);
 
 
-            // Calculate the last review page
-            totalReviewCount = (totalReviewCount - totalReviewCount % 5) / 5
-
-            // Get the url format
-            const url = document.getElementsByClassName('pageNum')[1].href
-
-            return { totalReviewCount, url }
-
-        })
-
-        // Destructure function outputs
-        let { totalReviewCount, url } = reviewPageUrls;
-
-        // Array to hold all the review urls
-        const allUrls = []
-
-        let counter = 0
-        // Replace the url page count till the last page
-        while (counter < totalReviewCount) {
-            counter++
-            url = url.replace(/-or[0-9]*/g, `-or${counter * 5}`)
-            allUrls.push(url)
-        }
-
-
-        // JSON structure
-        const data = {
-            count: allUrls.length * 5,
-            pageCount: allUrls.length,
-            urls: allUrls
-        };
-
-        // Write the data to a json file
-        writeFileSync('./data/reviewUrl.json', JSON.stringify(data));
-
-        // Close the browser
-        await browser.close();
-
-        return allUrls
-
-    } catch (err) {
-        throw err
-    }
-}
-
-
-const start = async () => {
-    try {
-        // Extract review page urls
-        const allReviewsUrl = await extractAllReviewPageUrls();
-
-        // Scrape the review page
-        const results = await scrap(allReviewsUrl);
-
-        // Convert JSON to CSV
-        const csv = parse(results, opts);
-
-        // Write the CSV to a file
-        writeFileSync('./data/review.csv', csv);
-
-        // Exit the process
-        console.log('Done');
-
-        process.exit(0);
+        return 'Scraping Done';
 
     } catch (err) {
         throw err;
     }
-}
-start().catch(err => console.error(err));
+};
+
+/**
+ * The main init function
+ * @returns {Promise<String | Error>} - The done message or error message
+ */
+const init = async () => {
+    try {
+
+        switch (SCRAPE_MODE) {
+            case 'HOTEL': return await hotelScraperInit();
+            case 'RESTO': return await restoScraperInit();
+            default: throw Error('Invalid Scrap Mode');
+        }
+
+    } catch (err) {
+        throw err;
+    }
+};
+
+// Start the program
+init()
+    .then(msg => console.log(msg))
+    .catch(err => {
+        console.log(err);
+        process.exit(1);
+    });

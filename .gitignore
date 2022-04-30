@@ -106,4 +106,6 @@ reviewUrl.json
 cookies.json
 review.csv
 **reviews
-.DS_Store
+**backup
+**data
+**source

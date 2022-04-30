@@ -4,9 +4,14 @@ services:
   scraper: 
     # Build directory
     build: .
+    environment:
+      SCRAPE_MODE: HOTEL
     # Image name
-    image: ghcr.io/algo7/tripadvisor-review-scraper/scrap:latest
+    image: x:latest
     volumes:
       - type: bind
         source: ./reviews
-        target: /puppeteer/data
+        target: /puppeteer/reviews
+      - type: bind
+        source: ./source
+        target: /puppeteer/source

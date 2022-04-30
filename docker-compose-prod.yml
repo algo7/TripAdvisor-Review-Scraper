@@ -1,11 +1,14 @@
 services:
   scraper:
     environment:
-      URL: https://www.tripadvisor.com/Hotel_Review-g1136493-d589283-Reviews-or150-Radisson_RED_Brussels-Ixelles_Brussels.html
+      SCRAPE_MODE: RESTO
     image: ghcr.io/algo7/tripadvisor-review-scraper/scrap:latest
     volumes:
     - source: ./reviews
-      target: /puppeteer/data
+      target: /puppeteer/reviews
+      type: bind
+    - source: ./source
+      target: /puppeteer/source
       type: bind
 version: '3.9'
 
