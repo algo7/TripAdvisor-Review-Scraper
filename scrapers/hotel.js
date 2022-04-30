@@ -1,8 +1,7 @@
 // Dependencies
 const puppeteer = require('puppeteer');
-const { writeFileSync, readFileSync, existsSync, mkdirSync, } = require('fs');
+const { writeFileSync, } = require('fs');
 const { parse, } = require('json2csv');
-const { fileExists, } = require('../utils');
 
 
 // Global vars for csv parser
@@ -44,29 +43,7 @@ const extractAllReviewPageUrls = async () => {
         // Open a new page
         const page = await browser.newPage();
 
-        const cookiesAvailable = await fileExists('./data/cookies.json');
 
-        if (!cookiesAvailable) {
-
-            // Navigate to the page below
-            await page.goto(myArgs[0] || process.env.URL);
-
-            // Log the cookies
-            const cookies = await page.cookies();
-            const cookieJson = JSON.stringify(cookies);
-            writeFileSync('./data/cookies.json', cookieJson);
-
-            // Close the browser
-            await browser.close();
-
-            // Exit the process
-            return await extractAllReviewPageUrls();
-        }
-
-        // Set Cookies
-        const cookies = readFileSync('./data/cookies.json', 'utf8');
-        const deserializedCookies = JSON.parse(cookies);
-        await page.setCookie(...deserializedCookies);
 
         // Navigate to the page below
         await page.goto(myArgs[0] || process.env.URL);
@@ -168,27 +145,6 @@ const scrap = async (urlList) => {
 
         // Open a new page
         const page = await browser.newPage();
-
-        const cookiesAvailable = await fileExists('./data/cookies.json');
-
-        if (!cookiesAvailable) {
-
-            // Navigate to the page below
-            await page.goto(myArgs[0] || process.env.URL);
-
-            // Log the cookies
-            const cookies = await page.cookies();
-            const cookieJson = JSON.stringify(cookies);
-            writeFileSync('./data/cookies.json', cookieJson);
-
-            // Close the browser
-            return await browser.close();
-        }
-
-        // Set Cookies
-        const cookies = readFileSync('./data/cookies.json', 'utf8');
-        const deserializedCookies = JSON.parse(cookies);
-        await page.setCookie(...deserializedCookies);
 
         // Navigate to the page below
         await page.goto(myArgs[0] || process.env.URL);

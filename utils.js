@@ -108,5 +108,29 @@ const restoCsvToJSON = async (csvFilePath) => {
 
 };
 
-
 module.exports = { fileExists, combine, reviewJSONToCsv, restoCsvToJSON, };
+
+
+// const cookiesAvailable = await fileExists('./data/cookies.json');
+
+// if (!cookiesAvailable) {
+
+//     // Navigate to the page below
+//     await page.goto(myArgs[0] || process.env.URL);
+
+//     // Log the cookies
+//     const cookies = await page.cookies();
+//     const cookieJson = JSON.stringify(cookies);
+//     writeFileSync('./data/cookies.json', cookieJson);
+
+//     // Close the browser
+//     await browser.close();
+
+//     // Exit the process
+//     return await extractAllReviewPageUrls();
+// }
+
+// // Set Cookies
+// const cookies = readFileSync('./data/cookies.json', 'utf8');
+// const deserializedCookies = JSON.parse(cookies);
+// await page.setCookie(...deserializedCookies);
