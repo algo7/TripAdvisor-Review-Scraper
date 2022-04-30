@@ -1,6 +1,6 @@
 // Dependencies
 const puppeteer = require('puppeteer');
-const { writeFileSync, existsSync, mkdirSync, readFileSync, } = require('fs');
+const { writeFileSync, existsSync, mkdirSync, readFileSync, readdirSync, fstat, } = require('fs');
 const path = require('path');
 
 // Custom modules
@@ -26,7 +26,7 @@ if (!existsSync(dataDir)) {
     }
 }
 
-const scrap = async (restoUrl) => {
+const extractUrls = async (restoUrl) => {
     try {
 
         // Launch the browser
@@ -48,30 +48,6 @@ const scrap = async (restoUrl) => {
         // Open a new page
         const page = await browser.newPage();
 
-        // const cookiesAvailable = await fileExists('./data/cookies.json');
-
-        // if (!cookiesAvailable) {
-
-        //     // Navigate to the page below
-        //     await page.goto(restoUrl);
-
-        //     // Log the cookies
-        //     const cookies = await page.cookies();
-        //     const cookieJson = JSON.stringify(cookies);
-        //     writeFileSync('./data/cookies.json', cookieJson);
-
-        //     // Close the browser
-        //     await browser.close();
-
-        //     return await scrap(restoUrl);
-        // }
-
-        // // Set Cookies
-        // const cookies = readFileSync('./data/cookies.json', 'utf8');
-        // const deserializedCookies = JSON.parse(cookies);
-        // await page.setCookie(...deserializedCookies);
-
-
         // Navigate to the resto page
         await page.goto(restoUrl);
 
@@ -81,7 +57,6 @@ const scrap = async (restoUrl) => {
         // Select all language
         await page.click('[id=filters_detail_language_filterLang_ALL]');
 
-        // Wait till all the review shows
         await page.waitForTimeout(1000);
 
         // Expand the reviews
@@ -94,9 +69,13 @@ const scrap = async (restoUrl) => {
         const reviewPageUrls = await page.evaluate(() => {
 
             // Get the total review count
-            const totalReviewCount = parseInt(document.getElementsByClassName('reviews_header_count')[0].innerText.split('(')[1].split(')')[0].replace(',', ''));
+            const totalReviewCount = parseInt(document
+                .getElementsByClassName('reviews_header_count')[0]
+                .innerText.split('(')[1]
+                .split(')')[0]
+                .replace(',', ''));
 
-            // Default review page
+            // Default review page count
             let noReviewPages = totalReviewCount / 15;
 
             // Calculate the last review page
@@ -106,6 +85,8 @@ const scrap = async (restoUrl) => {
 
             // Get the url of the 2nd page of review. The 1st page is the input link
             let url = false;
+
+            // If there is more than 1 review page
             if (document.getElementsByClassName('pageNum').length > 0) {
                 url = document.getElementsByClassName('pageNum')[1].href;
             }
@@ -123,6 +104,7 @@ const scrap = async (restoUrl) => {
         // Array to hold all the review page urls
         const allUrls = [];
 
+        // If there is more than 1 review page, create the review page url base on the rule below
         if (url) {
 
             let counter = 0;
@@ -145,6 +127,37 @@ const scrap = async (restoUrl) => {
         };
         console.log(data);
 
+        await browser.close();
+
+        return data;
+
+    } catch (err) {
+        throw err;
+    }
+};
+
+const scrap = async (totalReviewCount, allUrls) => {
+    try {
+
+        // Launch the browser
+        const browser = await puppeteer.launch({
+            headless: true,
+            devtools: false,
+            defaultViewport: {
+                width: 1920,
+                height: 1080,
+            },
+            args: [
+                '--disable-gpu',
+                '--disable-dev-shm-usage',
+                '--disable-setuid-sandbox',
+                '--no-sandbox'
+            ],
+        });
+
+        // Open a new page
+        const page = await browser.newPage();
+
         // Array to hold all the reviews 
         const allReviews = [];
 
@@ -152,7 +165,7 @@ const scrap = async (restoUrl) => {
         for (let index = 0; index < allUrls.length; index++) {
 
             // Navigate to each review page
-            await page.goto(allUrls[index]);
+            await page.goto(allUrls[index], { waitUntil: 'networkidle2', });
 
             // Wait for the content to load
             await page.waitForSelector('body');
@@ -205,6 +218,7 @@ const scrap = async (restoUrl) => {
 
             // Push the reviews to the array
             allReviews.push(...reviews);
+
         }
 
         // Data structure to be written to file
@@ -215,31 +229,51 @@ const scrap = async (restoUrl) => {
         };
 
         // Write to file
-        writeFileSync(`${dataPath}${restoUrl.split('-')[4]}.json`, JSON.stringify(finalData, null, 2));
+        writeFileSync(`${dataPath}${allUrls[0].split('-')[4]}.json`,
+            JSON.stringify(finalData, null, 2));
+
         await browser.close();
+
         return 'Done';
     } catch (err) {
         throw err;
     }
 };
 
+const start = async (restoUrl) => {
+    try {
+
+        const { urls, count, } = await extractUrls(restoUrl);
+
+        await scrap(count, urls);
+
+        return 'Done';
+
+    } catch (err) {
+        console.log(err);
+    }
+};
+
+
+
 (async () => {
     for (let index = 0; index < webUrls.length; index++) {
         const restoUrl = webUrls[index];
         console.log('Now Is', restoUrl);
-        await scrap(restoUrl);
+        const isDone = await start(restoUrl);
+        console.log(isDone);
     }
 })().catch(err => console.log(err));
 
-// scrap('https://www.tripadvisor.com/Restaurant_Review-g652156-d17621567-Reviews-Kalasin-Bulle_La_Gruyere_Canton_of_Fribourg.html').then(x => console.log(x)).catch(err => console.log(err));
+// extractUrls('https://www.tripadvisor.com/Restaurant_Review-g652156-d17621567-Reviews-Kalasin-Bulle_La_Gruyere_Canton_of_Fribourg.html').then(x => console.log(x)).catch(err => console.log(err));
 // const a = require('./data/Kalasin.json');
 // a.allReviews.forEach(x => console.log(x.title));
 
-  // The review count array based in the "Traveler rating info"
+// The review count array based in the "Traveler rating info"
 //   const reviewCount = [];
 
-        // // Extract the review count for each rating
-        // document.getElementsByClassName('choices')[0].querySelectorAll('.row_num').forEach(el => reviewCount.push(el.innerText));
+// // Extract the review count for each rating
+// document.getElementsByClassName('choices')[0].querySelectorAll('.row_num').forEach(el => reviewCount.push(el.innerText));
 
-        // // Sum them to get the total review count
-        // const totalReviewCount = reviewCount.map(count => parseInt(count)).reduce((a, b) => a + b);
+// // Sum them to get the total review count
+// const totalReviewCount = reviewCount.map(count => parseInt(count)).reduce((a, b) => a + b);
