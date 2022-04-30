@@ -10,7 +10,7 @@ const dataPath = path.join(__dirname, './data/');
 
 // URL JSON File
 const items = require('./resto.csv.json');
-const webUrls = items.map(item => item.webUrl);
+
 
 
 // Check if the data directory exists, otherwise create it
@@ -133,7 +133,17 @@ const extractUrls = async (restoUrl) => {
     }
 };
 
-const scrap = async (totalReviewCount, allUrls, position) => {
+/**
+ * Extract the reviews and write to a JSON file
+ * @param {Number} totalReviewCount - The total review count
+ * @param {Array<String>} allUrls - The array containing review page urls
+ * @param {Number} position - The index of the restaurant page in the list
+ * @param {String} restoName - The name of the restaurant
+ * @param {String} restoId - The id of the restaurant
+ * @returns {Promise<String | Error>} - The done message or error message
+ * @returns 
+ */
+const scrap = async (totalReviewCount, allUrls, position, restoName, restoId) => {
     try {
 
         // Launch the browser
@@ -220,10 +230,12 @@ const scrap = async (totalReviewCount, allUrls, position) => {
 
         // Data structure to be written to file
         const finalData = {
+            restoName,
+            restoId,
             count: totalReviewCount,
             actualCount: allReviews.length,
-            allReviews,
             position,
+            allReviews,
         };
 
         // Write to file
@@ -233,6 +245,7 @@ const scrap = async (totalReviewCount, allUrls, position) => {
         await browser.close();
 
         return 'Done';
+
     } catch (err) {
         throw err;
     }
