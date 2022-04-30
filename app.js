@@ -9,7 +9,7 @@ const restoScraper = require('./scrapers/resto');
 const { csvToJSON, fileExists, combine, reviewJSONToCsv, } = require('./utils');
 
 // Data path
-const dataDir = path.join(__dirname, './data/');
+const dataDir = path.join(__dirname, './reviews/');
 const sourceDir = path.join(__dirname, './source/');
 
 // Environment variables

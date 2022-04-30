@@ -5,7 +5,7 @@ services:
     image: ghcr.io/algo7/tripadvisor-review-scraper/scrap:latest
     volumes:
     - source: ./reviews
-      target: /puppeteer/data
+      target: /puppeteer/reviews
       type: bind
     - source: ./source
       target: /puppeteer/source
