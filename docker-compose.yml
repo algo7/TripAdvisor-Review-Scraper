@@ -5,10 +5,13 @@ services:
     # Build directory
     build: .
     environment:
-      SCRAPE_MODE: RESTO
+      SCRAPE_MODE: HOTEL
     # Image name
     image: x:latest
     volumes:
       - type: bind
         source: ./reviews
         target: /puppeteer/data
+      - type: bind
+        source: ./source
+        target: /puppeteer/source

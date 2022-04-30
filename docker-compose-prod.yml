@@ -7,5 +7,8 @@ services:
     - source: ./reviews
       target: /puppeteer/data
       type: bind
+    - source: ./source
+      target: /puppeteer/source
+      type: bind
 version: '3.9'
 
