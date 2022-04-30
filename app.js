@@ -1,6 +1,7 @@
 // Dependencies
 const path = require('path');
-const { existsSync, mkdirSync, writeFileSync, } = require('fs');
+const { existsSync, mkdirSync, } = require('fs');
+const { writeFile, } = require('fs/promises');
 
 // Custom Modules
 const hotelScraper = require('./scrapers/hotel');
@@ -30,55 +31,59 @@ const dataSource = path.join(__dirname, './data/resto.csv');
 const hotelScraperInit = async () => {
     try {
         const csv = await hotelScraper();
-        writeFileSync(`/${dataDir}reviews.csv`, csv);
+        await writeFile(`/${dataDir}reviews.csv`, csv);
     } catch (err) {
         throw err;
     }
 };
-
+/**
+ * Scrape the resto pages
+ * @returns {Promise<String | Error>} - The done message or error message
+ */
 const restoScraperInit = async () => {
     try {
+        // Check if the source file exists
         const sourceFileAvailable = await fileExists(dataSource);
-
         if (!sourceFileAvailable) {
             throw Error('Source file does not exist');
         }
 
+        // Convert the csv to json
         const rawData = await restoCsvToJSON(dataSource);
+        console.log(`Scraping ${rawData.length} restaurants`);
 
         await Promise.all(
             rawData.map(async (item, index) => {
-
+                // Extract resto info
                 const { webUrl: restoUrl, name: restoName, id: restoId, } = item;
-
-                // Logging
-                console.log('Now Is', [index], restoUrl);
-
+                // Start the scraping process
                 const finalData = await restoScraper(restoUrl, restoName, restoId, index);
                 const { fileName, } = finalData;
                 delete finalData.fileName;
-
-                // Write to file
-                writeFileSync(`${dataDir}${fileName}.json`,
-                    JSON.stringify(finalData, null, 2));
+                // Write the data to file
+                const dataToWrite = JSON.stringify(finalData, null, 2);
+                await writeFile(`${dataDir}${fileName}.json`, dataToWrite);
             })
         );
+
+        return 'Scraping Done';
 
     } catch (err) {
         throw err;
     }
 };
 
+/**
+ * The init function
+ * @returns {Promise<String | Error>} - The done message or error message
+ */
 const init = async () => {
     try {
 
         switch (SCRAP_MODE) {
-            case 'HOTEL': await hotelScraperInit();
-                break;
-            case 'RESTO': await restoScraperInit();
-                break;
-            default:
-                throw Error('Invalid Scrap Mode');
+            case 'HOTEL': return await hotelScraperInit();
+            case 'RESTO': return await restoScraperInit();
+            default: throw Error('Invalid Scrap Mode');
         }
 
     } catch (err) {
@@ -86,7 +91,10 @@ const init = async () => {
     }
 };
 
-init().catch(err => {
-    console.log(err);
-    process.exit(1);
-});
+// Start the program
+init()
+    .then(msg => console.log(msg))
+    .catch(err => {
+        console.log(err);
+        process.exit(1);
+    });
