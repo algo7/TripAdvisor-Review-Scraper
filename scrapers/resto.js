@@ -1,6 +1,5 @@
 // Dependencies
 const puppeteer = require('puppeteer');
-const { writeFileSync, } = require('fs');
 
 /**
  * Extract the review page urls, total review count, and total review page count
@@ -106,7 +105,7 @@ const extractUrls = async (restoUrl) => {
             pageCount: reviewPageUrls.length,
             urls: reviewPageUrls,
         };
-        console.log(data);
+        // console.log(data);
 
         await browser.close();
 
@@ -124,10 +123,9 @@ const extractUrls = async (restoUrl) => {
  * @param {Number} position - The index of the restaurant page in the list
  * @param {String} restoName - The name of the restaurant
  * @param {String} restoId - The id of the restaurant
- * @param {String} dataPath - The path to the data folder
  * @returns {Promise<String | Error>} - The done message or error message
  */
-const scrap = async (totalReviewCount, reviewPageUrls, position, restoName, restoId, dataPath) => {
+const scrap = async (totalReviewCount, reviewPageUrls, position, restoName, restoId) => {
     try {
 
         // Launch the browser
@@ -214,15 +212,12 @@ const scrap = async (totalReviewCount, reviewPageUrls, position, restoName, rest
             actualCount: allReviews.length,
             position,
             allReviews,
+            fileName: `${position}_${reviewPageUrls[0].split('-')[4]}`,
         };
-
-        // Write to file
-        writeFileSync(`${dataPath}${position}_${reviewPageUrls[0].split('-')[4]}.json`,
-            JSON.stringify(finalData, null, 2));
 
         await browser.close();
 
-        return 'Done';
+        return finalData;
 
     } catch (err) {
         throw err;
@@ -235,17 +230,16 @@ const scrap = async (totalReviewCount, reviewPageUrls, position, restoName, rest
  * @param {String} restoName - The name of the restaurant
  * @param {String} restoId - The id of the restaurant
  * @param {Number} position - The index of the restaurant page in the list
- * @param {String} dataPath - The path to the data folder
- * @returns {Promise<String | Error>} - The done message or error message
+ * @returns {Promise<Object | Error>} - The final data
  */
-const start = async (restoUrl, restoName, restoId, position, dataPath) => {
+const start = async (restoUrl, restoName, restoId, position) => {
     try {
 
         const { urls, count, } = await extractUrls(restoUrl);
 
-        await scrap(count, urls, position, restoName, restoId, dataPath);
+        const finalData = await scrap(count, urls, position, restoName, restoId);
 
-        return 'Done';
+        return finalData;
 
     } catch (err) {
         throw err;

@@ -5,8 +5,9 @@ const { existsSync, mkdirSync, writeFileSync, } = require('fs');
 // Custom Modules
 const hotelScraper = require('./scrapers/hotel');
 const restoScraper = require('./scrapers/resto');
+const { restoCsvToJSON, fileExists, } = require('./utils');
 
-// Global variables
+// Data path
 const dataDir = path.join(__dirname, './data/');
 
 // Environment variables
@@ -22,15 +23,70 @@ if (!existsSync(dataDir)) {
     }
 }
 
-if (SCRAP_MODE === 'hotel') {
-    hotelScraper().then(csv => {
-        // Write the CSV to a file
-        writeFileSync('./data/review.csv', csv);
-    }).catch(err => console.log(err));
-} else {
-    restoScraper.start();
+// Data source
+const dataSource = path.join(__dirname, './data/resto.csv');
 
-}
 
-hotelScraper('https://www.tripadvisor.com/Hotel_Review-g188107-d11761198-Reviews-Hotel_des_Patients-Lausanne_Canton_of_Vaud.html').catch(err => console.log(err));
+const hotelScraperInit = async () => {
+    try {
+        const csv = await hotelScraper();
+        writeFileSync(`/${dataDir}reviews.csv`, csv);
+    } catch (err) {
+        throw err;
+    }
+};
 
+const restoScraperInit = async () => {
+    try {
+        const sourceFileAvailable = await fileExists(dataSource);
+
+        if (!sourceFileAvailable) {
+            throw Error('Source file does not exist');
+        }
+
+        const rawData = await restoCsvToJSON(dataSource);
+
+        await Promise.all(
+            rawData.map(async (item, index) => {
+
+                const { webUrl: restoUrl, name: restoName, id: restoId, } = item;
+
+                // Logging
+                console.log('Now Is', [index], restoUrl);
+
+                const finalData = await restoScraper(restoUrl, restoName, restoId, index);
+                const { fileName, } = finalData;
+                delete finalData.fileName;
+
+                // Write to file
+                writeFileSync(`${dataDir}${fileName}.json`,
+                    JSON.stringify(finalData, null, 2));
+            })
+        );
+
+    } catch (err) {
+        throw err;
+    }
+};
+
+const init = async () => {
+    try {
+
+        switch (SCRAP_MODE) {
+            case 'HOTEL': await hotelScraperInit();
+                break;
+            case 'RESTO': await restoScraperInit();
+                break;
+            default:
+                throw Error('Invalid Scrap Mode');
+        }
+
+    } catch (err) {
+        throw err;
+    }
+};
+
+init().catch(err => {
+    console.log(err);
+    process.exit(1);
+});

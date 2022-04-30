@@ -97,9 +97,6 @@ const restoCsvToJSON = async (csvFilePath) => {
             };
         });
 
-        // Write to JSON file
-        writeFileSync(`${csvFilePath}.json`, JSON.stringify(processed, null, 2));
-
         return processed;
 
     } catch (err) {
