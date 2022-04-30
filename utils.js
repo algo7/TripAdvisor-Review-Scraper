@@ -21,7 +21,7 @@ const fileExists = async (filePath) => {
  * Combine all JSON files in the data directory into a JSON array of object
  * @param {String} scrapeMode - Resturant or hotel
  * @param {String} dataDir - The data directory
- * @returns {Array<Object>}
+ * @returns {Array<Object>} - The combined JSON array of review objects
  */
 const combine = (scrapeMode, dataDir) => {
     try {

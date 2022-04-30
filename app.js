@@ -6,7 +6,7 @@ const { writeFile, } = require('fs/promises');
 // Custom Modules
 const hotelScraper = require('./scrapers/hotel');
 const restoScraper = require('./scrapers/resto');
-const { csvToJSON, fileExists, } = require('./utils');
+const { csvToJSON, fileExists, combine, reviewJSONToCsv, } = require('./utils');
 
 // Data path
 const dataDir = path.join(__dirname, './data/');
@@ -48,15 +48,29 @@ const hotelScraperInit = async () => {
             rawData.map(async (item, index) => {
                 // Extract resto info
                 const { webUrl: hotelUrl, name: hotelName, id: hotelId, } = item;
+
                 // Start the scraping process
                 const finalData = await hotelScraper(hotelUrl, hotelName, hotelId, index);
                 const { fileName, } = finalData;
                 delete finalData.fileName;
+
                 // Write the data to file
                 const dataToWrite = JSON.stringify(finalData, null, 2);
                 await writeFile(`${dataDir}${fileName}.json`, dataToWrite);
             })
         );
+
+        // Combine all the reviews into an array of objects
+        const combinedData = combine(SCRAPE_MODE, dataDir);
+
+        // Write the combined JSON data to file
+        const dataToWrite = JSON.stringify(combinedData, null, 2);
+        await writeFile(`${dataDir}All.json`, dataToWrite);
+
+        // Convert the combined JSON data to csv
+        const csvData = reviewJSONToCsv(combinedData);
+        await writeFile(`${dataDir}All.csv`, csvData);
+
 
         return 'Scraping Done';
 
