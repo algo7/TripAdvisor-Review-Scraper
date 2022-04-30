@@ -116,7 +116,7 @@ const extractAllReviewPageUrls = async (hotelUrl) => {
  * @param {Array<String>} reviewPageUrls - The review page urls
  * @returns {Promise<Object| Error>} - THe final data
  */
-const scrap = async (reviewPageUrls) => {
+const scrape = async (reviewPageUrls) => {
     try {
 
         // Launch the browser
@@ -222,7 +222,7 @@ const start = async (hotelUrl) => {
         const { urls, count, } = await extractAllReviewPageUrls(hotelUrl);
 
         // Scrape the review page
-        const results = await scrap(urls);
+        const results = await scrape(urls);
 
         // Convert JSON to CSV
         const csv = parse(results, opts);

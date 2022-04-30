@@ -80,17 +80,17 @@ const reviewJSONToCsv = (jsonInput) => {
 /**
  * Extract the name, url, and id of the resto from a csv file
  * @param {String} csvFilePath - The location of the csv file 
- * @param {String} scrapMode - Resturant or hotel
+ * @param {String} scrapeMode - Resturant or hotel
  * @returns {Promise<Object | Error>} - The parsed json object or error message
  */
-const csvToJSON = async (csvFilePath, scrapMode) => {
+const csvToJSON = async (csvFilePath, scrapeMode) => {
     try {
 
         // Read the csv file
         const parsedJson = await csvtojsonV2().fromFile(csvFilePath);
 
         // Restaurant
-        if (scrapMode === 'RESTO') {
+        if (scrapeMode === 'RESTO') {
             return parsedJson.map(resto => {
                 return { name: resto.name, webUrl: resto.webUrl, id: resto.id, };
             });

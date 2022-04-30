@@ -125,7 +125,7 @@ const extractAllReviewPageUrls = async (restoUrl) => {
  * @param {String} restoId - The id of the restaurant
  * @returns {Promise<Object | Error>} - The final data
  */
-const scrap = async (totalReviewCount, reviewPageUrls, position, restoName, restoId) => {
+const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, restoId) => {
     try {
 
         // Launch the browser
@@ -225,7 +225,7 @@ const scrap = async (totalReviewCount, reviewPageUrls, position, restoName, rest
 };
 
 /**
- * Start the scrapping process
+ * Start the scraping process
  * @param {String} restoUrl - The url of the restaurant page 
  * @param {String} restoName - The name of the restaurant
  * @param {String} restoId - The id of the restaurant
@@ -237,7 +237,7 @@ const start = async (restoUrl, restoName, restoId, position) => {
 
         const { urls, count, } = await extractAllReviewPageUrls(restoUrl);
 
-        const finalData = await scrap(count, urls, position, restoName, restoId);
+        const finalData = await scrape(count, urls, position, restoName, restoId);
 
         return finalData;
 
@@ -248,29 +248,6 @@ const start = async (restoUrl, restoName, restoId, position) => {
 
 
 module.exports = start;
-
-// (async () => {
-//     // Loop through the list of restaurants
-//     for (let index = 0; index < items.length; index++) {
-
-//         // Get the restaurant url
-//         const restoUrl = items[index].webUrl;
-
-//         // Get the restaurant name
-//         const restoName = items[index].name;
-
-//         // Get the restaurant id
-//         const restoId = items[index].id;
-
-//         // Logging
-//         console.log('Now Is', [index], restoUrl);
-
-//         // Start the scrapping process
-//         const isDone = await start(restoUrl, restoName, restoId, index);
-
-//         console.log(isDone);
-//     }
-// })().catch(err => console.log(err));
 
 
 // extractAllReviewPageUrls('https://www.tripadvisor.com/Restaurant_Review-g652156-d17621567-Reviews-Kalasin-Bulle_La_Gruyere_Canton_of_Fribourg.html').then(x => console.log(x)).catch(err => console.log(err));

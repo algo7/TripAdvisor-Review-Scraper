@@ -12,7 +12,7 @@ const { csvToJSON, fileExists, } = require('./utils');
 const dataDir = path.join(__dirname, './data/');
 
 // Environment variables
-const { SCRAP_MODE, } = process.env;
+const { SCRAPE_MODE, } = process.env;
 
 // Check if the data directory exists, otherwise create it
 if (!existsSync(dataDir)) {
@@ -80,7 +80,7 @@ const restoScraperInit = async () => {
 const init = async () => {
     try {
 
-        switch (SCRAP_MODE) {
+        switch (SCRAPE_MODE) {
             case 'HOTEL': return await hotelScraperInit();
             case 'RESTO': return await restoScraperInit();
             default: throw Error('Invalid Scrap Mode');
