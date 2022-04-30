@@ -16,7 +16,7 @@ const sourceDir = path.join(__dirname, './source/');
 // Environment variables
 const { SCRAPE_MODE, } = process.env;
 
-console.log(chalk.bold.blue(`The Scraper is Running in ${SCRAPE_MODE} Mode`));
+console.log(chalk.bold.blue(`The Scraper is Running in ${chalk.bold.magenta(SCRAPE_MODE)} Mode`));
 
 // Check if the required directories exist, otherwise create them
 if (!fileExists(dataDir)) {
@@ -45,7 +45,7 @@ const hotelScraperInit = async () => {
 
         // Convert the csv to json
         const rawData = await csvToJSON(dataSourceHotel);
-        console.log(chalk.bold.yellow(`Scraping ${rawData.length} hotels`));
+        console.log(chalk.bold.yellow(`Scraping ${chalk.bold.magenta(rawData.length)} hotels`));
 
         await Promise.all(
             rawData.map(async (item, index) => {
@@ -96,7 +96,7 @@ const restoScraperInit = async () => {
 
         // Convert the csv to json
         const rawData = await csvToJSON(dataSourceResto);
-        console.log(chalk.bold.yellow(`Scraping ${rawData.length} restaurants`));
+        console.log(chalk.bold.yellow(`Scraping ${chalk.bold.magenta(rawData.length)} restaurants`));
 
         await Promise.all(
             rawData.map(async (item, index) => {
