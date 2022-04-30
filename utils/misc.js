@@ -25,6 +25,9 @@ const fileExists = async (filePath) => {
  */
 const restoJsonsToCsv = (jsonInput) => {
     try {
+
+
+
         const fields = ['name', 'id'];
         const opts = { fields, };
 
@@ -43,19 +46,22 @@ const combine = () => {
         const allFiles = readdirSync('../data/');
 
         const extracted = allFiles.map(file => {
-
             // eslint-disable-next-line global-require
             const fileContent = require(`../data/${file}`);
-
             const { restoName, restoId, position, allReviews, } = fileContent;
-            return {
-                restoName,
-                restoId,
-                position,
-                allReviews,
+            return { restoName, restoId, position, allReviews, };
+        })
+            .sort((a, b) => a.position - b.position)
+            .map(resto => {
+                const { restoName, restoId, position, allReviews, } = resto;
+                return allReviews.map(review => {
+                    review.restoName = restoName;
+                    review.restoId = restoId;
+                    review.position = position;
+                    return review;
+                });
+            });
 
-            };
-        }).sort((a, b) => a.position - b.position);
 
         return extracted;
 
@@ -64,3 +70,5 @@ const combine = () => {
     }
 };
 module.exports = { fileExists, combine, };
+
+console.log(combine()[0]);
