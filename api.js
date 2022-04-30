@@ -1,6 +1,6 @@
 // Dependencies
 const puppeteer = require('puppeteer');
-const { writeFileSync, existsSync, mkdirSync, readFileSync, readdirSync, fstat, } = require('fs');
+const { writeFileSync, existsSync, mkdirSync, } = require('fs');
 const path = require('path');
 
 // Global variables
