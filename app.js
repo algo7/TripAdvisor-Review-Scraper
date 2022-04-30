@@ -2,7 +2,7 @@
 const path = require('path');
 const { mkdirSync, } = require('fs');
 const { writeFile, } = require('fs/promises');
-const chalk = require('chalk');
+const { bold, } = require('chalk');
 
 // Custom Modules
 const hotelScraper = require('./scrapers/hotel');
@@ -16,7 +16,7 @@ const sourceDir = path.join(__dirname, './source/');
 // Environment variables
 const { SCRAPE_MODE, } = process.env;
 
-console.log(chalk.bold.blue(`The Scraper is Running in ${chalk.bold.magenta(SCRAPE_MODE)} Mode`));
+console.log(bold.blue(`The Scraper is Running in ${bold.magenta(SCRAPE_MODE)} Mode`));
 
 // Check if the required directories exist, otherwise create them
 if (!fileExists(dataDir)) {
@@ -45,7 +45,7 @@ const hotelScraperInit = async () => {
 
         // Convert the csv to json
         const rawData = await csvToJSON(dataSourceHotel);
-        console.log(chalk.bold.yellow(`Scraping ${chalk.bold.magenta(rawData.length)} hotels`));
+        console.log(bold.yellow(`Scraping ${bold.magenta(rawData.length)} hotels`));
 
         await Promise.all(
             rawData.map(async (item, index) => {
@@ -96,7 +96,7 @@ const restoScraperInit = async () => {
 
         // Convert the csv to json
         const rawData = await csvToJSON(dataSourceResto);
-        console.log(chalk.bold.yellow(`Scraping ${chalk.bold.magenta(rawData.length)} restaurants`));
+        console.log(bold.yellow(`Scraping ${bold.magenta(rawData.length)} restaurants`));
 
         await Promise.all(
             rawData.map(async (item, index) => {
