@@ -1,5 +1,5 @@
 // Dependencies
-const { promises: { access, }, readdirSync, writeFileSync, } = require('fs');
+const { promises: { access, }, readdirSync, } = require('fs');
 const { parse, } = require('json2csv');
 const csvtojsonV2 = require('csvtojson');
 
@@ -19,33 +19,64 @@ const fileExists = async (filePath) => {
 
 /**
  * Combine all JSON files in the data directory into a JSON array of object
+ * @param {String} scrapeMode - Resturant or hotel
+ * @param {String} dataDir - The data directory
  * @returns {Array<Object>}
  */
-const combine = () => {
+const combine = (scrapeMode, dataDir) => {
     try {
-        const allFiles = readdirSync('../data/');
+        // Read all files in the data directory
+        const allFiles = readdirSync(dataDir);
 
-        const extracted = allFiles.map(file => {
-            // eslint-disable-next-line global-require
-            const fileContent = require(`../data/${file}`);
-            const { restoName, restoId, position, allReviews, } = fileContent;
-            return { restoName, restoId, position, allReviews, };
-        })
+        const extracted = allFiles
+            // Filter out JSON files
+            .filter(fileName => fileName.includes('.json'))
+            // Load each file and extract the information
+            .map(fileName => {
+                // eslint-disable-next-line global-require
+                const fileContent = require(`${dataDir}${fileName}`);
+                if (scrapeMode === 'RESTO') {
+                    const { restoName, restoId, position, allReviews, } = fileContent;
+                    return { restoName, restoId, position, allReviews, };
+                }
+                const { hotelName, hotelId, position, allReviews, } = fileContent;
+                return { hotelName, hotelId, position, allReviews, };
+            })
+            // Sort the extracted data by the index
             .sort((a, b) => a.position - b.position)
-            .map(resto => {
-                const { restoName, restoId, position, allReviews, } = resto;
+            // Append the name, id, and index to each review
+            .map(item => {
+                if (scrapeMode === 'RESTO') {
+                    const { restoName, restoId, position, allReviews, } = item;
+                    return allReviews.map(review => {
+                        review.restoName = restoName;
+                        review.restoId = restoId;
+                        review.position = position;
+                        return review;
+                    });
+                }
+
+                const { hotelName, hotelId, position, allReviews, } = item;
                 return allReviews.map(review => {
-                    review.restoName = restoName;
-                    review.restoId = restoId;
+                    review.hotelName = hotelName;
+                    review.hotelId = hotelId;
                     review.position = position;
                     return review;
                 });
             })
             .flat()
+            // Rearrange the data for converting to CSV
             .map(review => {
-                const { restoName, restoId, rating, dateOfVist, ratingDate, title, content, } = review;
-
-                return { restoName, restoId, title, content, rating, dateOfVist, ratingDate, };
+                if (scrapeMode === 'RESTO') {
+                    const { restoName, restoId, rating, dateOfVist,
+                        ratingDate, title, content, } = review;
+                    return {
+                        restoName, restoId, title, content,
+                        rating, dateOfVist, ratingDate,
+                    };
+                }
+                const { hotelName, hotelId, title, content, } = review;
+                return { hotelName, hotelId, title, content, };
             });
 
         return extracted;
@@ -69,8 +100,7 @@ const reviewJSONToCsv = (jsonInput) => {
         // Convert JSON to CSV
         const csv = parse(jsonInput, opts);
 
-        // Write the CSV to a file
-        writeFileSync('../reviews.csv', csv);
+        return csv;
 
     } catch (err) {
         throw err;
