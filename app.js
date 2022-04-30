@@ -90,7 +90,7 @@ const restoScraperInit = async () => {
         if (!sourceFileAvailable) {
             throw Error('Source file does not exist');
         }
-
+      
         // Convert the csv to json
         const rawData = await csvToJSON(dataSourceResto);
         console.log(`Scraping ${rawData.length} restaurants`);
