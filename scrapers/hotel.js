@@ -159,7 +159,12 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
             // Determin current URL
             const currentURL = page.url();
 
-            console.log(`Scraping: ${currentURL} | ${reviewPageUrls.length - 1 - index} Pages Left`);
+            // Progress Report
+            console.log({
+                'Scraping': currentURL,
+                'Pages Left': reviewPageUrls.length - 1 - index,
+                'Progress': `${Math.round(((index + 1) / reviewPageUrls.length * 100), 1)}%`,
+            });
 
             // In browser code
             // Extract comments title
