@@ -2,6 +2,7 @@
 const path = require('path');
 const { mkdirSync, } = require('fs');
 const { writeFile, } = require('fs/promises');
+const chalk = require('chalk');
 
 // Custom Modules
 const hotelScraper = require('./scrapers/hotel');
@@ -14,7 +15,7 @@ const sourceDir = path.join(__dirname, './source/');
 
 // Environment variables
 const { SCRAPE_MODE, } = process.env;
-
+console.log(chalk.blue('Hello world!'));
 console.log(`The Scraper is Running in ${SCRAPE_MODE} Mode`);
 
 // Check if the required directories exist, otherwise create them
