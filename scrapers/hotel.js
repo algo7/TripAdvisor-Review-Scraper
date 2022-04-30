@@ -43,8 +43,6 @@ const extractAllReviewPageUrls = async () => {
         // Open a new page
         const page = await browser.newPage();
 
-
-
         // Navigate to the page below
         await page.goto(myArgs[0] || process.env.URL);
 
@@ -65,7 +63,7 @@ const extractAllReviewPageUrls = async () => {
             let totalReviewCount = null;
             let isResto = false;
             // For hotel reviews
-            totalReviewCount = parseInt(document.getElementsByClassName('ui_radio dQNlC')[1].innerText.split('(')[1].split(')')[0].replace(',', ''));
+            totalReviewCount = parseInt(document.querySelector('[for=LanguageFilter_0]').innerText.split('(')[1].split(')')[0].replace(',', ''));
             // 
             // totalReviewCount = parseInt(document.getElementsByClassName("filterLabel")[18].innerText.split('(')[1].split(')')[0].replace(',', ''))
 
