@@ -17,7 +17,13 @@ const fileExists = async (filePath) => {
     }
 };
 
-const restoJsonsToCsv = () => {
+
+/**
+ * Convert JSON input to CSV
+ * @param {Array<Object>} jsonInput - The JSON array of review and restaurant objects
+ * @returns {String} - The CSV string
+ */
+const restoJsonsToCsv = (jsonInput) => {
     try {
         const fields = ['name', 'id'];
         const opts = { fields, };
