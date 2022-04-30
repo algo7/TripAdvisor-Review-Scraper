@@ -1,27 +1,6 @@
 // Dependencies
 const puppeteer = require('puppeteer');
-const { writeFileSync, existsSync, mkdirSync, } = require('fs');
-const path = require('path');
-
-// Global variables
-// Data Directory
-const dataDir = './data';
-const dataPath = path.join(__dirname, './data/');
-
-// URL JSON File
-const items = require('./resto.csv.json');
-
-
-
-// Check if the data directory exists, otherwise create it
-if (!existsSync(dataDir)) {
-    try {
-        mkdirSync(dataDir);
-    } catch (err) {
-        console.error(err);
-        process.exit(1);
-    }
-}
+const { writeFileSync, } = require('fs');
 
 /**
  * Extract the review page urls, total review count, and total review page count
@@ -145,9 +124,10 @@ const extractUrls = async (restoUrl) => {
  * @param {Number} position - The index of the restaurant page in the list
  * @param {String} restoName - The name of the restaurant
  * @param {String} restoId - The id of the restaurant
+ * @param {String} dataPath - The path to the data folder
  * @returns {Promise<String | Error>} - The done message or error message
  */
-const scrap = async (totalReviewCount, allUrls, position, restoName, restoId) => {
+const scrap = async (totalReviewCount, allUrls, position, restoName, restoId, dataPath) => {
     try {
 
         // Launch the browser
@@ -261,46 +241,48 @@ const scrap = async (totalReviewCount, allUrls, position, restoName, restoId) =>
  * @param {String} restoName - The name of the restaurant
  * @param {String} restoId - The id of the restaurant
  * @param {Number} position - The index of the restaurant page in the list
+ * @param {String} dataPath - The path to the data folder
  * @returns {Promise<String | Error>} - The done message or error message
  */
-const start = async (restoUrl, restoName, restoId, position) => {
+const start = async (restoUrl, restoName, restoId, position, dataPath) => {
     try {
 
         const { urls, count, } = await extractUrls(restoUrl);
 
-        await scrap(count, urls, position, restoName, restoId);
+        await scrap(count, urls, position, restoName, restoId, dataPath);
 
         return 'Done';
 
     } catch (err) {
-        console.log(err);
+        throw err;
     }
 };
 
 
+module.exports = start;
 
-(async () => {
-    // Loop through the list of restaurants
-    for (let index = 0; index < items.length; index++) {
+// (async () => {
+//     // Loop through the list of restaurants
+//     for (let index = 0; index < items.length; index++) {
 
-        // Get the restaurant url
-        const restoUrl = items[index].webUrl;
+//         // Get the restaurant url
+//         const restoUrl = items[index].webUrl;
 
-        // Get the restaurant name
-        const restoName = items[index].name;
+//         // Get the restaurant name
+//         const restoName = items[index].name;
 
-        // Get the restaurant id
-        const restoId = items[index].id;
+//         // Get the restaurant id
+//         const restoId = items[index].id;
 
-        // Logging
-        console.log('Now Is', [index], restoUrl);
+//         // Logging
+//         console.log('Now Is', [index], restoUrl);
 
-        // Start the scrapping process
-        const isDone = await start(restoUrl, restoName, restoId, index);
+//         // Start the scrapping process
+//         const isDone = await start(restoUrl, restoName, restoId, index);
 
-        console.log(isDone);
-    }
-})().catch(err => console.log(err));
+//         console.log(isDone);
+//     }
+// })().catch(err => console.log(err));
 
 
 // extractUrls('https://www.tripadvisor.com/Restaurant_Review-g652156-d17621567-Reviews-Kalasin-Bulle_La_Gruyere_Canton_of_Fribourg.html').then(x => console.log(x)).catch(err => console.log(err));
