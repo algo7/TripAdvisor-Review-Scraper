@@ -9,8 +9,11 @@ const { writeFileSync, } = require('fs');
  */
 const restoCsvToJSON = async (csvFilePath) => {
     try {
+
+        // Read the csv file
         const parsedJson = await csvtojsonV2().fromFile(csvFilePath);
 
+        // Extract the fields
         const processed = parsedJson.map(resto => {
             return {
                 name: resto.name,
@@ -19,6 +22,7 @@ const restoCsvToJSON = async (csvFilePath) => {
             };
         });
 
+        // Write to JSON file
         writeFileSync(`${csvFilePath}.json`, JSON.stringify(processed, null, 2));
 
         return processed;
