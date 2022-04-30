@@ -25,18 +25,46 @@ if (!existsSync(dataDir)) {
 }
 
 // Data source
-const dataSource = path.join(__dirname, './data/resto.csv');
+const dataSourceResto = path.join(__dirname, './data/restos.csv');
+const dataSourceHotel = path.join(__dirname, './data/hotels.csv');
 
-
+/**
+ * Scrape the hotel pages
+ * @returns {Promise<String | Error>} - The done message or error message
+ */
 const hotelScraperInit = async () => {
     try {
-        const csv = await hotelScraper('https://www.tripadvisor.com/Hotel_Review-g188107-d11761198-Reviews-or30-Hotel_des_Patients-Lausanne_Canton_of_Vaud.html');
-        // await writeFile(`/${dataDir}reviews.csv`, csv);
+        // Check if the source file exists
+        const sourceFileAvailable = await fileExists(dataSourceHotel);
+        if (!sourceFileAvailable) {
+            throw Error('Source file does not exist');
+        }
+
+        // Convert the csv to json
+        const rawData = await csvToJSON(dataSourceHotel);
+        console.log(`Scraping ${rawData.length} hotels`);
+
+        await Promise.all(
+            rawData.map(async (item, index) => {
+                // Extract resto info
+                const { webUrl: hotelUrl, name: hotelName, id: hotelId, } = item;
+                // Start the scraping process
+                const finalData = await hotelScraper(hotelUrl, hotelName, hotelId, index);
+                const { fileName, } = finalData;
+                delete finalData.fileName;
+                // Write the data to file
+                const dataToWrite = JSON.stringify(finalData, null, 2);
+                await writeFile(`${dataDir}${fileName}.json`, dataToWrite);
+            })
+        );
+
+        return 'Scraping Done';
 
     } catch (err) {
         throw err;
     }
 };
+
 /**
  * Scrape the resto pages
  * @returns {Promise<String | Error>} - The done message or error message
@@ -44,13 +72,13 @@ const hotelScraperInit = async () => {
 const restoScraperInit = async () => {
     try {
         // Check if the source file exists
-        const sourceFileAvailable = await fileExists(dataSource);
+        const sourceFileAvailable = await fileExists(dataSourceResto);
         if (!sourceFileAvailable) {
             throw Error('Source file does not exist');
         }
 
         // Convert the csv to json
-        const rawData = await csvToJSON(dataSource);
+        const rawData = await csvToJSON(dataSourceResto);
         console.log(`Scraping ${rawData.length} restaurants`);
 
         await Promise.all(
