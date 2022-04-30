@@ -123,7 +123,7 @@ const extractAllReviewPageUrls = async (restoUrl) => {
  * @param {Number} position - The index of the restaurant page in the list
  * @param {String} restoName - The name of the restaurant
  * @param {String} restoId - The id of the restaurant
- * @returns {Promise<String | Error>} - The done message or error message
+ * @returns {Promise<Object | Error>} - The final data
  */
 const scrap = async (totalReviewCount, reviewPageUrls, position, restoName, restoId) => {
     try {
@@ -200,7 +200,7 @@ const scrap = async (totalReviewCount, reviewPageUrls, position, restoName, rest
             });
 
             // Push the reviews to the array
-            allReviews.push(...reviews);
+            allReviews.push(reviews);
 
         }
 

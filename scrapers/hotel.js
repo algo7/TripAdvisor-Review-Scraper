@@ -99,7 +99,7 @@ const extractAllReviewPageUrls = async (hotelUrl) => {
             pageCount: reviewPageUrls.length,
             urls: reviewPageUrls,
         };
-        console.log(data);
+        // console.log(data);
 
         // Close the browser
         await browser.close();
@@ -113,10 +113,10 @@ const extractAllReviewPageUrls = async (hotelUrl) => {
 
 /**
  * Scrape the page
- * @param {Array<String>} urls - The review page urls
- * @returns {Promise<Undefined | Error>}
+ * @param {Array<String>} reviewPageUrls - The review page urls
+ * @returns {Promise<Object| Error>} - THe final data
  */
-const scrap = async (urls) => {
+const scrap = async (reviewPageUrls) => {
     try {
 
         // Launch the browser
@@ -139,12 +139,12 @@ const scrap = async (urls) => {
         const page = await browser.newPage();
 
         // Array to hold the review info
-        const reviewInfo = [];
+        const allReviews = [];
 
-        for (let index = 0; index < urls.length; index++) {
+        for (let index = 0; index < reviewPageUrls.length; index++) {
 
             // Navigate to the page below
-            await page.goto(urls[index], { waitUntil: 'networkidle2', });
+            await page.goto(reviewPageUrls[index], { waitUntil: 'networkidle2', });
 
             // Wait for the content to load
             await page.waitForSelector('body');
@@ -152,7 +152,7 @@ const scrap = async (urls) => {
             // Determin current URL
             const currentURL = page.url();
 
-            console.log(`Scraping: ${currentURL} | ${urls.length - 1 - index} Pages Left`);
+            console.log(`Scraping: ${currentURL} | ${reviewPageUrls.length - 1 - index} Pages Left`);
 
             // In browser code
             // Extract comments title
@@ -196,7 +196,7 @@ const scrap = async (urls) => {
             });
 
             // Push the formmated review to the  array
-            reviewInfo.push(formatted);
+            allReviews.push(formatted);
 
         }
 
@@ -204,7 +204,7 @@ const scrap = async (urls) => {
         await browser.close();
 
         // Convert 2D array to 1D
-        return reviewInfo.flat();
+        return allReviews.flat();
 
     } catch (err) {
         throw err;
@@ -219,7 +219,7 @@ const scrap = async (urls) => {
 const start = async (hotelUrl) => {
     try {
         // Extract review page urls
-        const { urls, } = await extractAllReviewPageUrls(hotelUrl);
+        const { urls, count, } = await extractAllReviewPageUrls(hotelUrl);
 
         // Scrape the review page
         const results = await scrap(urls);

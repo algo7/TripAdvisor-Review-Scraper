@@ -6,7 +6,7 @@ const { writeFile, } = require('fs/promises');
 // Custom Modules
 const hotelScraper = require('./scrapers/hotel');
 const restoScraper = require('./scrapers/resto');
-const { restoCsvToJSON, fileExists, } = require('./utils');
+const { csvToJSON, fileExists, } = require('./utils');
 
 // Data path
 const dataDir = path.join(__dirname, './data/');
@@ -49,7 +49,7 @@ const restoScraperInit = async () => {
         }
 
         // Convert the csv to json
-        const rawData = await restoCsvToJSON(dataSource);
+        const rawData = await csvToJSON(dataSource);
         console.log(`Scraping ${rawData.length} restaurants`);
 
         await Promise.all(

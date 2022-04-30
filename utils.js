@@ -80,24 +80,26 @@ const reviewJSONToCsv = (jsonInput) => {
 /**
  * Extract the name, url, and id of the resto from a csv file
  * @param {String} csvFilePath - The location of the csv file 
+ * @param {String} scrapMode - Resturant or hotel
  * @returns {Promise<Object | Error>} - The parsed json object or error message
  */
-const restoCsvToJSON = async (csvFilePath) => {
+const csvToJSON = async (csvFilePath, scrapMode) => {
     try {
 
         // Read the csv file
         const parsedJson = await csvtojsonV2().fromFile(csvFilePath);
 
-        // Extract the fields
-        const processed = parsedJson.map(resto => {
-            return {
-                name: resto.name,
-                webUrl: resto.webUrl,
-                id: resto.id,
-            };
-        });
+        // Restaurant
+        if (scrapMode === 'RESTO') {
+            return parsedJson.map(resto => {
+                return { name: resto.name, webUrl: resto.webUrl, id: resto.id, };
+            });
+        }
 
-        return processed;
+        // Hotel
+        return parsedJson.map(hotel => {
+            return { name: hotel.name, webUrl: hotel.webUrl, id: hotel.id, };
+        });
 
     } catch (err) {
         throw err;
@@ -105,7 +107,7 @@ const restoCsvToJSON = async (csvFilePath) => {
 
 };
 
-module.exports = { fileExists, combine, reviewJSONToCsv, restoCsvToJSON, };
+module.exports = { fileExists, combine, reviewJSONToCsv, csvToJSON, };
 
 
 // const cookiesAvailable = await fileExists('./data/cookies.json');
