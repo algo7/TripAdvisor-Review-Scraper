@@ -43,9 +43,14 @@ const extractAllReviewPageUrls = async (hotelUrl) => {
         */
         const getReviewPageUrls = await page.evaluate(() => {
 
-            // All review count
+            // All review count (English Only)
+            let langFilterValue = 0;
+            document.querySelectorAll('[for*=LanguageFilter_]').forEach((el, index) => {
+                if (el.innerText.includes('English')) langFilterValue = index;
+            });
+
             const totalReviewCount = parseInt(document
-                .querySelector('[for=LanguageFilter_1]')
+                .querySelector(`[for=LanguageFilter_${langFilterValue}]`)
                 .innerText.split('(')[1]
                 .split(')')[0]
                 .replace(',', ''));
