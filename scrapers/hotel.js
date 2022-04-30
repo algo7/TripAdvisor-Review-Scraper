@@ -1,5 +1,6 @@
 // Dependencies
 const puppeteer = require('puppeteer');
+
 /**
  * Extract review page url
  * @returns {Promise<Object | Error>} - The object containing the review page urls and the total review count
