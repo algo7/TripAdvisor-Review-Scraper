@@ -129,7 +129,7 @@ const restoScraperInit = async () => {
 };
 
 /**
- * The init function
+ * The main init function
  * @returns {Promise<String | Error>} - The done message or error message
  */
 const init = async () => {
