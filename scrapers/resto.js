@@ -1,5 +1,6 @@
 // Dependencies
 const puppeteer = require('puppeteer');
+const { bold, } = require('chalk');
 
 /**
  * Extract the review page urls, total review count, and total review page count
@@ -48,7 +49,8 @@ const extractAllReviewPageUrls = async (restoUrl) => {
         // Determin current URL
         const currentURL = page.url();
 
-        console.log(`Gathering Info: ${currentURL}`);
+        console.log(`${bold.white.dim('Gathering Info: ')}${currentURL.split('-')[4]}`);
+
         /**
          * In browser code:
          * Extract the review page url
@@ -112,7 +114,6 @@ const extractAllReviewPageUrls = async (restoUrl) => {
             pageCount: reviewPageUrls.length,
             urls: reviewPageUrls,
         };
-        // console.log(data);
 
         await browser.close();
 
@@ -261,17 +262,3 @@ const start = async (restoUrl, restoName, restoId, position) => {
 
 
 module.exports = start;
-
-
-// extractAllReviewPageUrls('https://www.tripadvisor.com/Restaurant_Review-g652156-d17621567-Reviews-Kalasin-Bulle_La_Gruyere_Canton_of_Fribourg.html').then(x => console.log(x)).catch(err => console.log(err));
-// const a = require('./data/Kalasin.json');
-// a.allReviews.forEach(x => console.log(x.title));
-
-// The review count array based in the "Traveler rating info"
-//   const reviewCount = [];
-
-// // Extract the review count for each rating
-// document.getElementsByClassName('choices')[0].querySelectorAll('.row_num').forEach(el => reviewCount.push(el.innerText));
-
-// // Sum them to get the total review count
-// const totalReviewCount = reviewCount.map(count => parseInt(count)).reduce((a, b) => a + b);

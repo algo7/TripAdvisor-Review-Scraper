@@ -1,6 +1,6 @@
 // Dependencies
 const puppeteer = require('puppeteer');
-
+const { bold, } = require('chalk');
 /**
  * Extract review page url
  * @returns {Promise<Object | Error>} - The object containing the review page urls and the total review count
@@ -36,7 +36,7 @@ const extractAllReviewPageUrls = async (hotelUrl) => {
         // Determin current URL
         const currentURL = page.url();
 
-        console.log(`Gathering Info: ${currentURL}`);
+        console.log(`${bold.white.dim('Gathering Info: ')}${currentURL.split('-')[4]}`);
 
         /**
          * In browser code:
@@ -51,7 +51,7 @@ const extractAllReviewPageUrls = async (hotelUrl) => {
             });
 
             const totalReviewCount = parseInt(document
-                .querySelector(`[for=LanguageFilter_${langFilterValue}]`)
+                .querySelector(`[for= LanguageFilter_${langFilterValue}]`)
                 .innerText.split('(')[1]
                 .split(')')[0]
                 .replace(',', ''));
@@ -89,7 +89,7 @@ const extractAllReviewPageUrls = async (hotelUrl) => {
             // Replace the url page count till the last page
             while (counter < noReviewPages - 1) {
                 counter++;
-                url = url.replace(/-or[0-9]*/g, `-or${counter * 10}`);
+                url = url.replace(/-or[0-9]*/g, `- or${counter * 10} `);
                 reviewPageUrls.push(url);
             }
         }
@@ -103,7 +103,6 @@ const extractAllReviewPageUrls = async (hotelUrl) => {
             pageCount: reviewPageUrls.length,
             urls: reviewPageUrls,
         };
-        // console.log(data);
 
         // Close the browser
         await browser.close();
@@ -164,7 +163,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
             console.log({
                 'Scraping': currentURL,
                 'Pages Left': reviewPageUrls.length - 1 - index,
-                'Progress': `${Math.round(((index + 1) / reviewPageUrls.length * 100), 1)}%`,
+                'Progress': `${Math.round(((index + 1) / reviewPageUrls.length * 100), 1)}% `,
             });
 
             // In browser code
@@ -213,10 +212,8 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
 
         }
 
-
         // Close the browser
         await browser.close();
-
 
         // Convert 2D array to 1D
         const reviewFlattened = allReviews.flat();
@@ -229,7 +226,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
             actualCount: reviewFlattened.length,
             position,
             allReviews: reviewFlattened,
-            fileName: `${position}_${reviewPageUrls[0].split('-')[4]}`,
+            fileName: `${position}_${reviewPageUrls[0].split('-')[4]} `,
         };
 
         return finalData;

@@ -45,7 +45,7 @@ const hotelScraperInit = async () => {
 
         // Convert the csv to json
         const rawData = await csvToJSON(dataSourceHotel);
-        console.log(bold.yellow(`Scraping ${bold.magenta(rawData.length)} hotels`));
+        console.log(bold.yellow(`Scraping ${bold.magenta(rawData.length)} Hotels`));
 
         await Promise.all(
             rawData.map(async (item, index) => {
@@ -96,7 +96,7 @@ const restoScraperInit = async () => {
 
         // Convert the csv to json
         const rawData = await csvToJSON(dataSourceResto);
-        console.log(bold.yellow(`Scraping ${bold.magenta(rawData.length)} restaurants`));
+        console.log(bold.yellow(`Scraping ${bold.magenta(rawData.length)} Restaurants`));
 
         await Promise.all(
             rawData.map(async (item, index) => {
@@ -151,7 +151,7 @@ const init = async () => {
 
 // Start the program
 init()
-    .then(msg => console.log(msg))
+    .then(msg => console.log(bold.green(msg)))
     .catch(err => {
         console.log(err);
         process.exit(1);
