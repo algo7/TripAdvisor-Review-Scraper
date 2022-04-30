@@ -1,6 +1,6 @@
 // Dependencies
 const path = require('path');
-const { existsSync, mkdirSync, } = require('fs');
+const { mkdirSync, } = require('fs');
 const { writeFile, } = require('fs/promises');
 
 // Custom Modules
@@ -10,23 +10,23 @@ const { csvToJSON, fileExists, combine, reviewJSONToCsv, } = require('./utils');
 
 // Data path
 const dataDir = path.join(__dirname, './data/');
+const sourceDir = path.join(__dirname, './source/');
 
 // Environment variables
 const { SCRAPE_MODE, } = process.env;
 
-// Check if the data directory exists, otherwise create it
-if (!existsSync(dataDir)) {
-    try {
-        mkdirSync(dataDir);
-    } catch (err) {
-        console.error(err);
-        process.exit(1);
-    }
+// Check if the required directories exist, otherwise create them
+if (!fileExists(dataDir)) {
+    mkdirSync(dataDir);
+}
+
+if (!fileExists(sourceDir)) {
+    mkdirSync(sourceDir);
 }
 
 // Data source
-const dataSourceResto = path.join(__dirname, './data/restos.csv');
-const dataSourceHotel = path.join(__dirname, './data/hotels.csv');
+const dataSourceResto = path.join(__dirname, './source/restos.csv');
+const dataSourceHotel = path.join(__dirname, './source/hotels.csv');
 
 /**
  * Scrape the hotel pages
