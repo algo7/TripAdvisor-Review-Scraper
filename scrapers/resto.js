@@ -213,7 +213,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, res
             });
 
             // Push the reviews to the array
-            allReviews.push(reviews);
+            allReviews.push(...reviews);
 
         }
 

@@ -109,6 +109,18 @@ const restoScraperInit = async () => {
             })
         );
 
+        // Combine all the reviews into an array of objects
+        const combinedData = combine(SCRAPE_MODE, dataDir);
+
+        // Write the combined JSON data to file
+        const dataToWrite = JSON.stringify(combinedData, null, 2);
+        await writeFile(`${dataDir}All.json`, dataToWrite);
+
+        // Convert the combined JSON data to csv
+        const csvData = reviewJSONToCsv(combinedData);
+        await writeFile(`${dataDir}All.csv`, csvData);
+
+
         return 'Scraping Done';
 
     } catch (err) {
