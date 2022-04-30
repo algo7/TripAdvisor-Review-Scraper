@@ -23,6 +23,11 @@ if (!existsSync(dataDir)) {
     }
 }
 
+/**
+ * Extract the review page urls, total review count, and total review page count
+ * @param {String} restoUrl - The url of the restaurant page
+ * @returns {Promise<Object | Error>} - The object containing the review count, page count, and the review page urls
+ */
 const extractUrls = async (restoUrl) => {
     try {
 
@@ -141,7 +146,6 @@ const extractUrls = async (restoUrl) => {
  * @param {String} restoName - The name of the restaurant
  * @param {String} restoId - The id of the restaurant
  * @returns {Promise<String | Error>} - The done message or error message
- * @returns 
  */
 const scrap = async (totalReviewCount, allUrls, position, restoName, restoId) => {
     try {
@@ -276,14 +280,24 @@ const start = async (restoUrl, restoName, restoId, position) => {
 
 
 (async () => {
+    // Loop through the list of restaurants
     for (let index = 0; index < items.length; index++) {
+
+        // Get the restaurant url
         const restoUrl = items[index].webUrl;
+
+        // Get the restaurant name
         const restoName = items[index].name;
+
+        // Get the restaurant id
         const restoId = items[index].id;
 
+        // Logging
         console.log('Now Is', [index], restoUrl);
 
+        // Start the scrapping process
         const isDone = await start(restoUrl, restoName, restoId, index);
+
         console.log(isDone);
     }
 })().catch(err => console.log(err));
