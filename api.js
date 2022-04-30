@@ -3,9 +3,6 @@ const puppeteer = require('puppeteer');
 const { writeFileSync, existsSync, mkdirSync, readFileSync, readdirSync, fstat, } = require('fs');
 const path = require('path');
 
-// Custom modules
-const { fileExists, } = require('./utils/misc');
-
 // Global variables
 // Data Directory
 const dataDir = './data';
@@ -241,6 +238,12 @@ const scrap = async (totalReviewCount, allUrls, position) => {
     }
 };
 
+/**
+ * Start the scrapping process
+ * @param {String} restoUrl - The url of the restaurant page 
+ * @param {Number} position - The index of the restaurant page in the list
+ * @returns {Promise<String | Error>} - The done message or error message
+ */
 const start = async (restoUrl, position) => {
     try {
 

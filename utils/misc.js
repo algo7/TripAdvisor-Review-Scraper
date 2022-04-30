@@ -1,5 +1,6 @@
 // Dependencies
 const { promises: { access, }, } = require('fs');
+const { parse, } = require('json2csv');
 
 /**
  * Check if the given file exists
@@ -12,6 +13,17 @@ const fileExists = async (filePath) => {
         return true;
     } catch (err) {
         return false;
+    }
+};
+
+const restoJsonsToCsv = () => {
+    try {
+        const fields = ['title', 'content'];
+        const opts = { fields, };
+
+
+    } catch (err) {
+        throw err;
     }
 };
 
