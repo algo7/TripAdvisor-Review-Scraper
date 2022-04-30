@@ -5,9 +5,9 @@ services:
     # Build directory
     build: .
     environment:
-      SCRAPE_MODE: HOTEL
+      SCRAPE_MODE: RESTO
     # Image name
-    image: x:latest
+    image: ghcr.io/algo7/tripadvisor-review-scraper/scrap:latest
     volumes:
       - type: bind
         source: ./reviews
