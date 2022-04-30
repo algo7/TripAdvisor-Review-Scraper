@@ -268,7 +268,7 @@ const start = async (restoUrl, restoName, restoId, position) => {
 
         const { urls, count, } = await extractUrls(restoUrl);
 
-        await scrap(count, urls, position);
+        await scrap(count, urls, position, restoName, restoId);
 
         return 'Done';
 
