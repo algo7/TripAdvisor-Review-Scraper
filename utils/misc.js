@@ -1,6 +1,5 @@
 // Dependencies
-const { promises: { access, }, readdirSync, } = require('fs');
-const { request, } = require('http');
+const { promises: { access, }, readdirSync, writeFileSync, } = require('fs');
 const { parse, } = require('json2csv');
 
 /**
@@ -14,26 +13,6 @@ const fileExists = async (filePath) => {
         return true;
     } catch (err) {
         return false;
-    }
-};
-
-
-/**
- * Convert JSON input to CSV
- * @param {Array<Object>} jsonInput - The JSON array of review and restaurant objects
- * @returns {String} - The CSV string
- */
-const restoJsonsToCsv = (jsonInput) => {
-    try {
-
-
-
-        const fields = ['name', 'id'];
-        const opts = { fields, };
-
-
-    } catch (err) {
-        throw err;
     }
 };
 
@@ -60,8 +39,13 @@ const combine = () => {
                     review.position = position;
                     return review;
                 });
-            });
+            })
+            .flat()
+            .map(review => {
+                const { restoName, restoId, rating, dateOfVist, ratingDate, title, content, } = review;
 
+                return { restoName, restoId, title, content, rating, dateOfVist, ratingDate, };
+            });
 
         return extracted;
 
@@ -69,6 +53,30 @@ const combine = () => {
         throw err;
     }
 };
-module.exports = { fileExists, combine, };
 
-console.log(combine()[0]);
+/**
+ * Convert JSON input to CSV
+ * @param {Array<Object>} jsonInput - The JSON array of review and restaurant objects
+ * @returns {String} - The CSV string
+ */
+const reviewJSONToCsv = (jsonInput) => {
+    try {
+
+        const fields = Object.keys(jsonInput[0]);
+        const opts = { fields, };
+
+        // Convert JSON to CSV
+        const csv = parse(jsonInput, opts);
+
+        // Write the CSV to a file
+        writeFileSync('../reviews.csv', csv);
+
+    } catch (err) {
+        throw err;
+    }
+};
+
+
+module.exports = { fileExists, combine, reviewJSONToCsv, };
+
+console.log(reviewJSONToCsv(combine()));
