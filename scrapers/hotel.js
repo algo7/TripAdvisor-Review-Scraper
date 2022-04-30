@@ -113,10 +113,14 @@ const extractAllReviewPageUrls = async (hotelUrl) => {
 
 /**
  * Scrape the page
+ * @param {Number} totalReviewCount - The total review count
  * @param {Array<String>} reviewPageUrls - The review page urls
+ * @param {Number} position - The index of the hotel page in the list
+ * @param {String} hotelName - The name of the hotel
+ * @param {String} hotelId - The id of the hotel
  * @returns {Promise<Object| Error>} - THe final data
  */
-const scrape = async (reviewPageUrls) => {
+const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hotelId) => {
     try {
 
         // Launch the browser
@@ -200,11 +204,26 @@ const scrape = async (reviewPageUrls) => {
 
         }
 
+
         // Close the browser
         await browser.close();
 
-        // Convert 2D array to 1D
-        return allReviews.flat();
+
+
+
+        // Data structure to be written to file
+        const finalData = {
+            hotelName,
+            hotelId,
+            count: totalReviewCount,
+            actualCount: allReviews.length,
+            position,
+            // Convert 2D array to 1D
+            allReviews: allReviews.flat(),
+            fileName: `${position}_${reviewPageUrls[0].split('-')[4]}`,
+        };
+
+        return finalData;
 
     } catch (err) {
         throw err;
@@ -212,22 +231,20 @@ const scrape = async (reviewPageUrls) => {
 };
 
 /**
- * Scraper init function
- * @param {String} hotelUrl - The hotel url 
- * @returns {Promise<Stinrg | Error>} - The CSV 
+ * Start the scraping process
+ * @param {String} hotelUrl - The url of the hotel page 
+ * @param {String} hotelName - The name of the hotel
+ * @param {String} hotelId - The id of the hotel
+ * @param {Number} position - The index of the hotel page in the list
+ * @returns {Promise<Object | Error>} - The final data
  */
-const start = async (hotelUrl) => {
+const start = async (hotelUrl, hotelName, hotelId, position) => {
     try {
-        // Extract review page urls
         const { urls, count, } = await extractAllReviewPageUrls(hotelUrl);
 
-        // Scrape the review page
-        const results = await scrape(urls);
+        const results = await scrape(count, urls, position, hotelName, hotelId);
 
-        // Convert JSON to CSV
-        const csv = parse(results, opts);
-
-        return csv;
+        return results;
 
     } catch (err) {
         throw err;

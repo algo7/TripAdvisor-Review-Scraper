@@ -30,8 +30,9 @@ const dataSource = path.join(__dirname, './data/resto.csv');
 
 const hotelScraperInit = async () => {
     try {
-        const csv = await hotelScraper();
-        await writeFile(`/${dataDir}reviews.csv`, csv);
+        const csv = await hotelScraper('https://www.tripadvisor.com/Hotel_Review-g188107-d11761198-Reviews-or30-Hotel_des_Patients-Lausanne_Canton_of_Vaud.html');
+        // await writeFile(`/${dataDir}reviews.csv`, csv);
+
     } catch (err) {
         throw err;
     }

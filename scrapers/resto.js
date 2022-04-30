@@ -237,9 +237,9 @@ const start = async (restoUrl, restoName, restoId, position) => {
 
         const { urls, count, } = await extractAllReviewPageUrls(restoUrl);
 
-        const finalData = await scrape(count, urls, position, restoName, restoId);
+        const results = await scrape(count, urls, position, restoName, restoId);
 
-        return finalData;
+        return results;
 
     } catch (err) {
         throw err;
