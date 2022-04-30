@@ -136,7 +136,7 @@ const extractUrls = async (restoUrl) => {
     }
 };
 
-const scrap = async (totalReviewCount, allUrls) => {
+const scrap = async (totalReviewCount, allUrls, position) => {
     try {
 
         // Launch the browser
@@ -226,10 +226,11 @@ const scrap = async (totalReviewCount, allUrls) => {
             count: totalReviewCount,
             actualCount: allReviews.length,
             allReviews,
+            position,
         };
 
         // Write to file
-        writeFileSync(`${dataPath}${allUrls[0].split('-')[4]}.json`,
+        writeFileSync(`${dataPath}${position}_${allUrls[0].split('-')[4]}.json`,
             JSON.stringify(finalData, null, 2));
 
         await browser.close();
@@ -240,12 +241,12 @@ const scrap = async (totalReviewCount, allUrls) => {
     }
 };
 
-const start = async (restoUrl) => {
+const start = async (restoUrl, position) => {
     try {
 
         const { urls, count, } = await extractUrls(restoUrl);
 
-        await scrap(count, urls);
+        await scrap(count, urls, position);
 
         return 'Done';
 
@@ -259,8 +260,8 @@ const start = async (restoUrl) => {
 (async () => {
     for (let index = 0; index < webUrls.length; index++) {
         const restoUrl = webUrls[index];
-        console.log('Now Is', restoUrl);
-        const isDone = await start(restoUrl);
+        console.log('Now Is', [index], restoUrl);
+        const isDone = await start(restoUrl, index);
         console.log(isDone);
     }
 })().catch(err => console.log(err));
