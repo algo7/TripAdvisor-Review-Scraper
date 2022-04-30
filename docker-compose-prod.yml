@@ -1,7 +1,7 @@
 services:
   scraper:
     environment:
-      URL: https://www.tripadvisor.com/ShowUserReviews-g188107-d3174288-r646243892-Le_Berceau_des_Sens-Lausanne_Canton_of_Vaud.html
+      SCRAPE_MODE: RESTO
     image: ghcr.io/algo7/tripadvisor-review-scraper/scrap:latest
     volumes:
     - source: ./reviews
