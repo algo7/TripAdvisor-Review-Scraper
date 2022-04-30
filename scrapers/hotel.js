@@ -2,10 +2,8 @@
 const puppeteer = require('puppeteer');
 const { writeFileSync, readFileSync, existsSync, mkdirSync, } = require('fs');
 const { parse, } = require('json2csv');
-const { fileExists, } = require('./utils/misc');
+const { fileExists, } = require('../utils');
 
-// Data Directory
-const dataDir = './data';
 
 // Global vars for csv parser
 const fields = ['title', 'content'];
@@ -18,16 +16,6 @@ const myArgs = process.argv.slice(2);
 if (!myArgs[0] && !process.env.URL) {
     console.log('Missing URL');
     process.exit(1);
-}
-
-// Check if the data directory exists, otherwise create it
-if (!existsSync(dataDir)) {
-    try {
-        mkdirSync(dataDir);
-    } catch (err) {
-        console.error(err);
-        process.exit(1);
-    }
 }
 
 /**
