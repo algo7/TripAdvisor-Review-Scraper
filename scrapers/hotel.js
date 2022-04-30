@@ -1,11 +1,5 @@
 // Dependencies
 const puppeteer = require('puppeteer');
-const { parse, } = require('json2csv');
-
-// Global vars for csv parser
-const fields = ['title', 'content'];
-const opts = { fields, };
-
 /**
  * Extract review page url
  * @returns {Promise<Object | Error>} - The object containing the review page urls and the total review count
@@ -209,17 +203,17 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
         await browser.close();
 
 
-
+        // Convert 2D array to 1D
+        const reviewFlattened = allReviews.flat();
 
         // Data structure to be written to file
         const finalData = {
             hotelName,
             hotelId,
             count: totalReviewCount,
-            actualCount: allReviews.length,
+            actualCount: reviewFlattened.length,
             position,
-            // Convert 2D array to 1D
-            allReviews: allReviews.flat(),
+            allReviews: reviewFlattened,
             fileName: `${position}_${reviewPageUrls[0].split('-')[4]}`,
         };
 
