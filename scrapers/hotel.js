@@ -1,25 +1,14 @@
 // Dependencies
 const puppeteer = require('puppeteer');
-const { writeFileSync, } = require('fs');
 const { parse, } = require('json2csv');
-
 
 // Global vars for csv parser
 const fields = ['title', 'content'];
 const opts = { fields, };
 
-// Command line args
-const myArgs = process.argv.slice(2);
-
-// Check if the url is missing
-if (!myArgs[0] && !process.env.URL) {
-    console.log('Missing URL');
-    process.exit(1);
-}
-
 /**
  * Extract review page url
- * @returns {Promise<Undefined | Error>}
+ * @returns {Promise<Object | Error>} - The object containing the review page urls and the total review count
  */
 const extractAllReviewPageUrls = async (hotelUrl) => {
     try {
@@ -54,7 +43,7 @@ const extractAllReviewPageUrls = async (hotelUrl) => {
         console.log(`Gathering Info: ${currentURL}`);
 
         // In browser code
-        const reviewPageUrls = await page.evaluate(() => {
+        const getReviewPageUrls = await page.evaluate(() => {
 
             // All review count
             const totalReviewCount = parseInt(document
@@ -85,7 +74,7 @@ const extractAllReviewPageUrls = async (hotelUrl) => {
         });
 
         // Destructure function outputs
-        let { noReviewPages, url, totalReviewCount, } = reviewPageUrls;
+        let { noReviewPages, url, totalReviewCount, } = getReviewPageUrls;
 
         // Array to hold all the review urls
         const reviewPageUrls = [];
@@ -94,9 +83,9 @@ const extractAllReviewPageUrls = async (hotelUrl) => {
         if (url) {
             let counter = 0;
             // Replace the url page count till the last page
-            while (counter < noReviewPages) {
+            while (counter < noReviewPages - 1) {
                 counter++;
-                url = url.replace(/-or[0-9]*/g, `-or${counter * 5}`);
+                url = url.replace(/-or[0-9]*/g, `-or${counter * 10}`);
                 reviewPageUrls.push(url);
             }
         }
@@ -124,15 +113,11 @@ const extractAllReviewPageUrls = async (hotelUrl) => {
 
 /**
  * Scrape the page
- * @param {Array<String>} urlList 
+ * @param {Array<String>} urls - The review page urls
  * @returns {Promise<Undefined | Error>}
  */
-const scrap = async (urlList) => {
+const scrap = async (urls) => {
     try {
-
-        if (!urlList || urlList.length === 0) {
-            throw new Error('No url to scrape');
-        }
 
         // Launch the browser
         const browser = await puppeteer.launch({
@@ -153,26 +138,21 @@ const scrap = async (urlList) => {
         // Open a new page
         const page = await browser.newPage();
 
-        // Navigate to the page below
-        await page.goto(myArgs[0] || process.env.URL);
-
-        await page.waitForTimeout(1000);
-
-        // Add 1st review page to the urlList
-        urlList.unshift(myArgs[0] || process.env.URL);
-
         // Array to hold the review info
         const reviewInfo = [];
 
-        for (let index = 0; index < urlList.length; index++) {
+        for (let index = 0; index < urls.length; index++) {
+
             // Navigate to the page below
-            await page.goto(urlList[index]);
-            await page.waitForTimeout(3000);
+            await page.goto(urls[index], { waitUntil: 'networkidle2', });
+
+            // Wait for the content to load
+            await page.waitForSelector('body');
 
             // Determin current URL
             const currentURL = page.url();
 
-            console.log(`Scraping: ${currentURL} | ${urlList.length - 1 - index} Pages Left`);
+            console.log(`Scraping: ${currentURL} | ${urls.length - 1 - index} Pages Left`);
 
             // In browser code
             // Extract comments title
@@ -231,27 +211,23 @@ const scrap = async (urlList) => {
     }
 };
 
-
-
-// Start the scraper
-const start = async () => {
+/**
+ * Scraper init function
+ * @param {String} hotelUrl - The hotel url 
+ * @returns {Promise<Stinrg | Error>} - The CSV 
+ */
+const start = async (hotelUrl) => {
     try {
         // Extract review page urls
-        const allReviewsUrl = await extractAllReviewPageUrls();
+        const { urls, } = await extractAllReviewPageUrls(hotelUrl);
 
         // Scrape the review page
-        const results = await scrap(allReviewsUrl);
+        const results = await scrap(urls);
 
         // Convert JSON to CSV
         const csv = parse(results, opts);
 
-        // Write the CSV to a file
-        writeFileSync('./data/review.csv', csv);
-
-        // Exit the process
-        console.log('Done');
-
-        process.exit(0);
+        return csv;
 
     } catch (err) {
         throw err;

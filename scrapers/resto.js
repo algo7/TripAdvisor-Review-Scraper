@@ -47,7 +47,7 @@ const extractUrls = async (restoUrl) => {
         await page.waitForFunction('document.querySelector("body").innerText.includes("Show less")');
 
         // Extract the review page url
-        const reviewPageUrls = await page.evaluate(() => {
+        const getReviewPageUrls = await page.evaluate(() => {
 
             // Get the total review count
             const totalReviewCount = parseInt(document
@@ -80,7 +80,7 @@ const extractUrls = async (restoUrl) => {
         });
 
         // Destructure function outputs
-        let { noReviewPages, url, totalReviewCount, } = reviewPageUrls;
+        let { noReviewPages, url, totalReviewCount, } = getReviewPageUrls;
 
         // Array to hold all the review page urls
         const reviewPageUrls = [];
@@ -165,12 +165,6 @@ const scrap = async (totalReviewCount, reviewPageUrls, position, restoName, rest
             await page.click('[id=filters_detail_language_filterLang_ALL]');
 
             await page.waitForTimeout(1000);
-
-            // Expand the reviews
-            await page.click('.taLnk.ulBlueLinks');
-
-            // Wait for the reviews to load
-            await page.waitForFunction('document.querySelector("body").innerText.includes("Show less")');
 
             // Determine current URL
             const currentURL = page.url();
