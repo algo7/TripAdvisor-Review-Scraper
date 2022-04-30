@@ -37,7 +37,6 @@ const combine = (scrapeMode, dataDir) => {
                 const fileContent = require(`${dataDir}${fileName}`);
                 if (scrapeMode === 'RESTO') {
                     const { restoName, restoId, position, allReviews, } = fileContent;
-                    console.log(`Combining ${allReviews.length} reviews for ${restoName}`);
                     return { restoName, restoId, position, allReviews, };
                 }
                 const { hotelName, hotelId, position, allReviews, } = fileContent;
