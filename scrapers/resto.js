@@ -45,7 +45,14 @@ const extractAllReviewPageUrls = async (restoUrl) => {
         // Wait for the reviews to load
         await page.waitForFunction('document.querySelector("body").innerText.includes("Show less")');
 
-        // Extract the review page url
+        // Determin current URL
+        const currentURL = page.url();
+
+        console.log(`Gathering Info: ${currentURL}`);
+        /**
+         * In browser code:
+         * Extract the review page url
+         */
         const getReviewPageUrls = await page.evaluate(() => {
 
             // Get the total review count

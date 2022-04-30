@@ -26,17 +26,21 @@ const extractAllReviewPageUrls = async (hotelUrl) => {
         // Open a new page
         const page = await browser.newPage();
 
-        // Navigate to the page below
+        // Navigate to the hotel page
         await page.goto(hotelUrl);
 
-        await page.waitForTimeout(5000);
+        // Wait for the content to load
+        await page.waitForSelector('body');
 
         // Determin current URL
         const currentURL = page.url();
 
         console.log(`Gathering Info: ${currentURL}`);
 
-        // In browser code
+        /**
+         * In browser code:
+         * Extract the review page url
+        */
         const getReviewPageUrls = await page.evaluate(() => {
 
             // All review count
