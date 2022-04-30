@@ -83,7 +83,7 @@ const extractUrls = async (restoUrl) => {
         let { noReviewPages, url, totalReviewCount, } = reviewPageUrls;
 
         // Array to hold all the review page urls
-        const allUrls = [];
+        const reviewPageUrls = [];
 
         // If there is more than 1 review page, create the review page url base on the rule below
         if (url) {
@@ -93,18 +93,18 @@ const extractUrls = async (restoUrl) => {
             while (counter < noReviewPages - 1) {
                 counter++;
                 url = url.replace(/-or[0-9]*/g, `-or${counter * 15}`);
-                allUrls.push(url);
+                reviewPageUrls.push(url);
             }
         }
 
         // Add the first page url
-        allUrls.unshift(restoUrl);
+        reviewPageUrls.unshift(restoUrl);
 
         // Information for logging
         const data = {
             count: totalReviewCount,
-            pageCount: allUrls.length,
-            urls: allUrls,
+            pageCount: reviewPageUrls.length,
+            urls: reviewPageUrls,
         };
         console.log(data);
 
@@ -120,14 +120,14 @@ const extractUrls = async (restoUrl) => {
 /**
  * Extract the reviews and write to a JSON file
  * @param {Number} totalReviewCount - The total review count
- * @param {Array<String>} allUrls - The array containing review page urls
+ * @param {Array<String>} reviewPageUrls - The array containing review page urls
  * @param {Number} position - The index of the restaurant page in the list
  * @param {String} restoName - The name of the restaurant
  * @param {String} restoId - The id of the restaurant
  * @param {String} dataPath - The path to the data folder
  * @returns {Promise<String | Error>} - The done message or error message
  */
-const scrap = async (totalReviewCount, allUrls, position, restoName, restoId, dataPath) => {
+const scrap = async (totalReviewCount, reviewPageUrls, position, restoName, restoId, dataPath) => {
     try {
 
         // Launch the browser
@@ -153,10 +153,10 @@ const scrap = async (totalReviewCount, allUrls, position, restoName, restoId, da
         const allReviews = [];
 
         // Loop through all the review pages and extract the reviews
-        for (let index = 0; index < allUrls.length; index++) {
+        for (let index = 0; index < reviewPageUrls.length; index++) {
 
             // Navigate to each review page
-            await page.goto(allUrls[index], { waitUntil: 'networkidle2', });
+            await page.goto(reviewPageUrls[index], { waitUntil: 'networkidle2', });
 
             // Wait for the content to load
             await page.waitForSelector('body');
@@ -174,7 +174,7 @@ const scrap = async (totalReviewCount, allUrls, position, restoName, restoId, da
 
             // Determine current URL
             const currentURL = page.url();
-            console.log(`Scraping: ${currentURL} | ${allUrls.length - 1 - index} Pages Left`);
+            console.log(`Scraping: ${currentURL} | ${reviewPageUrls.length - 1 - index} Pages Left`);
 
             const reviews = await page.evaluate(() => {
 
@@ -223,7 +223,7 @@ const scrap = async (totalReviewCount, allUrls, position, restoName, restoId, da
         };
 
         // Write to file
-        writeFileSync(`${dataPath}${position}_${allUrls[0].split('-')[4]}.json`,
+        writeFileSync(`${dataPath}${position}_${reviewPageUrls[0].split('-')[4]}.json`,
             JSON.stringify(finalData, null, 2));
 
         await browser.close();

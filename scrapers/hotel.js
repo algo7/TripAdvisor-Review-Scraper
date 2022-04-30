@@ -88,7 +88,7 @@ const extractAllReviewPageUrls = async (hotelUrl) => {
         let { noReviewPages, url, totalReviewCount, } = reviewPageUrls;
 
         // Array to hold all the review urls
-        const allUrls = [];
+        const reviewPageUrls = [];
 
         // If there is more than 1 review page, create the review page url base on the rule below
         if (url) {
@@ -97,18 +97,18 @@ const extractAllReviewPageUrls = async (hotelUrl) => {
             while (counter < noReviewPages) {
                 counter++;
                 url = url.replace(/-or[0-9]*/g, `-or${counter * 5}`);
-                allUrls.push(url);
+                reviewPageUrls.push(url);
             }
         }
 
         // Add the first page url
-        allUrls.unshift(hotelUrl);
+        reviewPageUrls.unshift(hotelUrl);
 
         // Information for logging
         const data = {
             count: totalReviewCount,
-            pageCount: allUrls.length,
-            urls: allUrls,
+            pageCount: reviewPageUrls.length,
+            urls: reviewPageUrls,
         };
         console.log(data);
 
