@@ -18,7 +18,7 @@ const fileExists = async (filePath) => {
 
 const restoJsonsToCsv = () => {
     try {
-        const fields = ['title', 'content'];
+        const fields = ['name', 'id'];
         const opts = { fields, };
 
 

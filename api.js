@@ -241,10 +241,12 @@ const scrap = async (totalReviewCount, allUrls, position) => {
 /**
  * Start the scrapping process
  * @param {String} restoUrl - The url of the restaurant page 
+ * @param {String} restoName - The name of the restaurant
+ * @param {String} restoId - The id of the restaurant
  * @param {Number} position - The index of the restaurant page in the list
  * @returns {Promise<String | Error>} - The done message or error message
  */
-const start = async (restoUrl, position) => {
+const start = async (restoUrl, restoName, restoId, position) => {
     try {
 
         const { urls, count, } = await extractUrls(restoUrl);
@@ -261,13 +263,18 @@ const start = async (restoUrl, position) => {
 
 
 (async () => {
-    for (let index = 0; index < webUrls.length; index++) {
-        const restoUrl = webUrls[index];
+    for (let index = 0; index < items.length; index++) {
+        const restoUrl = items[index].webUrl;
+        const restoName = items[index].name;
+        const restoId = items[index].id;
+
         console.log('Now Is', [index], restoUrl);
-        const isDone = await start(restoUrl, index);
+
+        const isDone = await start(restoUrl, restoName, restoId, index);
         console.log(isDone);
     }
 })().catch(err => console.log(err));
+
 
 // extractUrls('https://www.tripadvisor.com/Restaurant_Review-g652156-d17621567-Reviews-Kalasin-Bulle_La_Gruyere_Canton_of_Fribourg.html').then(x => console.log(x)).catch(err => console.log(err));
 // const a = require('./data/Kalasin.json');
