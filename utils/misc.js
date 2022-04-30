@@ -1,5 +1,6 @@
 // Dependencies
-const { promises: { access, }, } = require('fs');
+const { promises: { access, }, readdirSync, } = require('fs');
+const { request, } = require('http');
 const { parse, } = require('json2csv');
 
 /**
@@ -27,4 +28,33 @@ const restoJsonsToCsv = () => {
     }
 };
 
-module.exports = { fileExists, };
+/**
+ * Combine all JSON files in the data directory into a JSON array of object
+ * @returns {Array<Object>}
+ */
+const combine = () => {
+    try {
+        const allFiles = readdirSync('../data/');
+
+        const extracted = allFiles.map(file => {
+
+            // eslint-disable-next-line global-require
+            const fileContent = require(`../data/${file}`);
+
+            const { restoName, restoId, position, allReviews, } = fileContent;
+            return {
+                restoName,
+                restoId,
+                position,
+                allReviews,
+
+            };
+        }).sort((a, b) => a.position - b.position);
+
+        return extracted;
+
+    } catch (err) {
+        throw err;
+    }
+};
+module.exports = { fileExists, combine, };
