@@ -31,4 +31,6 @@ COPY . .
 # Drop privilege
 USER node
 
+ENV FORCE_COLOR=1 
+
 CMD ["npm","run","start:prod"]
