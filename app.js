@@ -1,7 +1,7 @@
 // Dependencies
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import fs, { mkdirSync, writeFileSync } from 'fs';
+import fs, { mkdirSync, } from 'fs';
 const { promises: { writeFile, }, } = fs;
 import chalk from 'chalk';
 const __filename = fileURLToPath(import.meta.url);
