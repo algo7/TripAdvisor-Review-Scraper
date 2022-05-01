@@ -1,7 +1,7 @@
 // Dependencies
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import fs, { mkdirSync } from 'fs';
+import fs, { mkdirSync, writeFileSync } from 'fs';
 const { promises: { writeFile, }, } = fs;
 import chalk from 'chalk';
 const __filename = fileURLToPath(import.meta.url);
@@ -111,7 +111,8 @@ const restoScraperInit = async () => {
         // Get a browser instance
         const browser = await getBrowserInstance();
 
-        await Promise.all(
+        // Extract review info and file name of each individual resto
+        const reviewInfo = await Promise.all(
             rawData.map(async (item, index) => {
                 // Extract resto info
                 const { webUrl: restoUrl, name: restoName, id: restoId, } = item;
@@ -119,25 +120,35 @@ const restoScraperInit = async () => {
                 const finalData = await restoScraper(restoUrl, restoName, restoId, index, browser);
                 const { fileName, } = finalData;
                 delete finalData.fileName;
+
+                return { finalData, fileName, };
+            })
+        );
+
+        await Promise.all(
+            reviewInfo.map(async ({ finalData, fileName }) => {
                 // Write the data to file
                 const dataToWrite = JSON.stringify(finalData, null, 2);
                 await writeFile(`${dataDir}${fileName}.json`, dataToWrite);
             })
         );
 
+
         // Combine all the reviews into an array of objects
         const combinedData = combine(SCRAPE_MODE, dataDir);
 
         // Write the combined JSON data to file
-        const dataToWrite = JSON.stringify(combinedData, null, 2);
-        await writeFile(`${dataDir}All.json`, dataToWrite);
+        const jsonData = JSON.stringify(combinedData, null, 2);
 
         // Convert the combined JSON data to csv
         const csvData = reviewJSONToCsv(combinedData);
-        await writeFile(`${dataDir}All.csv`, csvData);
 
-        // Close the browser instance
-        await closeBrowserInstance();
+        await Promise.all([
+            writeFile(`${dataDir}All.json`, jsonData),
+            writeFile(`${dataDir}All.csv`, csvData),
+            // Close the browser instance
+            closeBrowserInstance()
+        ])
 
         return 'Scraping Done';
 
