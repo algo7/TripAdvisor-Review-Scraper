@@ -7,11 +7,11 @@ import chalk from 'chalk';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-
 // Custom Modules
 import hotelScraper from './scrapers/hotel.js';
 import restoScraper from './scrapers/resto.js';
 import { csvToJSON, fileExists, combine, reviewJSONToCsv } from './libs/utils.js';
+import { getBrowserInstance, closeBrowserInstance } from './libs/browser.js';
 
 // Data path
 const dataDir = join(__dirname, './reviews/');
@@ -51,13 +51,16 @@ const hotelScraperInit = async () => {
         const rawData = await csvToJSON(dataSourceHotel);
         console.log(chalk.bold.yellow(`Scraping ${chalk.magenta(rawData.length)} Hotels`));
 
+        // Get a browser instance
+        const browser = await getBrowserInstance();
+
         await Promise.all(
             rawData.map(async (item, index) => {
                 // Extract resto info
                 const { webUrl: hotelUrl, name: hotelName, id: hotelId, } = item;
 
                 // Start the scraping process
-                const finalData = await hotelScraper(hotelUrl, hotelName, hotelId, index);
+                const finalData = await hotelScraper(hotelUrl, hotelName, hotelId, index, browser);
                 const { fileName, } = finalData;
                 delete finalData.fileName;
 
@@ -78,6 +81,8 @@ const hotelScraperInit = async () => {
         const csvData = reviewJSONToCsv(combinedData);
         await writeFile(`${dataDir}All.csv`, csvData);
 
+        // Close the browser instance
+        await closeBrowserInstance();
 
         return 'Scraping Done';
 
@@ -92,6 +97,7 @@ const hotelScraperInit = async () => {
  */
 const restoScraperInit = async () => {
     try {
+
         // Check if the source file exists
         const sourceFileAvailable = await fileExists(dataSourceResto);
         if (!sourceFileAvailable) {
@@ -102,12 +108,15 @@ const restoScraperInit = async () => {
         const rawData = await csvToJSON(dataSourceResto);
         console.log(chalk.bold.yellow(`Scraping ${chalk.magenta(rawData.length)} Restaurants`));
 
+        // Get a browser instance
+        const browser = await getBrowserInstance();
+
         await Promise.all(
             rawData.map(async (item, index) => {
                 // Extract resto info
                 const { webUrl: restoUrl, name: restoName, id: restoId, } = item;
                 // Start the scraping process
-                const finalData = await restoScraper(restoUrl, restoName, restoId, index);
+                const finalData = await restoScraper(restoUrl, restoName, restoId, index, browser);
                 const { fileName, } = finalData;
                 delete finalData.fileName;
                 // Write the data to file
@@ -127,6 +136,8 @@ const restoScraperInit = async () => {
         const csvData = reviewJSONToCsv(combinedData);
         await writeFile(`${dataDir}All.csv`, csvData);
 
+        // Close the browser instance
+        await closeBrowserInstance();
 
         return 'Scraping Done';
 
@@ -160,3 +171,4 @@ init()
         console.log(err);
         process.exit(1);
     });
+

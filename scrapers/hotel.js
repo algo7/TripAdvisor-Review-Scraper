@@ -1,17 +1,14 @@
 // Dependencies
-import puppeteer from 'puppeteer';
 import chalk from 'chalk';
-import getBrowserInstance from '../libs/browser.js';
 
 /**
  * Extract review page url
+ * @param {String} hotelUrl - The url of the hotel page
+ * @param {Object} browser - A browser instance
  * @returns {Promise<Object | Error>} - The object containing the review page urls and the total review count
  */
-const extractAllReviewPageUrls = async (hotelUrl) => {
+const extractAllReviewPageUrls = async (hotelUrl, browser) => {
     try {
-
-        // Launch the browser
-        const browser = await getBrowserInstance();
 
         // Open a new page
         const page = await browser.newPage();
@@ -93,8 +90,8 @@ const extractAllReviewPageUrls = async (hotelUrl) => {
             urls: reviewPageUrls,
         };
 
-        // Close the browser
-        await browser.close();
+        // Close the page
+        await page.close();
 
         return data;
 
@@ -110,26 +107,11 @@ const extractAllReviewPageUrls = async (hotelUrl) => {
  * @param {Number} position - The index of the hotel page in the list
  * @param {String} hotelName - The name of the hotel
  * @param {String} hotelId - The id of the hotel
+ * @param {Object} browser - A browser instance
  * @returns {Promise<Object| Error>} - THe final data
  */
-const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hotelId) => {
+const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hotelId, browser) => {
     try {
-
-        // Launch the browser
-        const browser = await puppeteer.launch({
-            headless: true,
-            devtools: false,
-            defaultViewport: {
-                width: 1920,
-                height: 1080,
-            },
-            args: [
-                '--disable-gpu',
-                '--disable-dev-shm-usage',
-                '--disable-setuid-sandbox',
-                '--no-sandbox'
-            ],
-        });
 
         // Open a new page
         const page = await browser.newPage();
@@ -201,8 +183,8 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
 
         }
 
-        // Close the browser
-        await browser.close();
+        // Close the page
+        await page.close();
 
         // Convert 2D array to 1D
         const reviewFlattened = allReviews.flat();
@@ -231,13 +213,14 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
  * @param {String} hotelName - The name of the hotel
  * @param {String} hotelId - The id of the hotel
  * @param {Number} position - The index of the hotel page in the list
+ * @param {Object} browser - A browser instance
  * @returns {Promise<Object | Error>} - The final data
  */
-const start = async (hotelUrl, hotelName, hotelId, position) => {
+const start = async (hotelUrl, hotelName, hotelId, position, browser) => {
     try {
-        const { urls, count, } = await extractAllReviewPageUrls(hotelUrl);
+        const { urls, count, } = await extractAllReviewPageUrls(hotelUrl, browser);
 
-        const results = await scrape(count, urls, position, hotelName, hotelId);
+        const results = await scrape(count, urls, position, hotelName, hotelId, browser);
 
         return results;
 

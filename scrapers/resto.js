@@ -1,18 +1,14 @@
 // Dependencies
-import puppeteer from 'puppeteer';
 import chalk from 'chalk';
-import getBrowserInstance from '../libs/browser.js';
 
 /**
  * Extract the review page urls, total review count, and total review page count
  * @param {String} restoUrl - The url of the restaurant page
+ * @param {Object} browser - A browser instance
  * @returns {Promise<Object | Error>} - The object containing the review count, page count, and the review page urls
  */
-const extractAllReviewPageUrls = async (restoUrl) => {
+const extractAllReviewPageUrls = async (restoUrl, browser) => {
     try {
-
-        // Launch the browser
-        const browser = await getBrowserInstance();
 
         // Open a new page
         const page = await browser.newPage();
@@ -103,7 +99,7 @@ const extractAllReviewPageUrls = async (restoUrl) => {
             urls: reviewPageUrls,
         };
 
-        await browser.close();
+        await page.close();
 
         return data;
 
@@ -119,26 +115,11 @@ const extractAllReviewPageUrls = async (restoUrl) => {
  * @param {Number} position - The index of the restaurant page in the list
  * @param {String} restoName - The name of the restaurant
  * @param {String} restoId - The id of the restaurant
+ * @param {Object} browser - A browser instance
  * @returns {Promise<Object | Error>} - The final data
  */
-const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, restoId) => {
+const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, restoId, browser) => {
     try {
-
-        // Launch the browser
-        const browser = await puppeteer.launch({
-            headless: true,
-            devtools: false,
-            defaultViewport: {
-                width: 1920,
-                height: 1080,
-            },
-            args: [
-                '--disable-gpu',
-                '--disable-dev-shm-usage',
-                '--disable-setuid-sandbox',
-                '--no-sandbox'
-            ],
-        });
 
         // Open a new page
         const page = await browser.newPage();
@@ -217,7 +198,8 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, res
             fileName: `${position}_${reviewPageUrls[0].split('-')[4]}`,
         };
 
-        await browser.close();
+        // Close the page
+        await page.close();
 
         return finalData;
 
@@ -232,14 +214,15 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, res
  * @param {String} restoName - The name of the restaurant
  * @param {String} restoId - The id of the restaurant
  * @param {Number} position - The index of the restaurant page in the list
+ * @param {Object} browser - A browser instance
  * @returns {Promise<Object | Error>} - The final data
  */
-const start = async (restoUrl, restoName, restoId, position) => {
+const start = async (restoUrl, restoName, restoId, position, browser) => {
     try {
 
-        const { urls, count, } = await extractAllReviewPageUrls(restoUrl);
+        const { urls, count, } = await extractAllReviewPageUrls(restoUrl, browser);
 
-        const results = await scrape(count, urls, position, restoName, restoId);
+        const results = await scrape(count, urls, position, restoName, restoId, browser);
 
         return results;
 
