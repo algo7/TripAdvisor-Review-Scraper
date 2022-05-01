@@ -1,6 +1,7 @@
 // Dependencies
 import puppeteer from 'puppeteer';
 import chalk from 'chalk';
+import getBrowserInstance from '../libs/browser.js';
 
 /**
  * Extract review page url
@@ -10,20 +11,7 @@ const extractAllReviewPageUrls = async (hotelUrl) => {
     try {
 
         // Launch the browser
-        const browser = await puppeteer.launch({
-            headless: true,
-            devtools: false,
-            defaultViewport: {
-                width: 1920,
-                height: 1080,
-            },
-            args: [
-                '--disable-gpu',
-                '--disable-dev-shm-usage',
-                '--disable-setuid-sandbox',
-                '--no-sandbox'
-            ],
-        });
+        const browser = await getBrowserInstance();
 
         // Open a new page
         const page = await browser.newPage();

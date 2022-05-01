@@ -11,7 +11,7 @@ const __dirname = dirname(__filename);
 // Custom Modules
 import hotelScraper from './scrapers/hotel.js';
 import restoScraper from './scrapers/resto.js';
-import { csvToJSON, fileExists, combine, reviewJSONToCsv } from './utils.js';
+import { csvToJSON, fileExists, combine, reviewJSONToCsv } from './libs/utils.js';
 
 // Data path
 const dataDir = join(__dirname, './reviews/');
