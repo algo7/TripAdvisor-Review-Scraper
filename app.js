@@ -1,13 +1,17 @@
 // Dependencies
-const path = require('path');
-const { mkdirSync, } = require('fs');
-const { writeFile, } = require('fs/promises');
-const { bold, } = require('chalk');
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { mkdirSync } from 'fs';
+import { writeFile } from 'fs/promises';
+import chalk from 'chalk';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 
 // Custom Modules
-const hotelScraper = require('./scrapers/hotel');
-const restoScraper = require('./scrapers/resto');
-const { csvToJSON, fileExists, combine, reviewJSONToCsv, } = require('./utils');
+import hotelScraper from './scrapers/hotel.js';
+import restoScraper from './scrapers/resto.js';
+import { csvToJSON, fileExists, combine, reviewJSONToCsv } from './utils.js';
 
 // Data path
 const dataDir = path.join(__dirname, './reviews/');
@@ -16,7 +20,7 @@ const sourceDir = path.join(__dirname, './source/');
 // Environment variables
 const { SCRAPE_MODE, } = process.env;
 
-console.log(bold.blue(`The Scraper is Running in ${bold.magenta(SCRAPE_MODE)} Mode`));
+console.log(chalk.bold.blue(`The Scraper is Running in ${chalk.bold.magenta(SCRAPE_MODE)} Mode`));
 
 // Check if the required directories exist, otherwise create them
 if (!fileExists(dataDir)) {
@@ -45,7 +49,7 @@ const hotelScraperInit = async () => {
 
         // Convert the csv to json
         const rawData = await csvToJSON(dataSourceHotel);
-        console.log(bold.yellow(`Scraping ${bold.magenta(rawData.length)} Hotels`));
+        console.log(chalk.bold.yellow(`Scraping ${chalk.magenta(rawData.length)} Hotels`));
 
         await Promise.all(
             rawData.map(async (item, index) => {
@@ -96,7 +100,7 @@ const restoScraperInit = async () => {
 
         // Convert the csv to json
         const rawData = await csvToJSON(dataSourceResto);
-        console.log(bold.yellow(`Scraping ${bold.magenta(rawData.length)} Restaurants`));
+        console.log(chalk.bold.yellow(`Scraping ${chalk.magenta(rawData.length)} Restaurants`));
 
         await Promise.all(
             rawData.map(async (item, index) => {
@@ -151,7 +155,7 @@ const init = async () => {
 
 // Start the program
 init()
-    .then(msg => console.log(bold.green(msg)))
+    .then(msg => console.log(chalk.bold.green(msg)))
     .catch(err => {
         console.log(err);
         process.exit(1);

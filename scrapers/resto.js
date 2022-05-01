@@ -1,6 +1,6 @@
 // Dependencies
-const puppeteer = require('puppeteer');
-const { bold, } = require('chalk');
+import puppeteer from 'puppeteer';
+import chalk from 'chalk';
 
 /**
  * Extract the review page urls, total review count, and total review page count
@@ -49,7 +49,7 @@ const extractAllReviewPageUrls = async (restoUrl) => {
         // Determin current URL
         const currentURL = page.url();
 
-        console.log(`${bold.white.dim('Gathering Info: ')}${currentURL.split('-')[4]}`);
+        console.log(`${chalk.bold.white.dim('Gathering Info: ')}${currentURL.split('-')[4]}`);
 
         /**
          * In browser code:
@@ -261,4 +261,4 @@ const start = async (restoUrl, restoName, restoId, position) => {
 };
 
 
-module.exports = start;
+export default start;

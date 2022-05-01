@@ -7,7 +7,7 @@ services:
     environment:
       SCRAPE_MODE: RESTO
     # Image name
-    image: ghcr.io/algo7/tripadvisor-review-scraper/scrap:latest
+    image: x:latest
     volumes:
       - type: bind
         source: ./reviews

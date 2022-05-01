@@ -1,6 +1,7 @@
 // Dependencies
-const puppeteer = require('puppeteer');
-const { bold, } = require('chalk');
+import puppeteer from 'puppeteer';
+import chalk from 'chalk';
+
 /**
  * Extract review page url
  * @returns {Promise<Object | Error>} - The object containing the review page urls and the total review count
@@ -36,7 +37,7 @@ const extractAllReviewPageUrls = async (hotelUrl) => {
         // Determin current URL
         const currentURL = page.url();
 
-        console.log(`${bold.white.dim('Gathering Info: ')}${currentURL.split('-')[4]}`);
+        console.log(`${chalk.bold.white.dim('Gathering Info: ')}${currentURL.split('-')[4]}`);
 
         /**
          * In browser code:
@@ -257,4 +258,4 @@ const start = async (hotelUrl, hotelName, hotelId, position) => {
     }
 };
 
-module.exports = start;
+export default start;

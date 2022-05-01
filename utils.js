@@ -1,7 +1,8 @@
 // Dependencies
-const { promises: { access, }, readdirSync, } = require('fs');
-const { parse, } = require('json2csv');
-const csvtojsonV2 = require('csvtojson');
+import fs from 'fs';
+const { promises: { access, }, readdirSync, } = fs;
+import { parse } from 'json2csv';
+import csvtojsonV2 from 'csvtojson';
 
 /**
  * Check if the given file exists
@@ -137,7 +138,7 @@ const csvToJSON = async (csvFilePath, scrapeMode) => {
 
 };
 
-module.exports = { fileExists, combine, reviewJSONToCsv, csvToJSON, };
+export { fileExists, combine, reviewJSONToCsv, csvToJSON };
 
 
 // const cookiesAvailable = await fileExists('./data/cookies.json');
