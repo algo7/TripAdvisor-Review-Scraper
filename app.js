@@ -1,11 +1,11 @@
 // Dependencies
-import path from 'path';
+import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import { mkdirSync } from 'fs';
-import { writeFile } from 'fs/promises';
+import fs, { mkdirSync } from 'fs';
+const { promises: { writeFile, }, } = fs;
 import chalk from 'chalk';
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = dirname(__filename);
 
 
 // Custom Modules
@@ -14,8 +14,8 @@ import restoScraper from './scrapers/resto.js';
 import { csvToJSON, fileExists, combine, reviewJSONToCsv } from './utils.js';
 
 // Data path
-const dataDir = path.join(__dirname, './reviews/');
-const sourceDir = path.join(__dirname, './source/');
+const dataDir = join(__dirname, './reviews/');
+const sourceDir = join(__dirname, './source/');
 
 // Environment variables
 const { SCRAPE_MODE, } = process.env;
@@ -32,8 +32,8 @@ if (!fileExists(sourceDir)) {
 }
 
 // Data source
-const dataSourceResto = path.join(__dirname, './source/restos.csv');
-const dataSourceHotel = path.join(__dirname, './source/hotels.csv');
+const dataSourceResto = join(__dirname, './source/restos.csv');
+const dataSourceHotel = join(__dirname, './source/hotels.csv');
 
 /**
  * Scrape the hotel pages

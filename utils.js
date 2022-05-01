@@ -1,6 +1,6 @@
 // Dependencies
-import fs from 'fs';
-const { promises: { access, }, readdirSync, } = fs;
+import fs, { readFileSync, readdirSync } from 'fs';
+const { promises: { access, }, } = fs;
 import { parse } from 'json2csv';
 import csvtojsonV2 from 'csvtojson';
 
@@ -34,8 +34,8 @@ const combine = (scrapeMode, dataDir) => {
             .filter(fileName => fileName.includes('.json'))
             // Load each file and extract the information
             .map(fileName => {
-                // eslint-disable-next-line global-require
-                const fileContent = require(`${dataDir}${fileName}`);
+                const fileContent = JSON.parse(readFileSync(`${dataDir}${fileName}`));
+
                 if (scrapeMode === 'RESTO') {
                     const { restoName, restoId, position, allReviews, } = fileContent;
                     return { restoName, restoId, position, allReviews, };
