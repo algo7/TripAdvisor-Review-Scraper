@@ -47,14 +47,22 @@ const hotelScraperInit = async () => {
             throw Error('Source file does not exist');
         }
 
-        // Convert the csv to json
-        const rawData = await csvToJSON(dataSourceHotel);
+
+        const [rawData, browser] = await Promise.all([
+            // Convert the csv to json
+            csvToJSON(dataSourceHotel),
+            // Get a browser instance
+            getBrowserInstance()
+        ])
+
+
         console.log(chalk.bold.yellow(`Scraping ${chalk.magenta(rawData.length)} Hotels`));
 
-        // Get a browser instance
-        const browser = await getBrowserInstance();
 
-        await Promise.all(
+
+
+        // Extract review info and file name of each individual hotel
+        const reviewInfo = await Promise.all(
             rawData.map(async (item, index) => {
                 // Extract resto info
                 const { webUrl: hotelUrl, name: hotelName, id: hotelId, } = item;
@@ -63,8 +71,14 @@ const hotelScraperInit = async () => {
                 const finalData = await hotelScraper(hotelUrl, hotelName, hotelId, index, browser);
                 const { fileName, } = finalData;
                 delete finalData.fileName;
+                return { finalData, fileName, };
+            })
+        );
 
-                // Write the data to file
+
+        await Promise.all(
+            reviewInfo.map(async ({ finalData, fileName }) => {
+                // Write the review of each individual hotel to files
                 const dataToWrite = JSON.stringify(finalData, null, 2);
                 await writeFile(`${dataDir}${fileName}.json`, dataToWrite);
             })
@@ -73,16 +87,22 @@ const hotelScraperInit = async () => {
         // Combine all the reviews into an array of objects
         const combinedData = combine(SCRAPE_MODE, dataDir);
 
+
         // Write the combined JSON data to file
-        const dataToWrite = JSON.stringify(combinedData, null, 2);
-        await writeFile(`${dataDir}All.json`, dataToWrite);
+        const jsonData = JSON.stringify(combinedData, null, 2);
 
         // Convert the combined JSON data to csv
         const csvData = reviewJSONToCsv(combinedData);
-        await writeFile(`${dataDir}All.csv`, csvData);
 
-        // Close the browser instance
-        await closeBrowserInstance();
+
+        await Promise.all([
+            writeFile(`${dataDir}All.json`, jsonData),
+            writeFile(`${dataDir}All.csv`, csvData),
+            // Close the browser instance
+            closeBrowserInstance(),
+        ])
+
+
 
         return 'Scraping Done';
 
@@ -104,12 +124,17 @@ const restoScraperInit = async () => {
             throw Error('Source file does not exist');
         }
 
-        // Convert the csv to json
-        const rawData = await csvToJSON(dataSourceResto);
+        const [rawData, browser] = await Promise.all([
+            // Convert the csv to json
+            csvToJSON(dataSourceResto),
+            // Get a browser instance
+            getBrowserInstance()
+        ])
+
+
+
         console.log(chalk.bold.yellow(`Scraping ${chalk.magenta(rawData.length)} Restaurants`));
 
-        // Get a browser instance
-        const browser = await getBrowserInstance();
 
         // Extract review info and file name of each individual resto
         const reviewInfo = await Promise.all(
@@ -120,14 +145,13 @@ const restoScraperInit = async () => {
                 const finalData = await restoScraper(restoUrl, restoName, restoId, index, browser);
                 const { fileName, } = finalData;
                 delete finalData.fileName;
-
                 return { finalData, fileName, };
             })
         );
 
         await Promise.all(
             reviewInfo.map(async ({ finalData, fileName }) => {
-                // Write the data to file
+                // Write the review of each individual resto to files
                 const dataToWrite = JSON.stringify(finalData, null, 2);
                 await writeFile(`${dataDir}${fileName}.json`, dataToWrite);
             })
