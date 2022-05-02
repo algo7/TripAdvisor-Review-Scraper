@@ -207,9 +207,6 @@ const restoScraperInit = async () => {
     }
 };
 
-setInterval(() => {
-    console.log(browserInstance.reportTabStats());
-}, 2000);
 /**
  * The main init function
  * @returns {Promise<String | Error>} - The done message or error message
@@ -237,36 +234,6 @@ init()
     });
 
 
-
-
-
-
-// (async () => {
-
-
-//     for (let index = 0; index < 20; index++) {
-//         const page = await browserInstance.getNewPage()
-//         const pageInUse = browserInstance.getInUsePageCount()
-//         console.log(`In Use Page Count: ${pageInUse}`)
-//         await page.goto('https://www.tripadvisor.com')
-//         // Opened page count
-//         const pageCount = await browserInstance.countPage()
-//         console.log(`Page Count: ${pageCount}`)
-
-//         const pageAva = browserInstance.getAvailablePageCount()
-//         console.log(`Available Page Count: ${pageAva}`)
-
-//         browserInstance.handBack(page)
-
-//     }
-
-//     const pageInUse = browserInstance.getInUsePageCount()
-//     console.log(`In Use Page Count: ${pageInUse}`)
-
-//     const pageAva = browserInstance.getAvailablePageCount()
-//     console.log(`Available Page Count: ${pageAva}`)
-
-
-
-//     await browserInstance.closeBrowser()
-// })().catch(err => console.log(err))
+// setInterval(() => {
+//     console.log(browserInstance.reportTabStats());
+// }, 2000);
