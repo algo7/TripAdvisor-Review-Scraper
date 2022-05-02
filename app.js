@@ -241,7 +241,11 @@ init()
     });
 
 
+// Report Logic
 setInterval(async () => {
     const report = await browserInstance.reportTabStats()
+    const { inUse } = report;
     console.log(report);
+    if (inUse === 0) process.exit(1);
+
 }, 5000);
