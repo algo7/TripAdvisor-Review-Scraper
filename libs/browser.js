@@ -159,9 +159,11 @@ class Browser {
     */
     async reportTabStats() {
         return {
-            Idle: this.#getAvailablePageCount(),
-            inUse: this.#getInUsePageCount(),
-            openedPage: await this.#countPage()
+            heartbeat: {
+                Idle: this.#getAvailablePageCount(),
+                inUse: this.#getInUsePageCount(),
+                openedPage: await this.#countPage()
+            }
         }
     }
 
