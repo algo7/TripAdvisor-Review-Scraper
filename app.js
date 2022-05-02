@@ -21,9 +21,10 @@ const dataDir = join(__dirname, './reviews/');
 const sourceDir = join(__dirname, './source/');
 
 // Environment variables
-const { SCRAPE_MODE, } = process.env;
+const { SCRAPE_MODE, CONCURRENCY } = process.env;
 
 console.log(chalk.bold.blue(`The Scraper is Running in ${chalk.bold.magenta(SCRAPE_MODE)} Mode`));
+console.log(chalk.bold.blue(`Concurrency Setting ${chalk.bold.magenta(CONCURRENCY || 2)}`));
 
 // Check if the required directories exist, otherwise create them
 if (!fileExists(dataDir)) {
@@ -72,7 +73,7 @@ const hotelScraperInit = async () => {
         // Extract review info and file name of each individual hotel
         for (let index = 0; index < rawData.length; index++) {
 
-            if (processQueue.length > 4) {
+            if (processQueue.length > parseInt(process.env.CONCURRENCY) || 2) {
                 const finalData = await dataProcessor(processQueue)
                 reviewInfo.push(finalData);
                 processQueue = []

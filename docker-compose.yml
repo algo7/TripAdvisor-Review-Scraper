@@ -6,6 +6,7 @@ services:
     build: .
     environment:
       SCRAPE_MODE: RESTO
+      CONCURRENCY: 2
     # Image name
     image: ghcr.io/algo7/tripadvisor-review-scraper/scrap:latest
     volumes:

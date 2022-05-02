@@ -53,18 +53,17 @@ class Browser {
             this.browser = await this.launch()
             const newPage = await this.browser.newPage()
             newPage.setDefaultNavigationTimeout(0)
-
             this.pageInUse.push(newPage)
             return newPage
         }
 
         /**
-        * Return a new page if the amount of opened page is less than 4
-        * It's written as 5 as there is one unsable blank page by default
+        * Return a new page if the amount of opened page is less than 2
+        * It's written as 3 as there is one unsable blank page by default
         */
         const openedPage = await this.#countPage()
 
-        if (openedPage < 5) {
+        if (openedPage < parseInt(process.env.CONCURRENCY) + 1 || 3) {
             const newPage = await this.browser.newPage()
             newPage.setDefaultNavigationTimeout(0)
             return newPage

@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "start:prod": "node app.js",
-    "start:resto": "SCRAPE_MODE=RESTO node app.js",
-    "start:hotel": "SCRAPE_MODE=HOTEL node app.js",
+    "start:resto": "SCRAPE_MODE=RESTO CONCURRENCY=2 node app.js",
+    "start:hotel": "SCRAPE_MODE=HOTEL SCRAPE_MODE=RESTO CONCURRENCY=2 node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
