@@ -139,13 +139,14 @@ const csvToJSON = async (csvFilePath, scrapeMode) => {
 };
 
 /**
- * Reshape the object in the review array 
- * @param {Array<Object>} arrayToBeProcessed 
- * @returns {Array<Object>}
+ * Take in an array of review promises, resolve it then reshape the review object
+ * @param {Array<Promise<Object>>} arrayToBeProcessed 
+ * @returns {Promise<Array<Object>>}
  */
-const dataProcessor = (arrayToBeProcessed) => {
+const dataProcessor = async (arrayToBeProcessed) => {
     try {
-        const processed = arrayToBeProcessed.map(data => {
+        const toBeProcessed = await Promise.all(arrayToBeProcessed);
+        const processed = toBeProcessed.map(data => {
             const { fileName, } = data;
             delete data.fileName;
             return { finalData: data, fileName }

@@ -144,8 +144,7 @@ const restoScraperInit = async () => {
         for (let index = 0; index < rawData.length; index++) {
 
             if (processQueue.length > 4) {
-                let finalData = await Promise.all(processQueue)
-                finalData = dataProcessor(finalData);
+                const finalData = await dataProcessor(processQueue)
                 reviewInfo.push(finalData);
                 processQueue = []
             }
@@ -159,8 +158,7 @@ const restoScraperInit = async () => {
         }
 
         // Resolve processes the left over in the process queue
-        let finalData = await Promise.all(processQueue)
-        finalData = dataProcessor(finalData);
+        const finalData = await dataProcessor(processQueue)
         reviewInfo.push(finalData);
 
         // Write the review of each individual resto to files
