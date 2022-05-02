@@ -1,6 +1,9 @@
 // Dependencies
 import chalk from 'chalk';
 
+// Custom modules
+import { noBs } from '../libs/utils.js'
+
 /**
  * Extract the review page urls, total review count, and total review page count
  * @param {String} restoUrl - The url of the restaurant page
@@ -14,6 +17,7 @@ const extractAllReviewPageUrls = async (restoUrl, position, browser) => {
         // Open a new page
         const page = await browser.getNewPage()
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
+        await noBs(page);
 
         // Navigate to the resto page
         await page.goto(restoUrl);
@@ -127,6 +131,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, res
         // Open a new page
         const page = await browser.getNewPage()
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
+        await noBs(page);
 
         // Array to hold all the reviews 
         const allReviews = [];

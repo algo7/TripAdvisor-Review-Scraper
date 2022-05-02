@@ -157,7 +157,28 @@ const dataProcessor = async (arrayToBeProcessed) => {
     }
 }
 
-export { fileExists, combine, reviewJSONToCsv, csvToJSON, dataProcessor };
+/**
+ * Block all images
+ * @param {puppeteer.Browser.Page} page - The puppeteer page object
+ */
+const noBs = async (page) => {
+    try {
+        // Enable request interception
+        await page.setRequestInterception(true);
+
+        // Block all images
+        page.on('request', (req) => {
+            if (req.resourceType() === 'image' ||
+                req.resourceType() === 'stylesheet'
+                || req.resourceType() === 'font') return req.abort();
+            return req.continue();
+        });
+    } catch (err) {
+        throw err
+    }
+};
+
+export { fileExists, combine, reviewJSONToCsv, csvToJSON, dataProcessor, noBs };
 
 
 // const cookiesAvailable = await fileExists('./data/cookies.json');

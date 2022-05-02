@@ -1,6 +1,9 @@
 // Dependencies
 import chalk from 'chalk';
 
+// Custom modules
+import { noBs } from '../libs/utils.js'
+
 /**
  * Extract review page url
  * @param {String} hotelUrl - The url of the hotel page
@@ -13,6 +16,7 @@ const extractAllReviewPageUrls = async (hotelUrl, browser) => {
         // Open a new page
         const page = await browser.getNewPage()
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
+        await noBs(page);
 
         // Navigate to the hotel page
         await page.goto(hotelUrl);
@@ -117,6 +121,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
         // Open a new page
         const page = await browser.getNewPage()
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
+        await noBs(page);
 
         // Array to hold the review info
         const allReviews = [];
