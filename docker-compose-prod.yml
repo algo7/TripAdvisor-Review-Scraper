@@ -4,7 +4,7 @@ services:
       # It's either RESTO or HOTEL
       SCRAPE_MODE: RESTO
       # Keep it to 2 or 3
-      CONCURRENCY: 2
+      CONCURRENCY: 3
     # Dont touch anything below if you don't know what you are doing
     image: ghcr.io/algo7/tripadvisor-review-scraper/scrap:latest
     volumes:

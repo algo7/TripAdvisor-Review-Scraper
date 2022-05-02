@@ -15,7 +15,6 @@ class Browser {
                 width: 1920,
                 height: 1080,
             },
-            userDataDir: './',
             args: [
                 '--disable-gpu',
                 '--disable-dev-shm-usage',
