@@ -1,7 +1,9 @@
 services:
   scraper:
     environment:
+      # It's either RESTO or HOTEL
       SCRAPE_MODE: RESTO
+    # Dont touch this if you don't know what you are doing
     image: ghcr.io/algo7/tripadvisor-review-scraper/scrap:latest
     volumes:
     - source: ./reviews
