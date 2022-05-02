@@ -9,7 +9,7 @@ class Browser {
     constructor() {
         // Puppeteer configs
         this.config = {
-            headless: false,
+            headless: true,
             devtools: false,
             defaultViewport: {
                 width: 1920,
@@ -30,9 +30,7 @@ class Browser {
         this.pageInUse = []
 
         // Number of pages available
-        this.pageAvailable = []
-
-        this.pageOpenRequests = 1
+        this.pageIdle = []
     }
 
     /**
@@ -45,47 +43,36 @@ class Browser {
     }
 
     /**
-  * Count the number of pages started by the browser
-  * @returns {Promise<Number>}
-  */
-    async countPage() {
-        const pages = await this.browser.pages()
-        return pages.length
-    }
-
-    /**
      * Open a new page or get a page from the available pages
      * @returns {Promise<puppeteer.Browser.Page>}
      */
     async getNewPage() {
 
-        // // Return a new page if not browser hasn't been launched
-        // if (!this.browser) {
-        //     this.browser = await this.launch()
-        //     const newPage = await this.browser.newPage()
-        //     this.pageInUse.push(newPage)
-        //     return newPage
-        // }
+        // Return a new page if not browser hasn't been launched
+        if (!this.browser) {
+            this.browser = await this.launch()
+            const newPage = await this.browser.newPage()
+            this.pageInUse.push(newPage)
+            return newPage
+        }
 
         /**
-        * Return a new page if the amount of opened page is less than 10
-        * It's written as 11 as there is one unsable blank page by default
+        * Return a new page if the amount of opened page is less than 3
+        * It's written as 4 as there is one unsable blank page by default
         */
+        const openedPage = await this.#countPage()
 
-        console.log(`Opened Page: ${await this.countPage()}`)
-        this.pageOpenRequests = this.pageOpenRequests + 1
-        console.log(`Opened Page: ${this.pageOpenRequests}`)
-
-        if (this.pageOpenRequests < 11) {
+        if (openedPage < 4) {
             const newPage = await this.browser.newPage()
             this.pageInUse.push(newPage)
             return newPage
         }
 
         // If there are pages available
-        if (this.pageAvailable.length > 0) {
+        if (this.pageIdle.length > 0) {
+
             // Get the first page in the available page array
-            const page = this.pageAvailable.shift()
+            const page = this.pageIdle.shift()
             // Push the page into the in use page array
             this.pageInUse.push(page)
             return page
@@ -100,31 +87,53 @@ class Browser {
      */
     handBack(page) {
         this.pageInUse.shift()
-        this.pageAvailable.push(page)
+        this.pageIdle.push(page)
+    }
+
+
+    /**
+    * Report Tab Stats
+    * @returns {Obeject} 
+    */
+    reportTabStats() {
+        return {
+            Idle: this.#getAvailablePageCount(),
+            inUse: this.#getInUsePageCount(),
+        }
     }
 
     /**
-     * Close the browser instance
-     * @returns {Promise<Undefined>}
-     */
+    * Close the browser instance
+    * @returns {Promise<Undefined>}
+    */
     async closeBrowser() {
         await this.browser.close()
     }
 
+    // Private methods
     /**
      * Return the number of pages available
      * @returns {Number}
      */
-    getAvailablePageCount() {
-        return this.pageAvailable.length
+    #getAvailablePageCount() {
+        return this.pageIdle.length
     }
 
     /**
      * Return the number of pages in use
      * @returns {Number}
      */
-    getInUsePageCount() {
+    #getInUsePageCount() {
         return this.pageInUse.length
+    }
+
+    /**
+    * Count the number of pages started by the browser
+    * @returns {Promise<Number>}
+    */
+    async #countPage() {
+        const pages = await this.browser.pages()
+        return pages.length
     }
 }
 

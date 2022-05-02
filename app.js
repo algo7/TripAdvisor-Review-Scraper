@@ -138,19 +138,33 @@ const restoScraperInit = async () => {
         console.log(chalk.bold.yellow(`Scraping ${chalk.magenta(rawData.length)} Restaurants`));
 
 
-        // Extract review info and file name of each individual resto
-        const reviewInfo = await Promise.all(
-            rawData.map(async (item, index) => {
-                // Extract resto info
-                const { webUrl: restoUrl, name: restoName, id: restoId, } = item;
-                // Start the scraping process
-                const finalData = await restoScraper(restoUrl, restoName,
-                    restoId, index, browserInstance);
-                const { fileName, } = finalData;
-                delete finalData.fileName;
-                return { finalData, fileName, };
-            })
-        );
+
+        // // Extract review info and file name of each individual resto
+        // const reviewInfo = await Promise.all(
+        //     rawData.map(async (item, index) => {
+        //         // Extract resto info
+        //         const { webUrl: restoUrl, name: restoName, id: restoId, } = item;
+        //         // Start the scraping process
+        //         const finalData = await restoScraper(restoUrl, restoName,
+        //             restoId, index, browserInstance);
+        //         const { fileName, } = finalData;
+        //         delete finalData.fileName;
+        //         return { finalData, fileName, };
+        //     })
+        // );
+        const reviewInfo = []
+        for (let index = 0; index < rawData.length; index++) {
+            const item = rawData[index];
+            // Extract resto info
+            const { webUrl: restoUrl, name: restoName, id: restoId, } = item;
+            // Start the scraping process
+            const finalData = await restoScraper(restoUrl, restoName,
+                restoId, index, browserInstance);
+            const { fileName, } = finalData;
+            delete finalData.fileName;
+            reviewInfo.push[{ finalData, fileName, }];
+
+        }
 
         await Promise.all(
             reviewInfo.map(async ({ finalData, fileName }) => {
@@ -184,6 +198,9 @@ const restoScraperInit = async () => {
     }
 };
 
+setInterval(() => {
+    console.log(browserInstance.reportTabStats());
+}, 2000);
 /**
  * The main init function
  * @returns {Promise<String | Error>} - The done message or error message
