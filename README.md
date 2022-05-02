@@ -17,7 +17,7 @@
 9. Please remember to empty the `reviews` folder before running the scraper again.
 
 ## Docker CLI 
-1. Replace the `-e SCRAP_MODE` and `-e CONCURRENCY` with the custom values.
+1. Replace the `-e SCRAP_MODE` and `-e CONCURRENCY` with custom values.
 2. `docker run --mount type=bind,src="$(pwd)"/reviews,target=/puppeteer/reviews --mount type=bind,src="$(pwd)"/source,target=/puppeteer/source -e SCRAPE_MODE=HOTEL -e CONCURRENCY=5 ghcr.io/algo7/tripadvisor-review-scraper/scrap:latest`
 
 ## Known Issues
