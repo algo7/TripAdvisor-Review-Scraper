@@ -1,8 +1,15 @@
 // Dependencies
 // import puppeteer from 'puppeteer';
 import puppeteer from 'puppeteer-extra'
+import { enchantPuppeteer } from 'enchant-puppeteer'
+enchantPuppeteer()
 import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
-puppeteer.use(AdblockerPlugin({ blockTrackers: true }))
+import blockResourcesPlugin from 'puppeteer-extra-plugin-block-resources';
+puppeteer
+    .use(blockResourcesPlugin({ blockedTypes: new Set(['stylesheet', 'image', 'font', 'media', 'other']) }))
+    .use(AdblockerPlugin({ blockTrackers: true }))
+
+
 
 /**
  * Create a browser instance
