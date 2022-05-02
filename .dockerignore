@@ -8,6 +8,10 @@
 **Dockerfile
 **.yml
 **LICENSE
-**.eslint.js
+**.eslintrc.js
 **.dockerignore
 **README.md
+**examples
+**CITATION.cff
+**docker-compose.yml
+**docker-compose-prod.yml
