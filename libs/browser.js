@@ -19,7 +19,7 @@ class Browser {
     constructor() {
         // Puppeteer configs
         this.config = {
-            headless: false,
+            headless: true,
             devtools: false,
             defaultViewport: {
                 width: 1280,
