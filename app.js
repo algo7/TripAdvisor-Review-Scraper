@@ -22,8 +22,6 @@ const sourceDir = join(__dirname, './source/');
 
 // Environment variables
 let { SCRAPE_MODE, CONCURRENCY } = process.env;
-
-// Set concurrency
 CONCURRENCY = parseInt(CONCURRENCY);
 if (!CONCURRENCY) CONCURRENCY = 2;
 

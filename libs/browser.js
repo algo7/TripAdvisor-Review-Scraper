@@ -12,9 +12,8 @@ puppeteer
 // Environments variables
 let { CONCURRENCY } = process.env;
 CONCURRENCY = parseInt(CONCURRENCY) + 1;
-if (!CONCURRENCY) {
-    CONCURRENCY = 3;
-}
+if (!CONCURRENCY) CONCURRENCY = 3;
+
 
 
 /**
