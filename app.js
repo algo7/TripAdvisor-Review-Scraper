@@ -21,7 +21,13 @@ const dataDir = join(__dirname, './reviews/');
 const sourceDir = join(__dirname, './source/');
 
 // Environment variables
-const { SCRAPE_MODE, CONCURRENCY } = process.env;
+let { SCRAPE_MODE, CONCURRENCY } = process.env;
+
+// Set concurrency
+CONCURRENCY = parseInt(CONCURRENCY);
+if (!CONCURRENCY) {
+    CONCURRENCY = 2;
+}
 
 console.log(chalk.bold.blue(`The Scraper is Running in ${chalk.bold.magenta(SCRAPE_MODE)} Mode`));
 console.log(chalk.bold.blue(`Concurrency Setting ${chalk.bold.magenta(CONCURRENCY || 2)}`));
@@ -73,7 +79,7 @@ const hotelScraperInit = async () => {
         // Extract review info and file name of each individual hotel
         for (let index = 0; index < rawData.length; index++) {
 
-            if (processQueue.length > parseInt(process.env.CONCURRENCY) || 2) {
+            if (processQueue.length > CONCURRENCY) {
                 const finalData = await dataProcessor(processQueue)
                 reviewInfo.push(finalData);
                 processQueue = []
@@ -156,7 +162,7 @@ const restoScraperInit = async () => {
 
         for (let index = 0; index < rawData.length; index++) {
 
-            if (processQueue.length > parseInt(process.env.CONCURRENCY) || 2) {
+            if (processQueue.length > CONCURRENCY) {
                 const finalData = await dataProcessor(processQueue)
                 reviewInfo.push(finalData);
                 processQueue = []
