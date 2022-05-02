@@ -13,7 +13,8 @@ Scrape TripAdvisor Reviews
    1. A high concurrency number might cause the program to hang depending on the internet connection and the resource availability of your computer.
 6. Run `docker-compose -f docker-compose-prod.yml up` to start the container.
 7. Once the scraping process is finished, check the `reviews` folder for the results.
-8. Please remember to empty the `reviews` folder before running the scraper again.
+8. Samples of the results are included in the `samples` folder.
+9. Please remember to empty the `reviews` folder before running the scraper again.
 
 ## Known Issues
 1. The hotel scraper works for English reviews only.

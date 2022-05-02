@@ -1,0 +1,219 @@
+{
+  "restoName": "L'Indus Bar",
+  "restoId": "7285961",
+  "count": 22,
+  "actualCount": 30,
+  "position": 0,
+  "allReviews": [
+    {
+      "rating": 3,
+      "dateOfVisit": "January 2022",
+      "ratingDate": "January 8, 2022",
+      "title": "Moyen",
+      "content": "Repas bon mais tout le reste pas terrible, c est triste, peu éclairé, gros manque d entretien et de propreté,...More"
+    },
+    {
+      "rating": 5,
+      "dateOfVisit": "January 2019",
+      "ratingDate": "February 18, 2019",
+      "title": "La classe!",
+      "content": "Bar au top, une valeur sure dans la ville de Bulle. Les burgers sont trop trop bons, et Yannick est...More"
+    },
+    {
+      "rating": 5,
+      "dateOfVisit": "September 2018",
+      "ratingDate": "October 1, 2018",
+      "title": "Burger très bon et cadre agréable",
+      "content": "Nous y sommes allé suite aux avis sur Trip Advisor et n'avons pas été décus. Service rapide et sympa. J'ai...More"
+    },
+    {
+      "rating": 5,
+      "dateOfVisit": "June 2017",
+      "ratingDate": "August 13, 2017",
+      "title": "Hamburgers maison magnifiques",
+      "content": "Bar servant d'excellents hamburgers faits maison vous en aurez assez dans votre assiette.... à noter que cela reste un bar...More"
+    },
+    {
+      "rating": 5,
+      "dateOfVisit": "March 2017",
+      "ratingDate": "March 20, 2017",
+      "title": "Bar au top et adapté à tous !",
+      "content": "Que vous ayez 18 ans ou beaucoup plus, vous serez bien accueillis dans ce bar fort sympathique !!! Le patron...More"
+    },
+    {
+      "rating": 3,
+      "dateOfVisit": "February 2017",
+      "ratingDate": "February 24, 2017",
+      "title": "Noite de quinta feira",
+      "content": "Espaço agradavel, staff simpático, pouca variedade de cocktails, mas o staff consegue dar volta a situação, espaço a visitar numa...More"
+    },
+    {
+      "rating": 3,
+      "dateOfVisit": "October 2016",
+      "ratingDate": "December 11, 2016",
+      "title": "Bon hamburger et cadre sympa",
+      "content": "Bon Hamburger -frites à midi , le cadre est sympathique et le service aussi. Grand choix de bières pression pour...More"
+    },
+    {
+      "rating": 5,
+      "dateOfVisit": "October 2016",
+      "ratingDate": "October 28, 2016",
+      "title": "Le bar par excellence",
+      "content": "Si il y a un endroit à Bulle pour passer une bonne soirée c est clair c est ici. Merci...More"
+    },
+    {
+      "rating": 5,
+      "dateOfVisit": "August 2016",
+      "ratingDate": "August 3, 2016",
+      "title": "Au top!",
+      "content": "Super bar servant une cuisine de très bonne qualité. À midi et la majorité des soirs, burgers maison, diverses sortes...More"
+    },
+    {
+      "rating": 5,
+      "dateOfVisit": "May 2016",
+      "ratingDate": "May 10, 2016",
+      "title": "Endroit incontournable",
+      "content": "L'indus bar est un endroit chaleureux et accueillant où vous trouverez un choix très varié de boissons avec et sans...More"
+    },
+    {
+      "rating": 5,
+      "dateOfVisit": "May 2016",
+      "ratingDate": "May 2, 2016",
+      "title": "Jeune, frais, sympa !",
+      "content": "Sympathique endroit à Bulle où l'on y passe d'excellents moments. Le midi, un grand choix de burgers, de pâtes et...More"
+    },
+    {
+      "rating": 5,
+      "dateOfVisit": "April 2016",
+      "ratingDate": "April 24, 2016",
+      "title": "C est le top",
+      "content": "Un endroit chaleureux où on y mange super bien et avec les meilleurs hamburgers. Un accueil et un service toujours...More"
+    },
+    {
+      "rating": 4,
+      "dateOfVisit": "April 2016",
+      "ratingDate": "April 24, 2016",
+      "title": "Monstre noce !",
+      "content": "De loin le bar le plus cool de la région, j'y retourne chaque week-end et je n'ai jamais été déçu....More"
+    },
+    {
+      "rating": 4,
+      "dateOfVisit": "April 2016",
+      "ratingDate": "April 1, 2016",
+      "title": "Soirée tartare les jeudis",
+      "content": "Bonne ambiance et personnel très sympathique. Une petite carte propose quelques plats selon le jour de la semaine. Très bon...More"
+    },
+    {
+      "rating": 5,
+      "dateOfVisit": "January 2016",
+      "ratingDate": "January 30, 2016",
+      "title": "De tout, grande qualité, prix sympas",
+      "content": "Que ce soit pour une fondue, un poêlon d'entrecôte, une planchette, un burger, c'est l'endroit qu'il vous faut :)"
+    },
+    {
+      "rating": 3,
+      "dateOfVisit": "January 2022",
+      "ratingDate": "January 8, 2022",
+      "title": "Moyen",
+      "content": "Repas bon mais tout le reste pas terrible, c est triste, peu éclairé, gros manque d entretien et de propreté,...More"
+    },
+    {
+      "rating": 5,
+      "dateOfVisit": "January 2019",
+      "ratingDate": "February 18, 2019",
+      "title": "La classe!",
+      "content": "Bar au top, une valeur sure dans la ville de Bulle. Les burgers sont trop trop bons, et Yannick est...More"
+    },
+    {
+      "rating": 5,
+      "dateOfVisit": "September 2018",
+      "ratingDate": "October 1, 2018",
+      "title": "Burger très bon et cadre agréable",
+      "content": "Nous y sommes allé suite aux avis sur Trip Advisor et n'avons pas été décus. Service rapide et sympa. J'ai...More"
+    },
+    {
+      "rating": 5,
+      "dateOfVisit": "June 2017",
+      "ratingDate": "August 13, 2017",
+      "title": "Hamburgers maison magnifiques",
+      "content": "Bar servant d'excellents hamburgers faits maison vous en aurez assez dans votre assiette.... à noter que cela reste un bar...More"
+    },
+    {
+      "rating": 5,
+      "dateOfVisit": "March 2017",
+      "ratingDate": "March 20, 2017",
+      "title": "Bar au top et adapté à tous !",
+      "content": "Que vous ayez 18 ans ou beaucoup plus, vous serez bien accueillis dans ce bar fort sympathique !!! Le patron...More"
+    },
+    {
+      "rating": 3,
+      "dateOfVisit": "February 2017",
+      "ratingDate": "February 24, 2017",
+      "title": "Noite de quinta feira",
+      "content": "Espaço agradavel, staff simpático, pouca variedade de cocktails, mas o staff consegue dar volta a situação, espaço a visitar numa...More"
+    },
+    {
+      "rating": 3,
+      "dateOfVisit": "October 2016",
+      "ratingDate": "December 11, 2016",
+      "title": "Bon hamburger et cadre sympa",
+      "content": "Bon Hamburger -frites à midi , le cadre est sympathique et le service aussi. Grand choix de bières pression pour...More"
+    },
+    {
+      "rating": 5,
+      "dateOfVisit": "October 2016",
+      "ratingDate": "October 28, 2016",
+      "title": "Le bar par excellence",
+      "content": "Si il y a un endroit à Bulle pour passer une bonne soirée c est clair c est ici. Merci...More"
+    },
+    {
+      "rating": 5,
+      "dateOfVisit": "August 2016",
+      "ratingDate": "August 3, 2016",
+      "title": "Au top!",
+      "content": "Super bar servant une cuisine de très bonne qualité. À midi et la majorité des soirs, burgers maison, diverses sortes...More"
+    },
+    {
+      "rating": 5,
+      "dateOfVisit": "May 2016",
+      "ratingDate": "May 10, 2016",
+      "title": "Endroit incontournable",
+      "content": "L'indus bar est un endroit chaleureux et accueillant où vous trouverez un choix très varié de boissons avec et sans...More"
+    },
+    {
+      "rating": 5,
+      "dateOfVisit": "May 2016",
+      "ratingDate": "May 2, 2016",
+      "title": "Jeune, frais, sympa !",
+      "content": "Sympathique endroit à Bulle où l'on y passe d'excellents moments. Le midi, un grand choix de burgers, de pâtes et...More"
+    },
+    {
+      "rating": 5,
+      "dateOfVisit": "April 2016",
+      "ratingDate": "April 24, 2016",
+      "title": "C est le top",
+      "content": "Un endroit chaleureux où on y mange super bien et avec les meilleurs hamburgers. Un accueil et un service toujours...More"
+    },
+    {
+      "rating": 4,
+      "dateOfVisit": "April 2016",
+      "ratingDate": "April 24, 2016",
+      "title": "Monstre noce !",
+      "content": "De loin le bar le plus cool de la région, j'y retourne chaque week-end et je n'ai jamais été déçu....More"
+    },
+    {
+      "rating": 4,
+      "dateOfVisit": "April 2016",
+      "ratingDate": "April 1, 2016",
+      "title": "Soirée tartare les jeudis",
+      "content": "Bonne ambiance et personnel très sympathique. Une petite carte propose quelques plats selon le jour de la semaine. Très bon...More"
+    },
+    {
+      "rating": 5,
+      "dateOfVisit": "January 2016",
+      "ratingDate": "January 30, 2016",
+      "title": "De tout, grande qualité, prix sympas",
+      "content": "Que ce soit pour une fondue, un poêlon d'entrecôte, une planchette, un burger, c'est l'endroit qu'il vous faut :)"
+    }
+  ]
+}

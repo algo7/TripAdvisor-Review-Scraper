@@ -25,26 +25,19 @@ let { SCRAPE_MODE, CONCURRENCY } = process.env;
 
 // Set concurrency
 CONCURRENCY = parseInt(CONCURRENCY);
-if (!CONCURRENCY) {
-    CONCURRENCY = 2;
-}
+if (!CONCURRENCY) CONCURRENCY = 2;
+
 
 console.log(chalk.bold.blue(`The Scraper is Running in ${chalk.bold.magenta(SCRAPE_MODE)} Mode`));
 console.log(chalk.bold.blue(`Concurrency Setting ${chalk.bold.magenta(CONCURRENCY || 2)}`));
 
 // Check if the required directories exist, otherwise create them
-if (!fileExists(dataDir)) {
-    mkdirSync(dataDir);
-}
-
-if (!fileExists(sourceDir)) {
-    mkdirSync(sourceDir);
-}
+if (!fileExists(dataDir)) mkdirSync(dataDir);
+if (!fileExists(sourceDir)) mkdirSync(sourceDir);
 
 // Data source
 const dataSourceResto = join(__dirname, './source/restos.csv');
 const dataSourceHotel = join(__dirname, './source/hotels.csv');
-
 
 
 /**
@@ -245,7 +238,6 @@ init()
 setInterval(async () => {
     const report = await browserInstance.reportTabStats()
     const { inUse } = report;
-    console.log(report);
+    console.log({ heartbeat: report });
     if (inUse === 0) process.exit(1);
-
 }, 5000);

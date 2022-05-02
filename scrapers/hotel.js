@@ -1,22 +1,20 @@
 // Dependencies
 import chalk from 'chalk';
 
-// Custom modules
-// import { noBs } from '../libs/utils.js'
 
 /**
  * Extract review page url
- * @param {String} hotelUrl - The url of the hotel page
+ * @param {String} hotelUrl - The url of the hotel page 
+ * @param {Number} position - The index of the hotel page in the list
  * @param {Object} browser - A browser instance
  * @returns {Promise<Object | Error>} - The object containing the review page urls and the total review count
  */
-const extractAllReviewPageUrls = async (hotelUrl, browser) => {
+const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
     try {
 
         // Open a new page
         const page = await browser.getNewPage()
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
-        await noBs(page);
 
         // Navigate to the hotel page
         await page.goto(hotelUrl);
@@ -121,7 +119,6 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
         // Open a new page
         const page = await browser.getNewPage()
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
-        // await noBs(page);
 
         // Array to hold the review info
         const allReviews = [];
@@ -225,7 +222,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
  */
 const start = async (hotelUrl, hotelName, hotelId, position, browser) => {
     try {
-        const { urls, count, } = await extractAllReviewPageUrls(hotelUrl, browser);
+        const { urls, count, } = await extractAllReviewPageUrls(hotelUrl, position, browser);
 
         const results = await scrape(count, urls, position, hotelName, hotelId, browser);
 
