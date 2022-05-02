@@ -156,7 +156,7 @@ const restoScraperInit = async () => {
 
         for (let index = 0; index < rawData.length; index++) {
 
-            if (processQueue.length > 4) {
+            if (processQueue.length > parseInt(process.env.CONCURRENCY) || 2) {
                 const finalData = await dataProcessor(processQueue)
                 reviewInfo.push(finalData);
                 processQueue = []
