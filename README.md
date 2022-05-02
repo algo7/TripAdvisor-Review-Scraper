@@ -16,4 +16,3 @@ Scrape TripAdvisor Reviews
 ## Known Issues
 1. The hotel scraper works for English reviews only.
 2. The restaurant scraper will scrape all the reviews (you can't choose the language).
-3. As all the requests run in parallel, having too much entries in the source file will cause the program to crash.
