@@ -158,7 +158,7 @@ const dataProcessor = async (arrayToBeProcessed) => {
 }
 
 /**
- * Block all images
+ * Block all bs, and keep html only
  * @param {puppeteer.Browser.Page} page - The puppeteer page object
  */
 const noBs = async (page) => {
