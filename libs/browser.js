@@ -57,12 +57,12 @@ class Browser {
         }
 
         /**
-        * Return a new page if the amount of opened page is less than 3
-        * It's written as 4 as there is one unsable blank page by default
+        * Return a new page if the amount of opened page is less than 4
+        * It's written as 5 as there is one unsable blank page by default
         */
         const openedPage = await this.#countPage()
 
-        if (openedPage < 4) {
+        if (openedPage < 5) {
             const newPage = await this.browser.newPage()
             this.pageInUse.push(newPage)
             return newPage
@@ -90,10 +90,9 @@ class Browser {
         this.pageIdle.push(page)
     }
 
-
     /**
     * Report Tab Stats
-    * @returns {Obeject} 
+    * @returns {Object} 
     */
     reportTabStats() {
         return {
@@ -128,7 +127,8 @@ class Browser {
     }
 
     /**
-    * Count the number of pages started by the browser
+    * Count the number of pages started by the browser.
+    * Not so reliable when a lot pages are opened in a short time
     * @returns {Promise<Number>}
     */
     async #countPage() {

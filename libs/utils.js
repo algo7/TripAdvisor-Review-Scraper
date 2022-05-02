@@ -138,7 +138,25 @@ const csvToJSON = async (csvFilePath, scrapeMode) => {
 
 };
 
-export { fileExists, combine, reviewJSONToCsv, csvToJSON };
+/**
+ * Reshape the object in the review array 
+ * @param {Array<Object>} arrayToBeProcessed 
+ * @returns {Array<Object>}
+ */
+const dataProcessor = (arrayToBeProcessed) => {
+    try {
+        const processed = arrayToBeProcessed.map(data => {
+            const { fileName, } = data;
+            delete data.fileName;
+            return { finalData: data, fileName }
+        })
+        return processed
+    } catch (err) {
+        throw err;
+    }
+}
+
+export { fileExists, combine, reviewJSONToCsv, csvToJSON, dataProcessor };
 
 
 // const cookiesAvailable = await fileExists('./data/cookies.json');

@@ -10,7 +10,10 @@ const __dirname = dirname(__filename);
 // Custom Modules
 import hotelScraper from './scrapers/hotel.js';
 import restoScraper from './scrapers/resto.js';
-import { csvToJSON, fileExists, combine, reviewJSONToCsv } from './libs/utils.js';
+import {
+    csvToJSON, fileExists, combine,
+    reviewJSONToCsv, dataProcessor
+} from './libs/utils.js';
 import { browserInstance } from './libs/browser.js'
 
 // Data path
@@ -54,13 +57,11 @@ const hotelScraperInit = async () => {
             // Convert the csv to json
             csvToJSON(dataSourceHotel),
             // Get a browser instance
-            getBrowserInstance()
+            browserInstance.launch()
         ])
 
 
         console.log(chalk.bold.yellow(`Scraping ${chalk.magenta(rawData.length)} Hotels`));
-
-
 
 
         // Extract review info and file name of each individual hotel
@@ -76,7 +77,6 @@ const hotelScraperInit = async () => {
                 return { finalData, fileName, };
             })
         );
-
 
         await Promise.all(
             reviewInfo.map(async ({ finalData, fileName }) => {
@@ -101,7 +101,7 @@ const hotelScraperInit = async () => {
             writeFile(`${dataDir}All.json`, jsonData),
             writeFile(`${dataDir}All.csv`, csvData),
             // Close the browser instance
-            closeBrowserInstance(),
+            browser.closeBrowser(),
         ])
 
 
@@ -133,47 +133,45 @@ const restoScraperInit = async () => {
             browserInstance.launch()
         ])
 
-
-
         console.log(chalk.bold.yellow(`Scraping ${chalk.magenta(rawData.length)} Restaurants`));
 
-
-
-        // // Extract review info and file name of each individual resto
-        // const reviewInfo = await Promise.all(
-        //     rawData.map(async (item, index) => {
-        //         // Extract resto info
-        //         const { webUrl: restoUrl, name: restoName, id: restoId, } = item;
-        //         // Start the scraping process
-        //         const finalData = await restoScraper(restoUrl, restoName,
-        //             restoId, index, browserInstance);
-        //         const { fileName, } = finalData;
-        //         delete finalData.fileName;
-        //         return { finalData, fileName, };
-        //     })
-        // );
+        // Array to hold the processed data
         const reviewInfo = []
-        for (let index = 0; index < rawData.length; index++) {
-            const item = rawData[index];
-            // Extract resto info
-            const { webUrl: restoUrl, name: restoName, id: restoId, } = item;
-            // Start the scraping process
-            const finalData = await restoScraper(restoUrl, restoName,
-                restoId, index, browserInstance);
-            const { fileName, } = finalData;
-            delete finalData.fileName;
-            reviewInfo.push[{ finalData, fileName, }];
 
+        // Array to hold the promises to be processed
+        let processQueue = []
+
+        for (let index = 0; index < rawData.length; index++) {
+
+            if (processQueue.length > 4) {
+                let finalData = await Promise.all(processQueue)
+                finalData = dataProcessor(finalData);
+                reviewInfo.push(finalData);
+                processQueue = []
+            }
+
+            // Extract resto info
+            const item = rawData[index];
+            const { webUrl: restoUrl, name: restoName, id: restoId, } = item;
+
+            processQueue.push(restoScraper(restoUrl, restoName,
+                restoId, index, browserInstance))
         }
 
-        await Promise.all(
-            reviewInfo.map(async ({ finalData, fileName }) => {
-                // Write the review of each individual resto to files
-                const dataToWrite = JSON.stringify(finalData, null, 2);
-                await writeFile(`${dataDir}${fileName}.json`, dataToWrite);
-            })
-        );
+        // Resolve processes the left over in the process queue
+        let finalData = await Promise.all(processQueue)
+        finalData = dataProcessor(finalData);
+        reviewInfo.push(finalData);
 
+        // Write the review of each individual resto to files
+        await Promise.all(
+            reviewInfo
+                .flat()
+                .map(async ({ finalData, fileName }) => {
+                    const dataToWrite = JSON.stringify(finalData, null, 2);
+                    await writeFile(`${dataDir}${fileName}.json`, dataToWrite);
+                })
+        );
 
         // Combine all the reviews into an array of objects
         const combinedData = combine(SCRAPE_MODE, dataDir);
@@ -184,11 +182,12 @@ const restoScraperInit = async () => {
         // Convert the combined JSON data to csv
         const csvData = reviewJSONToCsv(combinedData);
 
+        // Write the combined data to files and close the browser instance
         await Promise.all([
             writeFile(`${dataDir}All.json`, jsonData),
             writeFile(`${dataDir}All.csv`, csvData),
             // Close the browser instance
-            // browserInstance.closeBrowser(),
+            browserInstance.closeBrowser(),
         ])
 
         return 'Scraping Done';
