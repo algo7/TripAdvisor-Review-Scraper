@@ -1,5 +1,8 @@
 // Dependencies
-import puppeteer from 'puppeteer';
+// import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-extra'
+import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
+puppeteer.use(AdblockerPlugin({ blockTrackers: true }))
 
 /**
  * Create a browser instance
