@@ -10,7 +10,7 @@ Scrape TripAdvisor Reviews
    3. The source file for hotels should be named `hotels.csv` and the source file for restaurants should be named `restos.csv`.
 4. Edit the `SCRAPE_MODE` (RESTO for restaurants, HOTEL for hotel) variable in the `docker-compose-prod.yml` file to scrape either restaurant or hotel reviews.
 5. Edit the `CONCURRENCY` variable in the `docker-compose-prod.yml` file to set the number of concurrent requests.
-   1. It is recommended to set the number of concurrent requests to 2 or 3. Above 4 the program might hang depending on your network connection.
+   1. A high concurrency number might cause the program to hang depending on the internet connection and the resource availability of your computer.
 6. Run `docker-compose -f docker-compose-prod.yml up` to start the container.
 7. Once the scraping process is finished, check the `reviews` folder for the results.
 8. Please remember to empty the `reviews` folder before running the scraper again.
