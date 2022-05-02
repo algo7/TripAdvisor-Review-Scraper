@@ -30,11 +30,16 @@ const extractAllReviewPageUrls = async (restoUrl, position, browser) => {
 
         await page.waitForTimeout(1000);
 
-        // Expand the reviews
-        await page.click('.taLnk.ulBlueLinks');
+        if (document.querySelector('.taLnk.ulBlueLinks')) {
 
-        // Wait for the reviews to load
-        await page.waitForFunction('document.querySelector("body").innerText.includes("Show less")');
+            // Expand the reviews
+            await page.click('.taLnk.ulBlueLinks');
+
+            // Wait for the reviews to load
+            await page.waitForFunction('document.querySelector("body").innerText.includes("Show less")');
+        }
+
+
 
         // Determin current URL
         const currentURL = page.url();
