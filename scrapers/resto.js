@@ -25,15 +25,26 @@ const extractAllReviewPageUrls = async (restoUrl, position, browser) => {
         // Wait for the content to load
         await page.waitForSelector('body');
 
+        const [reviewExpandable, reviewExists] = await Promise.all([
+            page.evaluate(() => {
+                if (document.querySelector('.taLnk.ulBlueLinks')) return true
+                return false
+            }),
+            page.evaluate(() => {
+                if (document.querySelector('[id=filters_detail_language_filterLang_ALL]')) return true
+                return false
+            })
+        ])
+
+        if (!reviewExists) {
+            return browser.handBack(page);
+        }
+
         // Select all language
         await page.click('[id=filters_detail_language_filterLang_ALL]');
 
-        await page.waitForSelector('body');
+        await page.waitForTimeout(1000);
 
-        const reviewExpandable = await page.evaluate(() => {
-            if (document.querySelector('.taLnk.ulBlueLinks')) return true
-            return false
-        })
         if (reviewExpandable) {
 
             // Expand the reviews
@@ -42,8 +53,6 @@ const extractAllReviewPageUrls = async (restoUrl, position, browser) => {
             // Wait for the reviews to load
             await page.waitForFunction('document.querySelector("body").innerText.includes("Show less")');
         }
-
-
 
         // Determin current URL
         const currentURL = page.url();
@@ -192,7 +201,6 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, res
                         ratingDate: item.querySelector('.ratingDate').getAttribute('title'),
                         title: item.querySelector('.noQuotes').innerText,
                         content: item.querySelector('.partial_entry').innerText,
-
                     });
 
                 });
@@ -238,11 +246,30 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, res
 const start = async (restoUrl, restoName, restoId, position, browser) => {
     try {
 
-        const { urls, count, } = await extractAllReviewPageUrls(restoUrl, position, browser);
+        const extracted = await extractAllReviewPageUrls(restoUrl, position, browser);
 
-        const results = await scrape(count, urls, position, restoName, restoId, browser);
+        // If the resto has no reviews
+        if (!extracted) return {
+            restoName,
+            restoId,
+            count: 0,
+            actualCount: 0,
+            position,
+            allReviews: [{
+                rating: 0,
+                dateOfVisit: 0,
+                ratingDate: 0,
+                title: 0,
+                content: 0,
+            }],
+            fileName: `${position}_${restoUrl.split('-')[4]}`,
+        };
 
-        return results;
+        // const { urls, count, } = extracted
+
+        // const results = await scrape(count, urls, position, restoName, restoId, browser);
+
+        // return results;
 
     } catch (err) {
         throw err;
