@@ -1,6 +1,11 @@
 # TripAdvisor-Review-Scraper
 ## Scrape TripAdvisor Reviews
 
+## How to Install Docker:
+1. [Windows](https://docs.docker.com/desktop/windows/install/)
+2. [Mac](https://docs.docker.com/desktop/mac/install/)
+3. [Linux](https://docs.docker.com/engine/install/ubuntu/)
+
 ## Docker
 1. Create a folder called `reviews` and a folder called `source` in the root directory of the project.
 2. The `reviews` folder will contain the scraped reviews.
