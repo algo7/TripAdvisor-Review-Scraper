@@ -53,7 +53,7 @@ const hotelScraperInit = async () => {
         }
 
 
-        const [rawData, browser] = await Promise.all([
+        const [rawData] = await Promise.all([
             // Convert the csv to json
             csvToJSON(dataSourceHotel),
             // Get a browser instance
@@ -63,32 +63,44 @@ const hotelScraperInit = async () => {
 
         console.log(chalk.bold.yellow(`Scraping ${chalk.magenta(rawData.length)} Hotels`));
 
+        // Array to hold the processed data
+        const reviewInfo = []
+
+        // Array to hold the promises to be processed
+        let processQueue = []
 
         // Extract review info and file name of each individual hotel
-        const reviewInfo = await Promise.all(
-            rawData.map(async (item, index) => {
-                // Extract resto info
-                const { webUrl: hotelUrl, name: hotelName, id: hotelId, } = item;
+        for (let index = 0; index < rawData.length; index++) {
 
-                // Start the scraping process
-                const finalData = await hotelScraper(hotelUrl, hotelName, hotelId, index, browser);
-                const { fileName, } = finalData;
-                delete finalData.fileName;
-                return { finalData, fileName, };
-            })
-        );
+            if (processQueue.length > 4) {
+                const finalData = await dataProcessor(processQueue)
+                reviewInfo.push(finalData);
+                processQueue = []
+            }
 
+            // Extract hotel info
+            const item = rawData[index];
+            const { webUrl: hotelUrl, name: hotelName, id: hotelId, } = item;
+
+            processQueue.push(hotelScraper(hotelUrl, hotelName, hotelId, index, browserInstance))
+        }
+
+        // Resolve processes the left over in the process queue
+        const finalData = await dataProcessor(processQueue)
+        reviewInfo.push(finalData);
+
+        // Write the review of each individual hotel to files
         await Promise.all(
-            reviewInfo.map(async ({ finalData, fileName }) => {
-                // Write the review of each individual hotel to files
-                const dataToWrite = JSON.stringify(finalData, null, 2);
-                await writeFile(`${dataDir}${fileName}.json`, dataToWrite);
-            })
+            reviewInfo
+                .flat()
+                .map(async ({ finalData, fileName }) => {
+                    const dataToWrite = JSON.stringify(finalData, null, 2);
+                    await writeFile(`${dataDir}${fileName}.json`, dataToWrite);
+                })
         );
 
         // Combine all the reviews into an array of objects
         const combinedData = combine(SCRAPE_MODE, dataDir);
-
 
         // Write the combined JSON data to file
         const jsonData = JSON.stringify(combinedData, null, 2);
@@ -101,7 +113,7 @@ const hotelScraperInit = async () => {
             writeFile(`${dataDir}All.json`, jsonData),
             writeFile(`${dataDir}All.csv`, csvData),
             // Close the browser instance
-            browser.closeBrowser(),
+            browserInstance.closeBrowser(),
         ])
 
 

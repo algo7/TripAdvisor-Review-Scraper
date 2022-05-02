@@ -11,7 +11,8 @@ const extractAllReviewPageUrls = async (hotelUrl, browser) => {
     try {
 
         // Open a new page
-        const page = await browser.newPage();
+        const page = await browser.getNewPage()
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
 
         // Navigate to the hotel page
         await page.goto(hotelUrl);
@@ -75,7 +76,7 @@ const extractAllReviewPageUrls = async (hotelUrl, browser) => {
             // Replace the url page count till the last page
             while (counter < noReviewPages - 1) {
                 counter++;
-                url = url.replace(/-or[0-9]*/g, `- or${counter * 10} `);
+                url = url.replace(/-or[0-9]*/g, `-or${counter * 10}`);
                 reviewPageUrls.push(url);
             }
         }
@@ -90,8 +91,8 @@ const extractAllReviewPageUrls = async (hotelUrl, browser) => {
             urls: reviewPageUrls,
         };
 
-        // Close the page
-        await page.close();
+        // Hand back the page so it's available again
+        browser.handBack(page);
 
         return data;
 
@@ -114,7 +115,8 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
     try {
 
         // Open a new page
-        const page = await browser.newPage();
+        const page = await browser.getNewPage()
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
 
         // Array to hold the review info
         const allReviews = [];
@@ -183,8 +185,8 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
 
         }
 
-        // Close the page
-        await page.close();
+        // Hand back the page so it's available again
+        browser.handBack(page);
 
         // Convert 2D array to 1D
         const reviewFlattened = allReviews.flat();
