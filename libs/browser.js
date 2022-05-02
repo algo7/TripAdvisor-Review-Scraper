@@ -12,8 +12,8 @@ class Browser {
             headless: true,
             devtools: false,
             defaultViewport: {
-                width: 1920,
-                height: 1080,
+                width: 1280,
+                height: 1024,
             },
             args: [
                 '--disable-gpu',
@@ -54,7 +54,10 @@ class Browser {
                 '--use-gl=swiftshader',
                 '--use-mock-keychain',
                 '--disable-gl-drawing-for-tests',
-                '-bwsi'
+                '-bwsi',
+                '--disable-canvas-aa',
+                '--disable-2d-canvas-clip-aa',
+                '--disable-infobars',
             ],
 
         };
