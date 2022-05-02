@@ -28,9 +28,12 @@ const extractAllReviewPageUrls = async (restoUrl, position, browser) => {
         // Select all language
         await page.click('[id=filters_detail_language_filterLang_ALL]');
 
-        await page.waitForTimeout(1000);
+        await page.waitForSelector('body');
 
-        if (document.querySelector('.taLnk.ulBlueLinks')) {
+        const reviewExpandable = await page.evaluate(() => {
+            return document.querySelector('.taLnk.ulBlueLinks')
+        })
+        if (reviewExpandable) {
 
             // Expand the reviews
             await page.click('.taLnk.ulBlueLinks');
