@@ -232,8 +232,12 @@ init()
 
 // Report Logic
 setInterval(async () => {
+    // Get tab stats
     const report = await browserInstance.reportTabStats()
-    const { heartbeat: { inUse } } = report;
+    // Extract heartbeat info
+    const { heartbeat: { inUse, openedPage } } = report;
+    // Log the tab stats
     console.log(report);
-    if (inUse === 0) process.exit(1);
+    // Exit if no tab is in use and browser is being loaded
+    if (inUse === 0 && typeof (openedPage) !== 'string') process.exit(1);
 }, 5000);

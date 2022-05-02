@@ -103,6 +103,7 @@ class Browser {
         if (!this.browser) {
             this.browser = await this.launch()
             const newPage = await this.browser.newPage()
+            newPage.setDefaultTimeout(0);
             newPage.setDefaultNavigationTimeout(0)
             this.pageInUse.push(newPage)
             return newPage
@@ -116,6 +117,7 @@ class Browser {
 
         if (openedPage < CONCURRENCY) {
             const newPage = await this.browser.newPage()
+            newPage.setDefaultTimeout(0);
             newPage.setDefaultNavigationTimeout(0)
             this.pageInUse.push(newPage)
             return newPage
@@ -155,13 +157,26 @@ class Browser {
     * @returns {Promise<Object>} 
     */
     async reportTabStats() {
+
+        const openedPage = await this.#countPage()
+        // If the countPage function is able to get the page opened
+        if (openedPage) return {
+            heartbeat: {
+                Idle: this.#getAvailablePageCount(),
+                inUse: this.#getInUsePageCount(),
+                openedPage,
+            }
+        }
+
+        // Pages are still being loaded
         return {
             heartbeat: {
                 Idle: this.#getAvailablePageCount(),
                 inUse: this.#getInUsePageCount(),
-                openedPage: await this.#countPage()
+                openedPage: 'Browser is still loading',
             }
         }
+
     }
 
     // Private methods
@@ -184,11 +199,15 @@ class Browser {
     /**
     * Count the number of pages started by the browser.
     * Not so reliable when a lot pages are opened in a short time
-    * @returns {Promise<Number>}
+    * @returns {Promise<Number> | Undefined}
     */
     async #countPage() {
-        const pages = await this.browser.pages()
-        return pages.length
+        if (this.browser) {
+            const pages = await this.browser.pages()
+            return pages.length
+        }
+
+        return undefined
     }
 }
 
