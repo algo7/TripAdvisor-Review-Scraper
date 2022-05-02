@@ -31,7 +31,8 @@ const extractAllReviewPageUrls = async (restoUrl, position, browser) => {
         await page.waitForSelector('body');
 
         const reviewExpandable = await page.evaluate(() => {
-            return document.querySelector('.taLnk.ulBlueLinks')
+            if (document.querySelector('.taLnk.ulBlueLinks')) return true
+            return false
         })
         if (reviewExpandable) {
 
