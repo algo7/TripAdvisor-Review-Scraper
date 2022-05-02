@@ -52,6 +52,8 @@ class Browser {
         if (!this.browser) {
             this.browser = await this.launch()
             const newPage = await this.browser.newPage()
+            newPage.setDefaultNavigationTimeout(0)
+
             this.pageInUse.push(newPage)
             return newPage
         }
@@ -64,7 +66,7 @@ class Browser {
 
         if (openedPage < 5) {
             const newPage = await this.browser.newPage()
-            this.pageInUse.push(newPage)
+            newPage.setDefaultNavigationTimeout(0)
             return newPage
         }
 
