@@ -114,8 +114,6 @@ const hotelScraperInit = async () => {
             browserInstance.closeBrowser(),
         ])
 
-
-
         return 'Scraping Done';
 
     } catch (err) {
