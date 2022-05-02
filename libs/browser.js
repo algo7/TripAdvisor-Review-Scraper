@@ -9,6 +9,12 @@ puppeteer
     .use(blockResourcesPlugin({ blockedTypes: new Set(['stylesheet', 'image', 'font', 'media', 'other']) }))
     .use(AdblockerPlugin({ blockTrackers: true }))
 
+// Environments variables
+let { CONCURRENCY } = process.env;
+CONCURRENCY = parseInt(CONCURRENCY) + 1;
+if (!CONCURRENCY) {
+    CONCURRENCY = 3;
+}
 
 
 /**
@@ -111,15 +117,15 @@ class Browser {
         */
         const openedPage = await this.#countPage()
 
-        if (openedPage < parseInt(process.env.CONCURRENCY) + 1 || 3) {
+        if (openedPage < CONCURRENCY) {
             const newPage = await this.browser.newPage()
             newPage.setDefaultNavigationTimeout(0)
+            this.pageInUse.push(newPage)
             return newPage
         }
 
         // If there are pages available
         if (this.pageIdle.length > 0) {
-
             // Get the first page in the available page array
             const page = this.pageIdle.shift()
             // Push the page into the in use page array
@@ -140,22 +146,23 @@ class Browser {
     }
 
     /**
-    * Report Tab Stats
-    * @returns {Object} 
-    */
-    reportTabStats() {
-        return {
-            Idle: this.#getAvailablePageCount(),
-            inUse: this.#getInUsePageCount(),
-        }
-    }
-
-    /**
     * Close the browser instance
     * @returns {Promise<Undefined>}
     */
     async closeBrowser() {
         await this.browser.close()
+    }
+
+    /**
+    * Report Tab Stats
+    * @returns {Promise<Object>} 
+    */
+    async reportTabStats() {
+        return {
+            Idle: this.#getAvailablePageCount(),
+            inUse: this.#getInUsePageCount(),
+            openedPage: await this.#countPage()
+        }
     }
 
     // Private methods

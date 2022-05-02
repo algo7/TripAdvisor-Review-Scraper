@@ -235,6 +235,7 @@ init()
     });
 
 
-// setInterval(() => {
-//     console.log(browserInstance.reportTabStats());
-// }, 2000);
+setInterval(async () => {
+    const report = await browserInstance.reportTabStats()
+    console.log(report);
+}, 5000);
