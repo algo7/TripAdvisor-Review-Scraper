@@ -9,7 +9,7 @@ class Browser {
     constructor() {
         // Puppeteer configs
         this.config = {
-            headless: false,
+            headless: true,
             devtools: false,
             defaultViewport: {
                 width: 1920,
@@ -53,7 +53,8 @@ class Browser {
                 '--password-store=basic',
                 '--use-gl=swiftshader',
                 '--use-mock-keychain',
-                '--disable-gl-drawing-for-tests'
+                '--disable-gl-drawing-for-tests',
+                '-bwsi'
             ],
 
         };
