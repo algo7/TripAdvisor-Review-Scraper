@@ -11,7 +11,8 @@ const extractAllReviewPageUrls = async (restoUrl, browser) => {
     try {
 
         // Open a new page
-        const page = await browser.newPage();
+        const page = await browser.getNewPage()
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
 
         // Navigate to the resto page
         await page.goto(restoUrl);
@@ -99,7 +100,8 @@ const extractAllReviewPageUrls = async (restoUrl, browser) => {
             urls: reviewPageUrls,
         };
 
-        await page.close();
+        // Hand back the page so it's available again
+        browser.handBack(page);
 
         return data;
 
@@ -122,7 +124,8 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, res
     try {
 
         // Open a new page
-        const page = await browser.newPage();
+        const page = await browser.getNewPage()
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
 
         // Array to hold all the reviews 
         const allReviews = [];
@@ -198,8 +201,8 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, res
             fileName: `${position}_${reviewPageUrls[0].split('-')[4]}`,
         };
 
-        // Close the page
-        await page.close();
+        // Hand back the page so it's available again
+        browser.handBack(page);
 
         return finalData;
 

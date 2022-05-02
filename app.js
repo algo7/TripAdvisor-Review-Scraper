@@ -11,7 +11,7 @@ const __dirname = dirname(__filename);
 import hotelScraper from './scrapers/hotel.js';
 import restoScraper from './scrapers/resto.js';
 import { csvToJSON, fileExists, combine, reviewJSONToCsv } from './libs/utils.js';
-import { getBrowserInstance, closeBrowserInstance } from './libs/browser.js';
+import { browserInstance } from './libs/browser.js'
 
 // Data path
 const dataDir = join(__dirname, './reviews/');
@@ -34,6 +34,8 @@ if (!fileExists(sourceDir)) {
 // Data source
 const dataSourceResto = join(__dirname, './source/restos.csv');
 const dataSourceHotel = join(__dirname, './source/hotels.csv');
+
+
 
 /**
  * Scrape the hotel pages
@@ -124,11 +126,11 @@ const restoScraperInit = async () => {
             throw Error('Source file does not exist');
         }
 
-        const [rawData, browser] = await Promise.all([
+        const [rawData] = await Promise.all([
             // Convert the csv to json
             csvToJSON(dataSourceResto),
-            // Get a browser instance
-            getBrowserInstance()
+            // Initiate a browser instance
+            browserInstance.launch()
         ])
 
 
@@ -142,7 +144,8 @@ const restoScraperInit = async () => {
                 // Extract resto info
                 const { webUrl: restoUrl, name: restoName, id: restoId, } = item;
                 // Start the scraping process
-                const finalData = await restoScraper(restoUrl, restoName, restoId, index, browser);
+                const finalData = await restoScraper(restoUrl, restoName,
+                    restoId, index, browserInstance);
                 const { fileName, } = finalData;
                 delete finalData.fileName;
                 return { finalData, fileName, };
@@ -171,7 +174,7 @@ const restoScraperInit = async () => {
             writeFile(`${dataDir}All.json`, jsonData),
             writeFile(`${dataDir}All.csv`, csvData),
             // Close the browser instance
-            closeBrowserInstance()
+            // browserInstance.closeBrowser(),
         ])
 
         return 'Scraping Done';
@@ -207,3 +210,37 @@ init()
         process.exit(1);
     });
 
+
+
+
+
+
+// (async () => {
+
+
+//     for (let index = 0; index < 20; index++) {
+//         const page = await browserInstance.getNewPage()
+//         const pageInUse = browserInstance.getInUsePageCount()
+//         console.log(`In Use Page Count: ${pageInUse}`)
+//         await page.goto('https://www.tripadvisor.com')
+//         // Opened page count
+//         const pageCount = await browserInstance.countPage()
+//         console.log(`Page Count: ${pageCount}`)
+
+//         const pageAva = browserInstance.getAvailablePageCount()
+//         console.log(`Available Page Count: ${pageAva}`)
+
+//         browserInstance.handBack(page)
+
+//     }
+
+//     const pageInUse = browserInstance.getInUsePageCount()
+//     console.log(`In Use Page Count: ${pageInUse}`)
+
+//     const pageAva = browserInstance.getAvailablePageCount()
+//     console.log(`Available Page Count: ${pageAva}`)
+
+
+
+//     await browserInstance.closeBrowser()
+// })().catch(err => console.log(err))
