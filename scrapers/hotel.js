@@ -23,7 +23,7 @@ const extractAllReviewPageUrls = async (hotelUrl, browser) => {
         // Determin current URL
         const currentURL = page.url();
 
-        console.log(`${chalk.bold.white.dim('Gathering Info: ')}${currentURL.split('-')[4]}`);
+        console.log(`${chalk.bold.white.dim('Gathering Info: ')}${currentURL.split('-')[4]} ${position}`);
 
         /**
          * In browser code:

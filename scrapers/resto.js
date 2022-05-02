@@ -4,10 +4,11 @@ import chalk from 'chalk';
 /**
  * Extract the review page urls, total review count, and total review page count
  * @param {String} restoUrl - The url of the restaurant page
+ * @param {Number} position - The index of the restaurant page in the list
  * @param {Object} browser - A browser instance
  * @returns {Promise<Object | Error>} - The object containing the review count, page count, and the review page urls
  */
-const extractAllReviewPageUrls = async (restoUrl, browser) => {
+const extractAllReviewPageUrls = async (restoUrl, position, browser) => {
     try {
 
         // Open a new page
@@ -34,7 +35,7 @@ const extractAllReviewPageUrls = async (restoUrl, browser) => {
         // Determin current URL
         const currentURL = page.url();
 
-        console.log(`${chalk.bold.white.dim('Gathering Info: ')}${currentURL.split('-')[4]}`);
+        console.log(`${chalk.bold.white.dim('Gathering Info: ')}${currentURL.split('-')[4]} ${position}`);
 
         /**
          * In browser code:
@@ -223,7 +224,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, res
 const start = async (restoUrl, restoName, restoId, position, browser) => {
     try {
 
-        const { urls, count, } = await extractAllReviewPageUrls(restoUrl, browser);
+        const { urls, count, } = await extractAllReviewPageUrls(restoUrl, position, browser);
 
         const results = await scrape(count, urls, position, restoName, restoId, browser);
 
