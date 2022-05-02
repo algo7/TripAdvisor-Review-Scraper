@@ -265,11 +265,11 @@ const start = async (restoUrl, restoName, restoId, position, browser) => {
             fileName: `${position}_${restoUrl.split('-')[4]}`,
         };
 
-        // const { urls, count, } = extracted
+        const { urls, count, } = extracted
 
-        // const results = await scrape(count, urls, position, restoName, restoId, browser);
+        const results = await scrape(count, urls, position, restoName, restoId, browser);
 
-        // return results;
+        return results;
 
     } catch (err) {
         throw err;
