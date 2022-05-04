@@ -35,3 +35,4 @@
    - setup-darwin-amd64.bin => For Mac Users
    - setup-linux-amd64.bin => For Linux Users
 2. Run the executable corresponding to your OS to automate the setup.
+3. You still have to install Docker though :)
