@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	git "github.com/go-git/go-git/v5"
@@ -15,13 +16,19 @@ import (
 var (
 	errDirectoryCreation = errors.New("FAILED TO CREATE DIRECTORY")
 	errGetDirectory      = errors.New("FAILED TO GET THE CURRENT DIRECTORY")
-	errPurgeDirectory    = errors.New("FAILED TO PURGE THE TMP DIRECTORY")
+	errPurgeDirectory    = errors.New("FAILED TO PURGE THE TMP / PROJECT FILE DIRECTORY")
 	errCopyFile          = errors.New("FAILED TO COPY DOCKER-COMPSE-PROD.YML")
 	errCloneRepo         = errors.New("FAILED TO CLONE THE REPOSITORY")
+	errDockerCheck       = errors.New("DOCKER IS NOT INSTALLED")
 )
 
 // The main function
 func main() {
+
+	// Check if docker is installed
+	msg, err := checkDocker()
+	errorHandler(err)
+	fmt.Println("0. " + msg)
 
 	// Get the current directory
 	currentDir, err := getCurrentDir()
@@ -55,7 +62,7 @@ func main() {
 	fmt.Println("3. Project Directory created:", projectDirFullPath)
 
 	// Call the clone repo function
-	msg, err := cloneRepo(tmpDirFullPath)
+	msg, err = cloneRepo(tmpDirFullPath)
 
 	// Check for errors
 	errorHandler(err)
@@ -151,4 +158,16 @@ func purgeDir(path string) (string, error) {
 		return "Ops", errPurgeDirectory
 	}
 	return "Directory purged", nil
+}
+
+func checkDocker() (string, error) {
+	cmd := exec.Command("docker", "-v")
+
+	err := cmd.Run()
+
+	if err != nil {
+		return "Ops", errDockerCheck
+	}
+
+	return "Docker is installed", nil
 }
