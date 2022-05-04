@@ -38,7 +38,7 @@ do
 	fi	
 
 # Set the env vars and build the binary
-	env GOOS=$GOOS GOARCH=$GOARCH go build -o $output_name $package
+	env GOOS=$GOOS GOARCH=$GOARCH go build -o ../builds/$output_name $package
 
 	# Exit if the build failed
 	if [ $? -ne 0 ]; then
