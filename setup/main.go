@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	git "github.com/go-git/go-git/v5"
 )
@@ -21,10 +22,7 @@ func main() {
 	currentDir, err := getCurrentDir()
 
 	// Check for errors
-	if err != nil {
-		fmt.Printf("%v", err)
-		os.Exit(0)
-	}
+	errorHandler(err)
 
 	// Print the current directory
 	fmt.Println("1. Current directory: ", currentDir)
@@ -32,25 +30,21 @@ func main() {
 	// Create the directory
 	dirName, err := createDirectory("Root")
 
-	if err != nil {
-		fmt.Printf("%v", err)
-		os.Exit(0)
-	}
+	// Check for errors
+	errorHandler(err)
+
+	dirFullPath := filepath.Join(currentDir, dirName)
 
 	// Print the message
-	fmt.Println("2. Directory created:", currentDir+"/"+dirName)
-	dirFullPath := currentDir + "/" + dirName
+	fmt.Println("2. Directory created:", dirFullPath)
 
 	// Call the clone repo function
 	msg, err := cloneRepo(dirFullPath)
 
 	// Check for errors
-	if err != nil {
-		fmt.Printf("%v", err)
-		os.Exit(0)
-	}
+	errorHandler(err)
 
-	fmt.Println(msg)
+	fmt.Println("3. " + msg)
 }
 
 // The function to get the current working directory
@@ -90,5 +84,11 @@ func cloneRepo(path string) (string, error) {
 	}
 
 	return "Repo cloned", nil
+}
 
+func errorHandler(err error) {
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(0)
+	}
 }
