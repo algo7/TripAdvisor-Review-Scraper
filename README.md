@@ -28,3 +28,10 @@
 ## Known Issues
 1. The hotel scraper works for English reviews only.
 2. The restaurant scraper will scrape all the reviews (you can't choose the language).
+
+## If you are lazy
+1. Go to the `setup` folder and you will find 3 files:
+   - setup-windows-amd64.exe => For Windows Users
+   - setup-darwin-amd64.bin => For Mac Users
+   - setup-linux-amd64.bin => For Linux Users
+2. Run the executable corresponding to your OS to automate the setup.
