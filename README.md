@@ -30,7 +30,7 @@
 2. The restaurant scraper will scrape all the reviews (you can't choose the language).
 
 ## If you are lazy
-1. Go to the `setup` folder and you will find 3 files:
+1. Go to the `builds` folder and you will find 3 files:
    - setup-windows-amd64.exe => For Windows Users
    - setup-darwin-amd64.bin => For Mac Users
    - setup-linux-amd64.bin => For Linux Users
