@@ -82,6 +82,27 @@ func main() {
 	// Check for errors
 	errorHandler(err)
 	fmt.Println("6. " + msg)
+
+	// Create the source directory
+	sourceDirFullPath := filepath.Join(projectDirFullPath, "source")
+	_, err = createDirectory(sourceDirFullPath)
+
+	// Check for errors
+	errorHandler(err)
+
+	// Print the message
+	fmt.Println("7. Source Directory created:", sourceDirFullPath)
+
+	// Create the reviews directory
+	reviewsDirFullPath := filepath.Join(projectDirFullPath, "reviews")
+	_, err = createDirectory(reviewsDirFullPath)
+
+	// Check for errors
+	errorHandler(err)
+
+	// Print the message
+	fmt.Println("7. Reviews Directory created:", reviewsDirFullPath)
+
 }
 
 // The function to get the current working directory
@@ -157,7 +178,7 @@ func purgeDir(path string) (string, error) {
 	if err != nil {
 		return "Ops", errPurgeDirectory
 	}
-	return "Directory purged", nil
+	return "Tmp directory purged", nil
 }
 
 func checkDocker() (string, error) {
