@@ -14,9 +14,9 @@ import (
 
 // Custom errors
 var (
-	errDirectoryCreation = errors.New("FAILED TO CREATE DIRECTORY")
+	errDirectoryCreation = errors.New("FAILED TO CREATE DIRECTORIES")
 	errGetDirectory      = errors.New("FAILED TO GET THE CURRENT DIRECTORY")
-	errPurgeDirectory    = errors.New("FAILED TO PURGE THE TMP / PROJECT FILE DIRECTORY")
+	errPurgeDirectory    = errors.New("FAILED TO PURGE THE TMP DIRECTORY")
 	errCopyFile          = errors.New("FAILED TO COPY DOCKER-COMPSE-PROD.YML")
 	errCloneRepo         = errors.New("FAILED TO CLONE THE REPOSITORY")
 	errDockerCheck       = errors.New("DOCKER IS NOT INSTALLED")
