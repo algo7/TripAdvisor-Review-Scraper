@@ -11,6 +11,7 @@ import (
 	git "github.com/go-git/go-git/v5"
 )
 
+// Custom errors
 var (
 	errDirectoryCreation = errors.New("FAILED TO CREATE DIRECTORY")
 	errGetDirectory      = errors.New("FAILED TO GET THE CURRENT DIRECTORY")
@@ -19,6 +20,7 @@ var (
 	errCloneRepo         = errors.New("FAILED TO CLONE THE REPOSITORY")
 )
 
+// The main function
 func main() {
 
 	// Get the current directory
@@ -100,6 +102,7 @@ func createDirectory(name string) (string, error) {
 	return name, nil
 }
 
+// Clone the repository
 func cloneRepo(path string) (string, error) {
 	_, err := git.PlainClone(path, false, &git.CloneOptions{
 		URL:        "https://github.com/algo7/TripAdvisor-Review-Scraper.git",
@@ -114,6 +117,7 @@ func cloneRepo(path string) (string, error) {
 	return "Repo cloned", nil
 }
 
+// Custom error handler
 func errorHandler(err error) {
 	if err != nil {
 		fmt.Println(err)
@@ -121,6 +125,7 @@ func errorHandler(err error) {
 	}
 }
 
+// Copy the file from source to destination
 func copy(sourceFile string, destFile string) (string, error) {
 
 	// Read the source file
