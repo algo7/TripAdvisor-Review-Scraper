@@ -14,6 +14,8 @@ import (
 var (
 	errDirectoryCreation = errors.New("FAILED TO CREATE DIRECTORY")
 	errGetDirectory      = errors.New("FAILED TO GET THE CURRENT DIRECTORY")
+	errPurgeDirectory    = errors.New("FAILED TO PURGE THE TMP DIRECTORY")
+	errCopyFile          = errors.New("FAILED TO COPY DOCKER-COMPSE-PROD.YML")
 	errCloneRepo         = errors.New("FAILED TO CLONE THE REPOSITORY")
 )
 
@@ -55,7 +57,6 @@ func main() {
 
 	// Check for errors
 	errorHandler(err)
-
 	fmt.Println("4. " + msg)
 
 	// Copy docker-compose-prod.yml to the Project_Files directory
@@ -66,6 +67,12 @@ func main() {
 	// Check for errors
 	errorHandler(err)
 	fmt.Println("5. " + msg)
+
+	// Purge the temporary directory
+	msg, err = purgeDir(tmpDirFullPath)
+	// Check for errors
+	errorHandler(err)
+	fmt.Println("6. " + msg)
 }
 
 // The function to get the current working directory
@@ -119,14 +126,24 @@ func copy(sourceFile string, destFile string) (string, error) {
 	// Read the source file
 	input, err := ioutil.ReadFile(sourceFile)
 	if err != nil {
-		return "Ops", err
+		return "Ops", errCopyFile
 	}
 
 	// Write tp the destination file
 	err = ioutil.WriteFile(destFile, input, os.ModePerm)
 	if err != nil {
-		return "Ops", err
+		return "Ops", errCopyFile
 	}
 
 	return "docker-compose-prod.yml copied successfully", nil
+}
+
+// Remove all the directories and files given the path
+func purgeDir(path string) (string, error) {
+
+	err := os.RemoveAll(path)
+	if err != nil {
+		return "Ops", errPurgeDirectory
+	}
+	return "Directory purged", nil
 }
