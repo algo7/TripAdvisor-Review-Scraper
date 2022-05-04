@@ -128,5 +128,5 @@ func copy(sourceFile string, destFile string) (string, error) {
 		return "Ops", err
 	}
 
-	return sourceFile + " copied successfully", nil
+	return "docker-compose-prod.yml copied successfully", nil
 }
