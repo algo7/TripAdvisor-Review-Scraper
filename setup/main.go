@@ -4,7 +4,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 
 	git "github.com/go-git/go-git/v5"
@@ -23,21 +22,23 @@ func main() {
 
 	// Check for errors
 	if err != nil {
-		log.Panic(err)
+		fmt.Printf("%v", err)
+		os.Exit(0)
 	}
 
 	// Print the current directory
-	fmt.Println("Current directory: ", currentDir)
+	fmt.Println("1. Current directory: ", currentDir)
 
 	// Create the directory
 	dirName, err := createDirectory("Root")
 
 	if err != nil {
-		log.Panic(err)
+		fmt.Printf("%v", err)
+		os.Exit(0)
 	}
 
 	// Print the message
-	fmt.Println("Directory created:", currentDir+"/"+dirName)
+	fmt.Println("2. Directory created:", currentDir+"/"+dirName)
 	dirFullPath := currentDir + "/" + dirName
 
 	// Call the clone repo function
@@ -45,7 +46,8 @@ func main() {
 
 	// Check for errors
 	if err != nil {
-		log.Panic(err)
+		fmt.Printf("%v", err)
+		os.Exit(0)
 	}
 
 	fmt.Println(msg)
