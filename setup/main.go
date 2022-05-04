@@ -181,6 +181,7 @@ func purgeDir(path string) (string, error) {
 	return "Tmp directory purged", nil
 }
 
+// Check if docker is installed
 func checkDocker() (string, error) {
 	cmd := exec.Command("docker", "-v")
 
