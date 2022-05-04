@@ -4,6 +4,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -27,24 +28,44 @@ func main() {
 	// Print the current directory
 	fmt.Println("1. Current directory: ", currentDir)
 
-	// Create the directory
-	dirName, err := createDirectory("Root")
+	// Create a temporary directory to hold the repository
+	tmpDirName, err := createDirectory("tmp")
 
 	// Check for errors
 	errorHandler(err)
 
-	dirFullPath := filepath.Join(currentDir, dirName)
+	tmpDirFullPath := filepath.Join(currentDir, tmpDirName)
 
 	// Print the message
-	fmt.Println("2. Directory created:", dirFullPath)
+	fmt.Println("2. Tmp Directory created:", tmpDirFullPath)
 
-	// Call the clone repo function
-	msg, err := cloneRepo(dirFullPath)
+	// Create a temporary directory to hold the repository
+	projectDirName, err := createDirectory("Project_Files")
 
 	// Check for errors
 	errorHandler(err)
 
-	fmt.Println("3. " + msg)
+	projectDirFullPath := filepath.Join(currentDir, projectDirName)
+
+	// Print the message
+	fmt.Println("3. Project Directory created:", projectDirFullPath)
+
+	// Call the clone repo function
+	msg, err := cloneRepo(tmpDirFullPath)
+
+	// Check for errors
+	errorHandler(err)
+
+	fmt.Println("4. " + msg)
+
+	// Copy docker-compose-prod.yml to the Project_Files directory
+	msg, err = copy(
+		filepath.Join(tmpDirFullPath, "docker-compose-prod.yml"),
+		filepath.Join(projectDirFullPath, "docker-compose-prod.yml"))
+
+	// Check for errors
+	errorHandler(err)
+	fmt.Println("5. " + msg)
 }
 
 // The function to get the current working directory
@@ -91,4 +112,21 @@ func errorHandler(err error) {
 		fmt.Println(err)
 		os.Exit(0)
 	}
+}
+
+func copy(sourceFile string, destFile string) (string, error) {
+
+	// Read the source file
+	input, err := ioutil.ReadFile(sourceFile)
+	if err != nil {
+		return "Ops", err
+	}
+
+	// Write tp the destination file
+	err = ioutil.WriteFile(destFile, input, os.ModePerm)
+	if err != nil {
+		return "Ops", err
+	}
+
+	return sourceFile + " copied successfully", nil
 }
