@@ -7,7 +7,7 @@ import chalk from 'chalk';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Custom Modules
+// Custom Modules 
 import hotelScraper from './scrapers/hotel.js';
 import restoScraper from './scrapers/resto.js';
 import {
