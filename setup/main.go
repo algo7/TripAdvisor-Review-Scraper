@@ -20,6 +20,9 @@ var (
 	errCopyFile          = errors.New("FAILED TO COPY DOCKER-COMPSE-PROD.YML")
 	errCloneRepo         = errors.New("FAILED TO CLONE THE REPOSITORY")
 	errDockerCheck       = errors.New("DOCKER IS NOT INSTALLED")
+	errSetupCheck        = errors.New("SETUP CHECK FAILED")
+	errDockerComposeRun  = errors.New("FAILED TO RUN DOCKER-COMPOSE")
+	errReviewsNotEmpty   = errors.New("REVIEWS DIRECTORY IS NOT EMPTY")
 )
 
 // The main function
@@ -38,6 +41,20 @@ func main() {
 
 	// Print the current directory
 	fmt.Println("1. Current directory: ", currentDir)
+
+	// Run the setup check
+	isCompleted, err := setupCheck(currentDir)
+
+	// Check for errors
+	errorHandler(err)
+
+	// If the setup is completed already, run the docker container
+	if isCompleted {
+		err := dockerComposeRun()
+		if err != nil {
+			errorHandler(err)
+		}
+	}
 
 	// Create a temporary directory to hold the repository
 	tmpDirName, err := createDirectory("tmp")
@@ -192,4 +209,99 @@ func checkDocker() (string, error) {
 	}
 
 	return "Docker is installed", nil
+}
+
+/* Check if the setup process has been completed already
+* If it has, spin up the docker container
+ */
+func setupCheck(path string) (bool, error) {
+
+	// Get all the directories and files in the current directory
+	files, err := ioutil.ReadDir(path)
+
+	if err != nil {
+		return false, errSetupCheck
+	}
+
+	var projectDirExists = false
+
+	// Check if the Project_Files directory exists
+	for _, file := range files {
+		if file.Name() == "Project_Files" && file.IsDir() == true {
+			projectDirExists = true
+		}
+	}
+
+	// If the project directory does not exist, return false
+	if !projectDirExists {
+		return false, nil
+	}
+
+	// Get all the directories and files in the project directory
+	projectFileDir := filepath.Join(path, "Project_Files")
+	files, err = ioutil.ReadDir(projectFileDir)
+
+	if err != nil {
+		return false, errSetupCheck
+	}
+
+	// Check if the source and reviews directory exists
+	var sourceDirExists = false
+	var reviewsDirExists = false
+
+	for _, file := range files {
+		if file.Name() == "source" && file.IsDir() == true {
+			sourceDirExists = true
+		}
+		if file.Name() == "reviews" && file.IsDir() == true {
+			reviewsDirExists = true
+		}
+	}
+
+	// If the source and reviews directories do not exist, return false
+	if !sourceDirExists || !reviewsDirExists {
+		return false, nil
+	}
+
+	// Get all the directories and files in the project directory
+	sourceFiles, err := ioutil.ReadDir(filepath.Join(projectFileDir, "source"))
+	if err != nil {
+		return false, errSetupCheck
+	}
+	reviewFiles, err := ioutil.ReadDir(filepath.Join(projectFileDir, "reviews"))
+	if err != nil {
+		return false, errSetupCheck
+	}
+
+	// Check if the restos.csv / hotel.csv files exist in the source directory
+	var sourceCSVExists = false
+
+	// Check if the source files exist
+	for _, sourceFile := range sourceFiles {
+		if (sourceFile.Name() == "restos.csv" || sourceFile.Name() == "hotels.csv") && !sourceFile.IsDir() {
+			sourceCSVExists = true
+		}
+	}
+
+	if !sourceCSVExists {
+		return false, errSetupCheck
+	}
+
+	// Check if the reviews folder is empty
+	if len(reviewFiles) != 0 {
+		return false, errReviewsNotEmpty
+	}
+
+	return true, nil
+}
+
+func dockerComposeRun() error {
+	fmt.Println("Press Any Key to Run The Scraper")
+	fmt.Scanln()
+	cmd := exec.Command("docker-compose", "-f", "docker-compose-prod.yml", "up")
+	err := cmd.Run()
+	if err != nil {
+		return errDockerComposeRun
+	}
+	return nil
 }
