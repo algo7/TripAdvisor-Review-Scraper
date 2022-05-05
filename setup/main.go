@@ -132,7 +132,10 @@ func main() {
 
 	// Notify the user that the setup has been completed
 	fmt.Println("Setup Completed. Please place the source files in the source directory and restart the program.")
+	fmt.Println("Press Any Key to Exit...")
 	fmt.Scanln()
+	os.Exit(0)
+	return
 }
 
 func userInputs(path string) error {
@@ -367,7 +370,7 @@ func setupCheck(path string) (bool, error) {
 func dockerComposeRun(path string) error {
 
 	// Prompt and wait for user input
-	fmt.Println("Press Any Key to Run The Scraper")
+	fmt.Println("Press Any Key to Run The Scraper...")
 	fmt.Scanln()
 
 	// The path to the docker-compose file
@@ -430,5 +433,6 @@ func errorHandler(err error) {
 		fmt.Println("Press Any Key to Exit...")
 		fmt.Scanln()
 		os.Exit(0)
+		return
 	}
 }
