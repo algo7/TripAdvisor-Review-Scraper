@@ -130,8 +130,10 @@ func main() {
 	// Print the message
 	fmt.Println("7. Reviews Directory created:", reviewsDirFullPath)
 
-	// Ask for user input
+	// Notify the user that the setup has been completed
 	fmt.Println("Setup Completed. Please place the source files in the source directory and restart the program.")
+
+	fmt.Scanln("Press Any Key to Exit...")
 }
 
 func userInputs(path string) error {
@@ -139,7 +141,7 @@ func userInputs(path string) error {
 	// Get scrap mode
 	fmt.Println("Enter the scrap mode (RESTO or HOTEL):")
 	var mode string
-	_, err := fmt.Scanf("%s", &mode)
+	_, err := fmt.Scanf("%s\n", &mode)
 
 	// Input validation
 	if err != nil || (mode != "HOTEL" && mode != "RESTO") {
@@ -149,7 +151,7 @@ func userInputs(path string) error {
 	// Get concurrency value
 	fmt.Println("Enter the concurrency value (ex: 10):")
 	var i int
-	_, err = fmt.Scanf("%d", &i)
+	_, err = fmt.Scanf("%d\n", &i)
 
 	// Input validation
 	if err != nil {
@@ -426,7 +428,7 @@ func dockerComposeRun(path string) error {
 func errorHandler(err error) {
 	if err != nil {
 		fmt.Println(err)
-		fmt.Println("Press Any Key to Exit")
+		fmt.Println("Press Any Key to Exit...")
 		fmt.Scanln()
 		os.Exit(0)
 	}
