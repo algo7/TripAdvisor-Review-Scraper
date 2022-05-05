@@ -37,6 +37,14 @@
 2. Run the executable corresponding to your OS to automate the setup.
 3. You still have to install Docker though :)
 
+## If you are really lazy
+1. Go to the [release](https://github.com/algo7/TripAdvisor-Review-Scraper/releases) page and donwload the latest setup binaries for your operating system.
+   - setup-windows-amd64.exe => For Windows Users
+   - setup-darwin-amd64.bin => For Mac Users
+   - setup-linux-amd64.bin => For Linux Users
+2. Run it.
+3. But there is still a catch: you still have to install Docker first :)
+
 ## Notes:
 - The Docker image is 1.77GB. If it's your first time running the scraper, the setup program might take some time depending on your internet connection.
 - Below are the outputs indicating that the image is being downloaded.
