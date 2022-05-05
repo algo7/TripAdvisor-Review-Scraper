@@ -167,6 +167,8 @@ func cloneRepo(path string) (string, error) {
 func errorHandler(err error) {
 	if err != nil {
 		fmt.Println(err)
+		fmt.Println("Press Any Key to Exit")
+		fmt.Scanln()
 		os.Exit(0)
 	}
 }
