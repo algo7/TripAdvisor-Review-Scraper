@@ -6,7 +6,7 @@ LABEL "org.opencontainers.image.source" = "https://github.com/algo7/TripAdvisor-
 WORKDIR /puppeteer
 
 # Install libs for Puppeteer
-RUN apt update && apt upgrade -y && apt --no-install-recommends install -y libnss3 libxss1 libasound2 libatk-bridge2.0-0 libgtk-3-0 libdrm-dev libgbm-dev && npm install -g npm@8.8.0
+RUN apt update && apt upgrade -y && apt --no-install-recommends install -y libnss3 libxss1 libasound2 libatk-bridge2.0-0 libgtk-3-0 libdrm-dev libgbm-dev && npm install -g npm@8.9.0
 
 # Copy the pkg json files
 COPY package.json package-lock.json ./
