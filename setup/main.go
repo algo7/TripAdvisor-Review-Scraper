@@ -177,8 +177,11 @@ func userInputs(path string) error {
 	if err != nil {
 		return errValueReplace
 	}
+
+	/*defer can be effectively used to release critical system resources – such as closing an open file – to ensure that our code does not leak file descriptors.*/
 	defer f.Close()
 
+	// Write the new content to the file
 	_, err = f.WriteString(concurrencyChanged)
 
 	if err != nil {
