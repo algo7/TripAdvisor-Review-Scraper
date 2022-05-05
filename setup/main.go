@@ -2,6 +2,7 @@ package main
 
 // Dependencies
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -14,15 +15,16 @@ import (
 
 // Custom errors
 var (
-	errDirectoryCreation = errors.New("FAILED TO CREATE DIRECTORIES")
-	errGetDirectory      = errors.New("FAILED TO GET THE CURRENT DIRECTORY")
-	errPurgeDirectory    = errors.New("FAILED TO PURGE THE TMP DIRECTORY")
-	errCopyFile          = errors.New("FAILED TO COPY DOCKER-COMPSE-PROD.YML")
-	errCloneRepo         = errors.New("FAILED TO CLONE THE REPOSITORY")
-	errDockerCheck       = errors.New("DOCKER IS NOT INSTALLED")
-	errSetupCheck        = errors.New("SETUP CHECK FAILED")
-	errDockerComposeRun  = errors.New("FAILED TO RUN DOCKER-COMPOSE")
-	errReviewsNotEmpty   = errors.New("REVIEWS DIRECTORY IS NOT EMPTY")
+	errDirectoryCreation  = errors.New("FAILED TO CREATE DIRECTORIES")
+	errGetDirectory       = errors.New("FAILED TO GET THE CURRENT DIRECTORY")
+	errPurgeDirectory     = errors.New("FAILED TO PURGE THE TMP DIRECTORY")
+	errCopyFile           = errors.New("FAILED TO COPY DOCKER-COMPSE-PROD.YML")
+	errCloneRepo          = errors.New("FAILED TO CLONE THE REPOSITORY")
+	errDockerCheck        = errors.New("DOCKER IS NOT INSTALLED")
+	errSetupCheck         = errors.New("SETUP CHECK FAILED")
+	errDockerComposeRun   = errors.New("FAILED TO RUN DOCKER-COMPOSE")
+	errReviewsNotEmpty    = errors.New("REVIEWS DIRECTORY IS NOT EMPTY")
+	errMissingSourceFiles = errors.New("MISSING SOURCE FILES")
 )
 
 // The main function
@@ -50,10 +52,9 @@ func main() {
 
 	// If the setup is completed already, run the docker container
 	if isCompleted {
-		err := dockerComposeRun()
-		if err != nil {
-			errorHandler(err)
-		}
+		err := dockerComposeRun(filepath.Join(currentDir, "Project_Files"))
+		errorHandler(err)
+		return
 	}
 
 	// Create a temporary directory to hold the repository
@@ -284,7 +285,7 @@ func setupCheck(path string) (bool, error) {
 	}
 
 	if !sourceCSVExists {
-		return false, errSetupCheck
+		return false, errMissingSourceFiles
 	}
 
 	// Check if the reviews folder is empty
@@ -295,13 +296,62 @@ func setupCheck(path string) (bool, error) {
 	return true, nil
 }
 
-func dockerComposeRun() error {
+// Spin up the docker container
+func dockerComposeRun(path string) error {
+
+	// Prompt and wait for user input
 	fmt.Println("Press Any Key to Run The Scraper")
 	fmt.Scanln()
-	cmd := exec.Command("docker-compose", "-f", "docker-compose-prod.yml", "up")
-	err := cmd.Run()
+
+	// The path to the docker-compose file
+	dockerComposePath := filepath.Join(path, "docker-compose-prod.yml")
+
+	// Run the docker container
+	cmd := exec.Command("docker-compose", "-f", dockerComposePath, "up")
+
+	// Create a pipe that connects to the stdout of the command
+	stdout, err := cmd.StdoutPipe()
+
 	if err != nil {
 		return errDockerComposeRun
 	}
+
+	// Use the same pipe for standard error
+	cmd.Stderr = cmd.Stdout
+
+	// Make a new channel which will be used to ensure we get all output
+	done := make(chan struct{})
+
+	// Creates a scanner that read the stdout/stderr line-by-line
+	scanner := bufio.NewScanner(stdout)
+
+	// Use the scanner to scan the output line by line and log it
+	// It's running in a goroutine so that it doesn't block
+	go func() {
+
+		// Read line by line and process it
+		for scanner.Scan() {
+			line := scanner.Text()
+			fmt.Println(line)
+		}
+
+		// We're all done, unblock the channel
+		done <- struct{}{}
+
+	}()
+
+	// Start the command but do not wait until it is finished
+	err = cmd.Start()
+
+	if err != nil {
+		return errDockerComposeRun
+	}
+
+	err = cmd.Wait()
+
+	if err != nil {
+		return errDockerComposeRun
+	}
+
 	return nil
 }
