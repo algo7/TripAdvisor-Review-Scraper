@@ -36,3 +36,11 @@
    - setup-linux-amd64.bin => For Linux Users
 2. Run the executable corresponding to your OS to automate the setup.
 3. You still have to install Docker though :)
+
+## Notes:
+- The Docker image is 1.77GB. If it's your first time running the scraper, the setup program might take some time depending on your internet connection.
+- Below are the outputs indicating that the image is being downloaded.
+```bash
+Pulling scraper (ghcr.io/algo7/tripadvisor-review-scraper/scrap:latest)...
+latest: Pulling from algo7/tripadvisor-review-scraper/scrap
+```
