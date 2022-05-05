@@ -51,6 +51,7 @@
 Pulling scraper (ghcr.io/algo7/tripadvisor-review-scraper/scrap:latest)...
 latest: Pulling from algo7/tripadvisor-review-scraper/scrap
 ```
+- Some operating systems, Windows especailly, or Anti-Virus software might block the download. In that case, you can safely ignore the warnings. This project is 100% open source. The [release](https://github.com/algo7/TripAdvisor-Review-Scraper/releases) page also contains links to [Virus Total](https://www.virustotal.com/gui/home/upload) scan results of each binary.
 
 ## Known Issues
 1. The hotel scraper works for English reviews only.
