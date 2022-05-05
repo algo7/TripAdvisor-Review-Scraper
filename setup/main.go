@@ -47,9 +47,6 @@ func main() {
 	// Check for errors
 	errorHandler(err)
 
-	err = userInputs(currentDir)
-	errorHandler(err)
-
 	// Print the current directory
 	fmt.Println("1. Current directory: ", currentDir)
 
@@ -61,6 +58,9 @@ func main() {
 
 	// If the setup is completed already, run the docker container
 	if isCompleted {
+		// Ask for user input
+		err = userInputs(currentDir)
+		errorHandler(err)
 		err := dockerComposeRun(filepath.Join(currentDir, "Project_Files"))
 		errorHandler(err)
 		return
@@ -130,12 +130,14 @@ func main() {
 	// Print the message
 	fmt.Println("7. Reviews Directory created:", reviewsDirFullPath)
 
+	// Ask for user input
+	fmt.Println("Setup Completed. Please place the source files in the source directory and restart the program.")
 }
 
 func userInputs(path string) error {
 
 	// Get scrap mode
-	fmt.Println("Enter the scrap mode:")
+	fmt.Println("Enter the scrap mode (RESTO or HOTEL):")
 	var mode string
 	_, err := fmt.Scanf("%s", &mode)
 
@@ -145,7 +147,7 @@ func userInputs(path string) error {
 	}
 
 	// Get concurrency value
-	fmt.Println("Enter the concurrency value:")
+	fmt.Println("Enter the concurrency value (ex: 10):")
 	var i int
 	_, err = fmt.Scanf("%d", &i)
 
@@ -153,6 +155,10 @@ func userInputs(path string) error {
 	if err != nil {
 		return errInputConcurrency
 	}
+
+	// Print the user output
+	fmt.Println("Scrap mode:", mode)
+	fmt.Println("Concurrency value:", i)
 
 	// Read the docker-compose-prod.yml file
 	dockerComposeFilePath := filepath.Join(path, "Project_Files/docker-compose-prod.yml")
