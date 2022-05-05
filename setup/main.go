@@ -9,22 +9,28 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
+	"strconv"
 
 	git "github.com/go-git/go-git/v5"
 )
 
 // Custom errors
 var (
-	errDirectoryCreation  = errors.New("FAILED TO CREATE DIRECTORIES")
-	errGetDirectory       = errors.New("FAILED TO GET THE CURRENT DIRECTORY")
-	errPurgeDirectory     = errors.New("FAILED TO PURGE THE TMP DIRECTORY")
-	errCopyFile           = errors.New("FAILED TO COPY DOCKER-COMPSE-PROD.YML")
-	errCloneRepo          = errors.New("FAILED TO CLONE THE REPOSITORY")
-	errDockerCheck        = errors.New("DOCKER IS NOT INSTALLED")
-	errSetupCheck         = errors.New("SETUP CHECK FAILED")
-	errDockerComposeRun   = errors.New("FAILED TO RUN DOCKER-COMPOSE")
-	errReviewsNotEmpty    = errors.New("REVIEWS DIRECTORY IS NOT EMPTY")
-	errMissingSourceFiles = errors.New("MISSING SOURCE FILES")
+	errDirectoryCreation        = errors.New("FAILED TO CREATE DIRECTORIES")
+	errGetDirectory             = errors.New("FAILED TO GET THE CURRENT DIRECTORY")
+	errPurgeDirectory           = errors.New("FAILED TO PURGE THE TMP DIRECTORY")
+	errCopyFile                 = errors.New("FAILED TO COPY DOCKER-COMPSE-PROD.YML")
+	errCloneRepo                = errors.New("FAILED TO CLONE THE REPOSITORY")
+	errDockerCheck              = errors.New("DOCKER IS NOT INSTALLED")
+	errSetupCheck               = errors.New("SETUP CHECK FAILED")
+	errDockerComposeRun         = errors.New("FAILED TO RUN DOCKER-COMPOSE")
+	errReviewsNotEmpty          = errors.New("REVIEWS DIRECTORY IS NOT EMPTY")
+	errMissingSourceFiles       = errors.New("MISSING SOURCE FILES")
+	errInputScrapMode           = errors.New("INVALID SCRAP MODE")
+	errInputConcurrency         = errors.New("INVALID CONCURRENCY VALUE")
+	errDockerComposeYmlNotFound = errors.New("DOCKER-COMPSE-PROD.YML NOT FOUND")
+	errValueReplace             = errors.New("FAILED TO REPLACE VALUE")
 )
 
 // The main function
@@ -39,6 +45,9 @@ func main() {
 	currentDir, err := getCurrentDir()
 
 	// Check for errors
+	errorHandler(err)
+
+	err = userInputs(currentDir)
 	errorHandler(err)
 
 	// Print the current directory
@@ -123,6 +132,62 @@ func main() {
 
 }
 
+func userInputs(path string) error {
+
+	// Get scrap mode
+	fmt.Println("Enter the scrap mode:")
+	var mode string
+	_, err := fmt.Scanf("%s", &mode)
+
+	// Input validation
+	if err != nil || (mode != "HOTEL" && mode != "RESTO") {
+		return errInputScrapMode
+	}
+
+	// Get concurrency value
+	fmt.Println("Enter the concurrency value:")
+	var i int
+	_, err = fmt.Scanf("%d", &i)
+
+	// Input validation
+	if err != nil {
+		return errInputConcurrency
+	}
+
+	// Read the docker-compose-prod.yml file
+	dockerComposeFilePath := filepath.Join(path, "Project_Files/docker-compose-prod.yml")
+	content, err := ioutil.ReadFile(dockerComposeFilePath)
+
+	if err != nil {
+		return errDockerComposeYmlNotFound
+	}
+
+	// Regex to match the scrap mode
+	scrapModeRegex := regexp.MustCompile("SCRAPE_MODE:(.*)")
+	// Regex to match the concurrency value
+	concurrencyRegex := regexp.MustCompile("CONCURRENCY:(.*)")
+
+	// Replace the scrap mode with the input
+	scrapModeChanged := scrapModeRegex.ReplaceAllString(string(content), "SCRAPE_MODE: "+mode)
+	// Replace the concurrency value with the input
+	concurrencyChanged := concurrencyRegex.ReplaceAllString(scrapModeChanged, "CONCURRENCY: "+strconv.Itoa(i))
+
+	f, err := os.OpenFile(dockerComposeFilePath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, os.ModePerm)
+
+	if err != nil {
+		return errValueReplace
+	}
+	defer f.Close()
+
+	_, err = f.WriteString(concurrencyChanged)
+
+	if err != nil {
+		return errValueReplace
+	}
+
+	return nil
+}
+
 // The function to get the current working directory
 func getCurrentDir() (string, error) {
 	// Get the current directory
@@ -161,16 +226,6 @@ func cloneRepo(path string) (string, error) {
 	}
 
 	return "Repo cloned", nil
-}
-
-// Custom error handler
-func errorHandler(err error) {
-	if err != nil {
-		fmt.Println(err)
-		fmt.Println("Press Any Key to Exit")
-		fmt.Scanln()
-		os.Exit(0)
-	}
 }
 
 // Copy the file from source to destination
@@ -356,4 +411,14 @@ func dockerComposeRun(path string) error {
 	}
 
 	return nil
+}
+
+// Custom error handler
+func errorHandler(err error) {
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("Press Any Key to Exit")
+		fmt.Scanln()
+		os.Exit(0)
+	}
 }
