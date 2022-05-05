@@ -128,12 +128,11 @@ func main() {
 	errorHandler(err)
 
 	// Print the message
-	fmt.Println("7. Reviews Directory created:", reviewsDirFullPath)
+	fmt.Println("8. Reviews Directory created:", reviewsDirFullPath)
 
 	// Notify the user that the setup has been completed
 	fmt.Println("Setup Completed. Please place the source files in the source directory and restart the program.")
-
-	fmt.Scanln("Press Any Key to Exit...")
+	fmt.Scanln()
 }
 
 func userInputs(path string) error {
