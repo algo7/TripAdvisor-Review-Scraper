@@ -146,7 +146,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
             const commentTitle = await page.evaluate(async () => {
 
                 // Extract a tags
-                const commentTitleBlocks = document.getElementsByClassName('fCitC');
+                const commentTitleBlocks = document.getElementsByClassName('Qwuub')
 
                 // Array to store the comment titles
                 const titles = [];
