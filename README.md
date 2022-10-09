@@ -55,4 +55,4 @@ latest: Pulling from algo7/tripadvisor-review-scraper/scrap
 
 ## Known Issues
 1. The hotel scraper works for English reviews only.
-2. The restaurant scraper will scrape all the reviews (you can't choose the language).
+2. [Unstable] The restaurant scraper will scrape all the reviews (you can't choose the language).
