@@ -1,8 +1,5 @@
 // Dependencies
-// import puppeteer from 'puppeteer';
 import puppeteer from 'puppeteer-extra'
-import { enchantPuppeteer } from 'enchant-puppeteer'
-enchantPuppeteer()
 import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
 import blockResourcesPlugin from 'puppeteer-extra-plugin-block-resources';
 puppeteer
