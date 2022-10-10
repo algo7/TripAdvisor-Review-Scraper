@@ -23,8 +23,9 @@ var (
 	errCopyFile                 = errors.New("FAILED TO COPY DOCKER-COMPSE-PROD.YML")
 	errCloneRepo                = errors.New("FAILED TO CLONE THE REPOSITORY")
 	errDockerCheck              = errors.New("DOCKER IS NOT INSTALLED")
-	errSetupCheck               = errors.New("SETUP CHECK FAILED")
 	errDockerComposeRun         = errors.New("FAILED TO RUN DOCKER-COMPOSE")
+	errDockerImageUpdate        = errors.New("FAILED TO UPDATE THE DOCKER IMAGE")
+	errSetupCheck               = errors.New("SETUP CHECK FAILED")
 	errReviewsNotEmpty          = errors.New("REVIEWS DIRECTORY IS NOT EMPTY")
 	errMissingSourceFiles       = errors.New("MISSING SOURCE FILES")
 	errInputScrapMode           = errors.New("INVALID SCRAP MODE")
@@ -41,6 +42,12 @@ func main() {
 	errorHandler(err)
 	fmt.Println("0. " + msg)
 
+	// Check if the image already exists
+	fmt.Println("1. Downloading / Updating Dokcer Image")
+	msg, err = updateDockerImage()
+	errorHandler(err)
+	fmt.Println("1.1 " + msg)
+
 	// Get the current directory
 	currentDir, err := getCurrentDir()
 
@@ -48,7 +55,7 @@ func main() {
 	errorHandler(err)
 
 	// Print the current directory
-	fmt.Println("1. Current directory: ", currentDir)
+	fmt.Println("2. Current directory: ", currentDir)
 
 	// Run the setup check
 	isCompleted, err := setupCheck(currentDir)
@@ -75,7 +82,7 @@ func main() {
 	tmpDirFullPath := filepath.Join(currentDir, tmpDirName)
 
 	// Print the message
-	fmt.Println("2. Tmp Directory created:", tmpDirFullPath)
+	fmt.Println("3. Tmp Directory created:", tmpDirFullPath)
 
 	// Create a temporary directory to hold the repository
 	projectDirName, err := createDirectory("Project_Files")
@@ -86,14 +93,14 @@ func main() {
 	projectDirFullPath := filepath.Join(currentDir, projectDirName)
 
 	// Print the message
-	fmt.Println("3. Project Directory created:", projectDirFullPath)
+	fmt.Println("4. Project Directory created:", projectDirFullPath)
 
 	// Call the clone repo function
 	msg, err = cloneRepo(tmpDirFullPath)
 
 	// Check for errors
 	errorHandler(err)
-	fmt.Println("4. " + msg)
+	fmt.Println("5. " + msg)
 
 	// Copy docker-compose-prod.yml to the Project_Files directory
 	msg, err = copy(
@@ -102,13 +109,13 @@ func main() {
 
 	// Check for errors
 	errorHandler(err)
-	fmt.Println("5. " + msg)
+	fmt.Println("6. " + msg)
 
 	// Purge the temporary directory
 	msg, err = purgeDir(tmpDirFullPath)
 	// Check for errors
 	errorHandler(err)
-	fmt.Println("6. " + msg)
+	fmt.Println("7. " + msg)
 
 	// Create the source directory
 	sourceDirFullPath := filepath.Join(projectDirFullPath, "source")
@@ -118,7 +125,7 @@ func main() {
 	errorHandler(err)
 
 	// Print the message
-	fmt.Println("7. Source Directory created:", sourceDirFullPath)
+	fmt.Println("8. Source Directory created:", sourceDirFullPath)
 
 	// Create the reviews directory
 	reviewsDirFullPath := filepath.Join(projectDirFullPath, "reviews")
@@ -128,7 +135,7 @@ func main() {
 	errorHandler(err)
 
 	// Print the message
-	fmt.Println("8. Reviews Directory created:", reviewsDirFullPath)
+	fmt.Println("9. Reviews Directory created:", reviewsDirFullPath)
 
 	// Notify the user that the setup has been completed
 	fmt.Println("Setup Completed. Please place the source files in the source directory and restart the program.")
@@ -282,6 +289,20 @@ func checkDocker() (string, error) {
 	return "Docker is installed", nil
 }
 
+// Update the docker image if already exist
+func updateDockerImage() (string, error) {
+
+	cmd := exec.Command("docker", "pull", "ghcr.io/algo7/tripadvisor-review-scraper/scrap:latest")
+
+	err := cmd.Run()
+
+	if err != nil {
+		return "Ops", errDockerImageUpdate
+	}
+
+	return "All Clear", nil
+}
+
 /* Check if the setup process has been completed already
 * If it has, spin up the docker container
  */
@@ -377,7 +398,7 @@ func dockerComposeRun(path string) error {
 	dockerComposePath := filepath.Join(path, "docker-compose-prod.yml")
 
 	// Run the docker container
-	cmd := exec.Command("docker-compose", "-f", dockerComposePath, "up")
+	cmd := exec.Command("docker", "compose", "-f", dockerComposePath, "up")
 
 	// Create a pipe that connects to the stdout of the command
 	stdout, err := cmd.StdoutPipe()
