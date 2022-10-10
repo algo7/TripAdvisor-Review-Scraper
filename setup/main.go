@@ -5,7 +5,6 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -173,7 +172,7 @@ func userInputs(path string) error {
 
 	// Read the docker-compose-prod.yml file
 	dockerComposeFilePath := filepath.Join(path, "Project_Files/docker-compose-prod.yml")
-	content, err := ioutil.ReadFile(dockerComposeFilePath)
+	content, err := os.ReadFile(dockerComposeFilePath)
 
 	if err != nil {
 		return errDockerComposeYmlNotFound
@@ -252,13 +251,13 @@ func cloneRepo(path string) (string, error) {
 func copy(sourceFile string, destFile string) (string, error) {
 
 	// Read the source file
-	input, err := ioutil.ReadFile(sourceFile)
+	input, err := os.ReadFile(sourceFile)
 	if err != nil {
 		return "Ops", errCopyFile
 	}
 
 	// Write tp the destination file
-	err = ioutil.WriteFile(destFile, input, os.ModePerm)
+	err = os.WriteFile(destFile, input, os.ModePerm)
 	if err != nil {
 		return "Ops", errCopyFile
 	}
@@ -309,7 +308,7 @@ func updateDockerImage() (string, error) {
 func setupCheck(path string) (bool, error) {
 
 	// Get all the directories and files in the current directory
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 
 	if err != nil {
 		return false, errSetupCheck
@@ -331,7 +330,7 @@ func setupCheck(path string) (bool, error) {
 
 	// Get all the directories and files in the project directory
 	projectFileDir := filepath.Join(path, "Project_Files")
-	files, err = ioutil.ReadDir(projectFileDir)
+	files, err = os.ReadDir(projectFileDir)
 
 	if err != nil {
 		return false, errSetupCheck
@@ -356,11 +355,11 @@ func setupCheck(path string) (bool, error) {
 	}
 
 	// Get all the directories and files in the project directory
-	sourceFiles, err := ioutil.ReadDir(filepath.Join(projectFileDir, "source"))
+	sourceFiles, err := os.ReadDir(filepath.Join(projectFileDir, "source"))
 	if err != nil {
 		return false, errSetupCheck
 	}
-	reviewFiles, err := ioutil.ReadDir(filepath.Join(projectFileDir, "reviews"))
+	reviewFiles, err := os.ReadDir(filepath.Join(projectFileDir, "reviews"))
 	if err != nil {
 		return false, errSetupCheck
 	}
