@@ -22,34 +22,22 @@ const extractAllReviewPageUrls = async (restoUrl, position, browser) => {
         // Wait for the content to load
         await page.waitForSelector('body');
 
-        const [reviewExpandable, reviewExists] = await Promise.all([
-            page.evaluate(() => {
-                if (document.querySelector('.taLnk.ulBlueLinks')) return true
-                return false
-            }),
-            page.evaluate(() => {
-                if (document.querySelector('[id=filters_detail_language_filterLang_ALL]')) return true
-                return false
-            })
-        ])
+        const reviewExists = await page.evaluate(() => {
+            // if (document.querySelector('[id=filters_detail_language_filterLang_ALL]')) return true
+            if (document.querySelector('[id=filters_detail_language_filterLang_fr]')) return true
 
-        if (!reviewExists) {
-            return browser.handBack(page);
-        }
+            return false
+        })
+
+        if (!reviewExists) return browser.handBack(page);
+
 
         // Select all language
-        await page.click('[id=filters_detail_language_filterLang_ALL]');
+        // await page.click('[id=filters_detail_language_filterLang_ALL]');
+        await page.click('[id=filters_detail_language_filterLang_fr]');
+
 
         await page.waitForTimeout(1000);
-
-        if (reviewExpandable) {
-
-            // Expand the reviews
-            await page.click('.taLnk.ulBlueLinks');
-
-            // Wait for the reviews to load
-            await page.waitForFunction('document.querySelector("body").innerText.includes("Show less")');
-        }
 
         // Determin current URL
         const currentURL = page.url();
@@ -63,11 +51,18 @@ const extractAllReviewPageUrls = async (restoUrl, position, browser) => {
         const getReviewPageUrls = await page.evaluate(() => {
 
             // Get the total review count
-            const totalReviewCount = parseInt(document
-                .getElementsByClassName('reviews_header_count')[0]
-                .innerText.split('(')[1]
-                .split(')')[0]
-                .replace(',', ''));
+            // const totalReviewCount = parseInt(document
+            //     .getElementsByClassName('reviews_header_count')[0]
+            //     .innerText.split('(')[1]
+            //     .split(')')[0]
+            //     .replace(',', ''));
+            const reviewEelement = document.getElementsByClassName('count')
+            let totalReviewCount = 0
+            for (let index = 0; index < reviewEelement.length; index++) {
+                if (reviewEelement[index].parentElement.innerText.split('(')[0].split(' ')[0] === 'French') {
+                    totalReviewCount = parseInt(document.getElementsByClassName('count')[index].innerText.split('(')[1].split(')')[0])
+                }
+            }
 
             // Default review page count
             let noReviewPages = totalReviewCount / 15;
@@ -119,7 +114,7 @@ const extractAllReviewPageUrls = async (restoUrl, position, browser) => {
             pageCount: reviewPageUrls.length,
             urls: reviewPageUrls,
         };
-
+        console.log(data)
         // Hand back the page so it's available again
         browser.handBack(page);
 
@@ -160,9 +155,26 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, res
             await page.waitForSelector('body');
 
             // Select all language
-            await page.click('[id=filters_detail_language_filterLang_ALL]');
+            // await page.click('[id=filters_detail_language_filterLang_ALL]');
+            await page.click('[id=filters_detail_language_filterLang_fr]');
 
             await page.waitForTimeout(1000);
+
+            const reviewExpandable = await page.evaluate(() => {
+                if (document.querySelector('.taLnk.ulBlueLinks')) return true
+                return false
+            })
+
+            if (reviewExpandable) {
+
+                // Expand the reviews
+                await page.click('.taLnk.ulBlueLinks');
+
+                // Wait for the reviews to load
+                await page.waitForFunction('document.querySelector("body").innerText.includes("Show less")');
+            }
+
+
 
             // Determine current URL
             const currentURL = page.url();
