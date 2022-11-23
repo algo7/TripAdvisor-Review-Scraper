@@ -133,10 +133,11 @@ const extractAllReviewPageUrls = async (restoUrl, position, language, browser) =
  * @param {Number} position - The index of the restaurant page in the list
  * @param {String} restoName - The name of the restaurant
  * @param {String} restoId - The id of the restaurant
+ * @param {String} language - The language of the reviews that you wantto scrape
  * @param {Object} browser - A browser instance
  * @returns {Promise<Object | Error>} - The final data
  */
-const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, restoId, browser) => {
+const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, restoId, language, browser) => {
     try {
 
         // Open a new page
@@ -249,13 +250,14 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, res
  * @param {String} restoName - The name of the restaurant
  * @param {String} restoId - The id of the restaurant
  * @param {Number} position - The index of the restaurant page in the list
+ * @param {String} language - The language of the reviews to scrape
  * @param {Object} browser - A browser instance
  * @returns {Promise<Object | Error>} - The final data
  */
-const start = async (restoUrl, restoName, restoId, position, browser) => {
+const start = async (restoUrl, restoName, restoId, position, language, browser) => {
     try {
 
-        const extracted = await extractAllReviewPageUrls(restoUrl, position, browser);
+        const extracted = await extractAllReviewPageUrls(restoUrl, position, language, browser);
 
         // If the resto has no reviews
         if (!extracted) return {
@@ -276,7 +278,7 @@ const start = async (restoUrl, restoName, restoId, position, browser) => {
 
         const { urls, count, } = extracted
 
-        const results = await scrape(count, urls, position, restoName, restoId, browser);
+        const results = await scrape(count, urls, position, restoName, restoId, language, browser);
 
         return results;
 
