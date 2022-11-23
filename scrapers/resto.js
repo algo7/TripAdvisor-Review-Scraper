@@ -13,6 +13,7 @@ import chalk from 'chalk';
 const extractAllReviewPageUrls = async (restoUrl, position, language, browser) => {
     try {
 
+
         // Open a new page
         const page = await browser.getNewPage()
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
@@ -23,19 +24,33 @@ const extractAllReviewPageUrls = async (restoUrl, position, language, browser) =
         // Wait for the content to load
         await page.waitForSelector('body');
 
-        const reviewExists = await page.evaluate(() => {
-            // if (document.querySelector('[id=filters_detail_language_filterLang_ALL]')) return true
-            if (document.querySelector('[id=filters_detail_language_filterLang_fr]')) return true
 
-            return false
-        })
+        // Check if the restaurant has reviews
+        let reviewExists = false;
+
+
+        if (language === 'fr') {
+            reviewExists = await page.evaluate(() => {
+                if (document.querySelector('[id=filters_detail_language_filterLang_fr]')) return true
+                return false
+            })
+        }
+
+        if (language === 'en') {
+            reviewExists = await page.evaluate(() => {
+                if (document.querySelector('[id=filters_detail_language_filterLang_ALL]')) return true
+                return false
+            })
+        }
+
 
         if (!reviewExists) return browser.handBack(page);
 
 
-        // Select all language
-        // await page.click('[id=filters_detail_language_filterLang_ALL]');
-        await page.click('[id=filters_detail_language_filterLang_fr]');
+        // Select specified language
+        let filterString = 'ALL'
+        if (language === 'fr') filterString = 'fr'
+        await page.click(`[id=filters_detail_language_filterLang_${filterString}]`);
 
 
         await page.waitForTimeout(1000);
@@ -49,7 +64,42 @@ const extractAllReviewPageUrls = async (restoUrl, position, language, browser) =
          * In browser code:
          * Extract the review page url
          */
-        const getReviewPageUrls = await page.evaluate(() => {
+        let getReviewPageUrls = null
+
+        if (language === 'en') getReviewPageUrls = await page.evaluate(() => {
+
+            // Get the total review count
+            const totalReviewCount = parseInt(document
+                .getElementsByClassName('reviews_header_count')[0]
+                .innerText.split('(')[1]
+                .split(')')[0]
+                .replace(',', ''));
+
+
+            // Default review page count
+            let noReviewPages = totalReviewCount / 15;
+
+            // Calculate the last review page
+            if (totalReviewCount % 15 !== 0) {
+                noReviewPages = ((totalReviewCount - totalReviewCount % 15) / 15) + 1;
+            }
+
+            // Get the url of the 2nd page of review. The 1st page is the input link
+            let url = false;
+
+            // If there is more than 1 review page
+            if (document.getElementsByClassName('pageNum').length > 0) {
+                url = document.getElementsByClassName('pageNum')[1].href;
+            }
+
+            return {
+                noReviewPages,
+                url,
+                totalReviewCount,
+            };
+        });
+
+        if (language === 'fr') getReviewPageUrls = await page.evaluate(() => {
 
             // Get the total review count
             // const totalReviewCount = parseInt(document
@@ -87,6 +137,8 @@ const extractAllReviewPageUrls = async (restoUrl, position, language, browser) =
                 totalReviewCount,
             };
         });
+
+
 
         // Destructure function outputs
         let { noReviewPages, url, totalReviewCount, } = getReviewPageUrls;
@@ -156,9 +208,11 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, res
             // Wait for the content to load
             await page.waitForSelector('body');
 
-            // Select all language
-            // await page.click('[id=filters_detail_language_filterLang_ALL]');
-            await page.click('[id=filters_detail_language_filterLang_fr]');
+
+            // Select specified language
+            let filterString = 'ALL'
+            if (language === 'fr') filterString = 'fr'
+            await page.click(`[id=filters_detail_language_filterLang_${filterString}]`);
 
             await page.waitForTimeout(1000);
 
