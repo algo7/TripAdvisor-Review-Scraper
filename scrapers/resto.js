@@ -6,10 +6,11 @@ import chalk from 'chalk';
  * Extract the review page urls, total review count, and total review page count
  * @param {String} restoUrl - The url of the restaurant page
  * @param {Number} position - The index of the restaurant page in the list
+ * @param {String} language - The language of the reviews that you wantto scrape
  * @param {Object} browser - A browser instance
  * @returns {Promise<Object | Error>} - The object containing the review count, page count, and the review page urls
  */
-const extractAllReviewPageUrls = async (restoUrl, position, browser) => {
+const extractAllReviewPageUrls = async (restoUrl, position, language, browser) => {
     try {
 
         // Open a new page

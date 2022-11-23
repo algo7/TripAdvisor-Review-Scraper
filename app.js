@@ -21,9 +21,10 @@ const dataDir = join(__dirname, './reviews/');
 const sourceDir = join(__dirname, './source/');
 
 // Environment variables
-let { SCRAPE_MODE, CONCURRENCY } = process.env;
+let { SCRAPE_MODE, CONCURRENCY, LANGUAGE } = process.env;
 CONCURRENCY = parseInt(CONCURRENCY);
 if (!CONCURRENCY) CONCURRENCY = 2;
+if (!LANGUAGE) LANGUAGE = 'en';
 
 
 console.log(chalk.bold.blue(`The Scraper is Running in ${chalk.bold.magenta(SCRAPE_MODE)} Mode`));
