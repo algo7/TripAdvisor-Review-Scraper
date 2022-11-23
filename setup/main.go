@@ -163,7 +163,7 @@ func userInputs(path string) error {
 	_, err = fmt.Scanf("%s\n", &lang)
 
 	// Input validation
-	if err != nil || (lang != "en" && mode != "fr") {
+	if err != nil || (lang != "en" && lang != "fr") {
 		return errInputLanguage
 	}
 
