@@ -6,11 +6,13 @@ import chalk from 'chalk';
  * Extract the review page urls, total review count, and total review page count
  * @param {String} restoUrl - The url of the restaurant page
  * @param {Number} position - The index of the restaurant page in the list
+ * @param {String} language - The language of the reviews that you wantto scrape
  * @param {Object} browser - A browser instance
  * @returns {Promise<Object | Error>} - The object containing the review count, page count, and the review page urls
  */
-const extractAllReviewPageUrls = async (restoUrl, position, browser) => {
+const extractAllReviewPageUrls = async (restoUrl, position, language, browser) => {
     try {
+
 
         // Open a new page
         const page = await browser.getNewPage()
@@ -22,34 +24,36 @@ const extractAllReviewPageUrls = async (restoUrl, position, browser) => {
         // Wait for the content to load
         await page.waitForSelector('body');
 
-        const [reviewExpandable, reviewExists] = await Promise.all([
-            page.evaluate(() => {
-                if (document.querySelector('.taLnk.ulBlueLinks')) return true
+
+        // Check if the restaurant has reviews
+        let reviewExists = false;
+
+
+        if (language === 'fr') {
+            reviewExists = await page.evaluate(() => {
+                if (document.querySelector('[id=filters_detail_language_filterLang_fr]')) return true
                 return false
-            }),
-            page.evaluate(() => {
+            })
+        }
+
+        if (language === 'en') {
+            reviewExists = await page.evaluate(() => {
                 if (document.querySelector('[id=filters_detail_language_filterLang_ALL]')) return true
                 return false
             })
-        ])
-
-        if (!reviewExists) {
-            return browser.handBack(page);
         }
 
-        // Select all language
-        await page.click('[id=filters_detail_language_filterLang_ALL]');
+
+        if (!reviewExists) return browser.handBack(page);
+
+
+        // Select specified language
+        let filterString = 'ALL'
+        if (language === 'fr') filterString = 'fr'
+        await page.click(`[id=filters_detail_language_filterLang_${filterString}]`);
+
 
         await page.waitForTimeout(1000);
-
-        if (reviewExpandable) {
-
-            // Expand the reviews
-            await page.click('.taLnk.ulBlueLinks');
-
-            // Wait for the reviews to load
-            await page.waitForFunction('document.querySelector("body").innerText.includes("Show less")');
-        }
 
         // Determin current URL
         const currentURL = page.url();
@@ -60,7 +64,9 @@ const extractAllReviewPageUrls = async (restoUrl, position, browser) => {
          * In browser code:
          * Extract the review page url
          */
-        const getReviewPageUrls = await page.evaluate(() => {
+        let getReviewPageUrls = null
+
+        if (language === 'en') getReviewPageUrls = await page.evaluate(() => {
 
             // Get the total review count
             const totalReviewCount = parseInt(document
@@ -68,6 +74,7 @@ const extractAllReviewPageUrls = async (restoUrl, position, browser) => {
                 .innerText.split('(')[1]
                 .split(')')[0]
                 .replace(',', ''));
+
 
             // Default review page count
             let noReviewPages = totalReviewCount / 15;
@@ -91,6 +98,47 @@ const extractAllReviewPageUrls = async (restoUrl, position, browser) => {
                 totalReviewCount,
             };
         });
+
+        if (language === 'fr') getReviewPageUrls = await page.evaluate(() => {
+
+            // Get the total review count
+            // const totalReviewCount = parseInt(document
+            //     .getElementsByClassName('reviews_header_count')[0]
+            //     .innerText.split('(')[1]
+            //     .split(')')[0]
+            //     .replace(',', ''));
+            const reviewEelement = document.getElementsByClassName('count')
+            let totalReviewCount = 0
+            for (let index = 0; index < reviewEelement.length; index++) {
+                if (reviewEelement[index].parentElement.innerText.split('(')[0].split(' ')[0] === 'French') {
+                    totalReviewCount = parseInt(document.getElementsByClassName('count')[index].innerText.split('(')[1].split(')')[0])
+                }
+            }
+
+            // Default review page count
+            let noReviewPages = totalReviewCount / 15;
+
+            // Calculate the last review page
+            if (totalReviewCount % 15 !== 0) {
+                noReviewPages = ((totalReviewCount - totalReviewCount % 15) / 15) + 1;
+            }
+
+            // Get the url of the 2nd page of review. The 1st page is the input link
+            let url = false;
+
+            // If there is more than 1 review page
+            if (document.getElementsByClassName('pageNum').length > 0) {
+                url = document.getElementsByClassName('pageNum')[1].href;
+            }
+
+            return {
+                noReviewPages,
+                url,
+                totalReviewCount,
+            };
+        });
+
+
 
         // Destructure function outputs
         let { noReviewPages, url, totalReviewCount, } = getReviewPageUrls;
@@ -119,7 +167,7 @@ const extractAllReviewPageUrls = async (restoUrl, position, browser) => {
             pageCount: reviewPageUrls.length,
             urls: reviewPageUrls,
         };
-
+        console.log(data)
         // Hand back the page so it's available again
         browser.handBack(page);
 
@@ -137,10 +185,11 @@ const extractAllReviewPageUrls = async (restoUrl, position, browser) => {
  * @param {Number} position - The index of the restaurant page in the list
  * @param {String} restoName - The name of the restaurant
  * @param {String} restoId - The id of the restaurant
+ * @param {String} language - The language of the reviews that you wantto scrape
  * @param {Object} browser - A browser instance
  * @returns {Promise<Object | Error>} - The final data
  */
-const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, restoId, browser) => {
+const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, restoId, language, browser) => {
     try {
 
         // Open a new page
@@ -159,10 +208,29 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, res
             // Wait for the content to load
             await page.waitForSelector('body');
 
-            // Select all language
-            await page.click('[id=filters_detail_language_filterLang_ALL]');
+
+            // Select specified language
+            let filterString = 'ALL'
+            if (language === 'fr') filterString = 'fr'
+            await page.click(`[id=filters_detail_language_filterLang_${filterString}]`);
 
             await page.waitForTimeout(1000);
+
+            const reviewExpandable = await page.evaluate(() => {
+                if (document.querySelector('.taLnk.ulBlueLinks')) return true
+                return false
+            })
+
+            if (reviewExpandable) {
+
+                // Expand the reviews
+                await page.click('.taLnk.ulBlueLinks');
+
+                // Wait for the reviews to load
+                await page.waitForFunction('document.querySelector("body").innerText.includes("Show less")');
+            }
+
+
 
             // Determine current URL
             const currentURL = page.url();
@@ -236,13 +304,14 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, res
  * @param {String} restoName - The name of the restaurant
  * @param {String} restoId - The id of the restaurant
  * @param {Number} position - The index of the restaurant page in the list
+ * @param {String} language - The language of the reviews to scrape
  * @param {Object} browser - A browser instance
  * @returns {Promise<Object | Error>} - The final data
  */
-const start = async (restoUrl, restoName, restoId, position, browser) => {
+const start = async (restoUrl, restoName, restoId, position, language, browser) => {
     try {
 
-        const extracted = await extractAllReviewPageUrls(restoUrl, position, browser);
+        const extracted = await extractAllReviewPageUrls(restoUrl, position, language, browser);
 
         // If the resto has no reviews
         if (!extracted) return {
@@ -263,7 +332,7 @@ const start = async (restoUrl, restoName, restoId, position, browser) => {
 
         const { urls, count, } = extracted
 
-        const results = await scrape(count, urls, position, restoName, restoId, browser);
+        const results = await scrape(count, urls, position, restoName, restoId, language, browser);
 
         return results;
 

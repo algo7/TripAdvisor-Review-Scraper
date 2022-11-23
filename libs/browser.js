@@ -2,9 +2,7 @@
 import puppeteer from 'puppeteer-extra'
 import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
 import blockResourcesPlugin from 'puppeteer-extra-plugin-block-resources';
-puppeteer
-    .use(blockResourcesPlugin({ blockedTypes: new Set(['stylesheet', 'image', 'font', 'media', 'other']) }))
-    .use(AdblockerPlugin({ blockTrackers: true }))
+
 
 // Environments variables
 let { CONCURRENCY } = process.env;
@@ -86,6 +84,9 @@ class Browser {
      * @returns {Promise<puppeteer.Browser>}
      */
     async launch() {
+        puppeteer
+            .use(blockResourcesPlugin({ blockedTypes: new Set(['stylesheet', 'image', 'font', 'media', 'other']) }))
+            .use(AdblockerPlugin({ blockTrackers: true }))
         this.browser = await puppeteer.launch(this.config)
         return this.browser
     }

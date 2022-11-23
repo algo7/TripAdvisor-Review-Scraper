@@ -29,6 +29,7 @@ var (
 	errMissingSourceFiles       = errors.New("MISSING SOURCE FILES")
 	errInputScrapMode           = errors.New("INVALID SCRAP MODE")
 	errInputConcurrency         = errors.New("INVALID CONCURRENCY VALUE")
+	errInputLanguage            = errors.New("INVALID CONCURRENCY VALUE")
 	errDockerComposeYmlNotFound = errors.New("DOCKER-COMPSE-PROD.YML NOT FOUND")
 	errValueReplace             = errors.New("FAILED TO REPLACE VALUE")
 )
@@ -156,6 +157,16 @@ func userInputs(path string) error {
 		return errInputScrapMode
 	}
 
+	// Get review language
+	fmt.Println("Enter the language of the reviews (en or fr):")
+	var lang string
+	_, err = fmt.Scanf("%s\n", &lang)
+
+	// Input validation
+	if err != nil || (lang != "en" && lang != "fr") {
+		return errInputLanguage
+	}
+
 	// Get concurrency value
 	fmt.Println("Enter the concurrency value (ex: 10):")
 	var i int
@@ -169,6 +180,7 @@ func userInputs(path string) error {
 	// Print the user output
 	fmt.Println("Scrap mode:", mode)
 	fmt.Println("Concurrency value:", i)
+	fmt.Println("Review language:", lang)
 
 	// Read the docker-compose-prod.yml file
 	dockerComposeFilePath := filepath.Join(path, "Project_Files/docker-compose-prod.yml")
@@ -182,11 +194,15 @@ func userInputs(path string) error {
 	scrapModeRegex := regexp.MustCompile("SCRAPE_MODE:(.*)")
 	// Regex to match the concurrency value
 	concurrencyRegex := regexp.MustCompile("CONCURRENCY:(.*)")
+	// Regex to match the review language option
+	reviewLaguageRegex := regexp.MustCompile("LANGUAGE:(.*)")
 
 	// Replace the scrap mode with the input
 	scrapModeChanged := scrapModeRegex.ReplaceAllString(string(content), "SCRAPE_MODE: "+mode)
 	// Replace the concurrency value with the input
 	concurrencyChanged := concurrencyRegex.ReplaceAllString(scrapModeChanged, "CONCURRENCY: "+strconv.Itoa(i))
+	// Replace the review language with the input
+	reviewLanguageChanged := reviewLaguageRegex.ReplaceAllString(concurrencyChanged, "LANGUAGE: "+lang)
 
 	f, err := os.OpenFile(dockerComposeFilePath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, os.ModePerm)
 
@@ -198,7 +214,7 @@ func userInputs(path string) error {
 	defer f.Close()
 
 	// Write the new content to the file
-	_, err = f.WriteString(concurrencyChanged)
+	_, err = f.WriteString(reviewLanguageChanged)
 
 	if err != nil {
 		return errValueReplace

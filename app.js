@@ -21,13 +21,15 @@ const dataDir = join(__dirname, './reviews/');
 const sourceDir = join(__dirname, './source/');
 
 // Environment variables
-let { SCRAPE_MODE, CONCURRENCY } = process.env;
+let { SCRAPE_MODE, CONCURRENCY, LANGUAGE } = process.env;
 CONCURRENCY = parseInt(CONCURRENCY);
 if (!CONCURRENCY) CONCURRENCY = 2;
+if (!LANGUAGE || LANGUAGE !== 'fr') LANGUAGE = 'en';
 
 
 console.log(chalk.bold.blue(`The Scraper is Running in ${chalk.bold.magenta(SCRAPE_MODE)} Mode`));
 console.log(chalk.bold.blue(`Concurrency Setting ${chalk.bold.magenta(CONCURRENCY || 2)}`));
+console.log(chalk.bold.blue(`Review Language ${chalk.bold.magenta(LANGUAGE)}`));
 
 // Check if the required directories exist, otherwise create them
 if (!fileExists(dataDir)) mkdirSync(dataDir);
@@ -162,7 +164,7 @@ const restoScraperInit = async () => {
             const { webUrl: restoUrl, name: restoName, id: restoId, } = item;
 
             processQueue.push(restoScraper(restoUrl, restoName,
-                restoId, index, browserInstance))
+                restoId, index, LANGUAGE, browserInstance))
         }
 
         // Resolve processes the left over in the process queue

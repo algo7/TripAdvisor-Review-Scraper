@@ -17,15 +17,18 @@
 5. Edit the `SCRAPE_MODE` (RESTO for restaurants, HOTEL for hotel) variable in the `docker-compose-prod.yml` file to scrape either restaurant or hotel reviews.
 6. Edit the `CONCURRENCY` variable in the `docker-compose-prod.yml` file to set the number of concurrent requests.
    - A high concurrency number might cause the program to hang depending on the internet connection and the resource availability of your computer.
-7. Run `docker-compose -f docker-compose-prod.yml up` to start the container.
-8. Once the scraping process is finished, check the `reviews` folder for the results.
-9. Samples of the results are included in the `samples` folder.
-10. Please remember to empty the `reviews` folder before running the scraper again.
+7. Edit the `LANGUAGE` variable in the `docker-compose-prod.yml` file to the language of the reviews you want to scrape.
+   - This option is only supported RESTO mode.
+   - Available options are `fr` and `en` which will actaully scrape all the reviews.
+8. Run `docker-compose -f docker-compose-prod.yml up` to start the container.
+9. Once the scraping process is finished, check the `reviews` folder for the results.
+10. Samples of the results are included in the `samples` folder.
+11. Please remember to empty the `reviews` folder before running the scraper again.
 
 ## Docker CLI 
 1. Download the repository.
-2. Replace the `-e SCRAP_MODE` and `-e CONCURRENCY` with custom values.
-3. Run `docker run --mount type=bind,src="$(pwd)"/reviews,target=/puppeteer/reviews --mount type=bind,src="$(pwd)"/source,target=/puppeteer/source -e SCRAPE_MODE=HOTEL -e CONCURRENCY=5 ghcr.io/algo7/tripadvisor-review-scraper/scrap:latest` in the terminal at the root directory of the project.
+2. Replace the `-e SCRAP_MODE`, `-e CONCURRENCY`, `-e LANGUAGE` with custom values.
+3. Run `docker run --mount type=bind,src="$(pwd)"/reviews,target=/puppeteer/reviews --mount type=bind,src="$(pwd)"/source,target=/puppeteer/source -e SCRAPE_MODE=HOTEL -e CONCURRENCY=5 -e LANGUAGE=en ghcr.io/algo7/tripadvisor-review-scraper/scrap:latest` in the terminal at the root directory of the project.
 
 ## If you are lazy
 1. Download the repository.
@@ -55,4 +58,4 @@ latest: Pulling from algo7/tripadvisor-review-scraper/scrap
 
 ## Known Issues
 1. The hotel scraper works for English reviews only.
-2. [Unstable] The restaurant scraper will scrape all the reviews (you can't choose the language).
+2. The restaurant scraper can only scrap all the reviews together or the French reviews alone.
