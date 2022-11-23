@@ -163,7 +163,7 @@ const restoScraperInit = async () => {
             const { webUrl: restoUrl, name: restoName, id: restoId, } = item;
 
             processQueue.push(restoScraper(restoUrl, restoName,
-                restoId, index, browserInstance))
+                restoId, index, LANGUAGE, browserInstance))
         }
 
         // Resolve processes the left over in the process queue
