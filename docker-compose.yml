@@ -14,6 +14,10 @@ services:
       - type: bind
         source: ./reviews
         target: /puppeteer/reviews
+        bind:
+          create_host_path: true
       - type: bind
         source: ./source
         target: /puppeteer/source
+        bind:
+          create_host_path: true

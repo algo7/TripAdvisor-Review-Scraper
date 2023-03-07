@@ -25,6 +25,8 @@ COPY --from=dependencies /puppeteer/node_modules ./node_modules
 # Copy rest of the files [from local to the image]
 COPY . .
 
+RUN chown -R node:node /puppeteer
+
 # Drop privilege
 USER node
 
