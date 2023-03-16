@@ -54,13 +54,15 @@ const hotelScraperInit = async () => {
 
 
         // Get the raw data from env variables or csv file
-        let rawData = {
-            hotelName: HOTEL_NAME,
-            hotelUrl: HOTEL_URL,
-        }
+        let rawData = [
+            {
+                hotelName: HOTEL_NAME,
+                hotelUrl: HOTEL_URL,
+            }
+        ]
 
         // If the env variables are not set, get the data from the csv file
-        if (!rawData.hotelName) [rawData] = await Promise.all([
+        if (!rawData[0].hotelName) [rawData] = await Promise.all([
             // Convert the csv to json
             csvToJSON(dataSourceHotel),
             // Get a browser instance
