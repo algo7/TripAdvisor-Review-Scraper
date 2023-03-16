@@ -29,8 +29,12 @@ func main() {
 
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
 		Image: "test:latest",
-		Env:   []string{"SCRAPE_MODE=HOTEL", "HOTEL_NAME=BRO", "HOTEL_URL=https://www.tripadvisor.com/Hotel_Review-g188107-d199124-Reviews-Hotel_Des_Voyageurs-Lausanne_Canton_of_Vaud.html"},
-		Tty:   false,
+		Env: []string{
+			"CONCURRENCY=1",
+			"SCRAPE_MODE=HOTEL",
+			"HOTEL_NAME=BRO",
+			"HOTEL_URL=https://www.tripadvisor.com/Hotel_Review-g188107-d199124-Reviews-Hotel_Des_Voyageurs-Lausanne_Canton_of_Vaud.html"},
+		Tty: false,
 	}, nil, nil, nil, "")
 
 	if err != nil {
