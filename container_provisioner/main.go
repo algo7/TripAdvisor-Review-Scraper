@@ -28,12 +28,11 @@ func main() {
 	io.Copy(os.Stdout, reader)
 
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
-		User:  "1000:1000",
-		Image: "ghcr.io/algo7/tripadvisor-review-scraper/scrap:latest",
-		Env:   []string{"SCRAPE_MODE=HOTEL"},
-		// Cmd:   []string{"echo", "hello world"},
-		Tty: false,
+		Image: "test:latest",
+		Env:   []string{"SCRAPE_MODE=HOTEL", "HOTEL_NAME=BRO", "HOTEL_URL=https://www.tripadvisor.com/Hotel_Review-g188107-d199124-Reviews-Hotel_Des_Voyageurs-Lausanne_Canton_of_Vaud.html"},
+		Tty:   false,
 	}, nil, nil, nil, "")
+
 	if err != nil {
 		panic(err)
 	}
@@ -42,6 +41,12 @@ func main() {
 		panic(err)
 	}
 
+	out, err := cli.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{ShowStdout: true, Follow: true})
+	if err != nil {
+		panic(err)
+	}
+	stdcopy.StdCopy(os.Stdout, os.Stderr, out)
+
 	statusCh, errCh := cli.ContainerWait(ctx, resp.ID, container.WaitConditionNotRunning)
 	select {
 	case err := <-errCh:
@@ -49,12 +54,7 @@ func main() {
 			panic(err)
 		}
 	case <-statusCh:
+
 	}
 
-	out, err := cli.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{ShowStdout: true})
-	if err != nil {
-		panic(err)
-	}
-
-	stdcopy.StdCopy(os.Stdout, os.Stderr, out)
 }

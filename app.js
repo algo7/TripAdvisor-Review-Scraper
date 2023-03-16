@@ -34,6 +34,8 @@ console.log(chalk.bold.blue(`Review Language ${chalk.bold.magenta(LANGUAGE)}`));
 // Check if the required directories exist, otherwise create them
 if (!fileExists(dataDir)) mkdirSync(dataDir);
 if (!fileExists(sourceDir)) mkdirSync(sourceDir);
+console.log(fileExists(dataDir))
+
 
 // Data source
 const dataSourceResto = join(__dirname, './source/restos.csv');
@@ -46,29 +48,36 @@ const dataSourceHotel = join(__dirname, './source/hotels.csv');
  */
 const hotelScraperInit = async () => {
     try {
-        // Check if the source file exists
-        const sourceFileAvailable = await fileExists(dataSourceHotel);
-        if (!sourceFileAvailable) {
-            throw Error('Source file does not exist');
-        }
 
 
         // Get the raw data from env variables or csv file
         let rawData = [
             {
-                hotelName: HOTEL_NAME,
-                hotelUrl: HOTEL_URL,
+                name: HOTEL_NAME,
+                webUrl: HOTEL_URL,
             }
         ]
 
-        // If the env variables are not set, get the data from the csv file
-        if (!rawData[0].hotelName) [rawData] = await Promise.all([
-            // Convert the csv to json
-            csvToJSON(dataSourceHotel),
-            // Get a browser instance
-            browserInstance.launch()
-        ])
+        // Get a browser instance
+        await browserInstance.launch()
 
+
+        // If the env variables are not set, get the data from the csv file
+        if (!rawData[0].name) {
+
+            // Check if the source file exists
+            const sourceFileAvailable = await fileExists(dataSourceHotel);
+            if (!sourceFileAvailable) {
+                throw Error('Source file does not exist');
+            }
+
+            [rawData] = await Promise.all([
+                // Convert the csv to json
+                csvToJSON(dataSourceHotel),
+                // Get a browser instance
+                browserInstance.launch()
+            ])
+        }
 
         console.log(chalk.bold.yellow(`Scraping ${chalk.magenta(rawData.length)} Hotels`));
 
@@ -89,6 +98,7 @@ const hotelScraperInit = async () => {
 
             // Extract hotel info
             const item = rawData[index];
+
             const { webUrl: hotelUrl, name: hotelName, id: hotelId, } = item;
 
             processQueue.push(hotelScraper(hotelUrl, hotelName, hotelId, index, browserInstance))
