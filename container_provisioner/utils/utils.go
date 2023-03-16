@@ -14,7 +14,36 @@ func WriteToFile(filename string, tarF io.ReadCloser) error {
 
 	// Untar the file
 	// Note: This is not a generic untar function. It only works for a single file
+	/**
+		A tar file is a collection of binary data segments (usually sourced from files). Each segment starts with a header that contains metadata about the binary data, that follows it, and how to reconstruct it as a file.
+
+	+---------------------------+
+	| [name][mode][uid][guild]  |
+	| ...                       |
+	+---------------------------+
+	| XXXXXXXXXXXXXXXXXXXXXXXXX |
+	| XXXXXXXXXXXXXXXXXXXXXXXXX |
+	| XXXXXXXXXXXXXXXXXXXXXXXXX |
+	+---------------------------+
+	| [name][mode][uid][guild]  |
+	| ...                       |
+	+---------------------------+
+	| XXXXXXXXXXXXXXXXXXXXXXXXX |
+	| XXXXXXXXXXXXXXXXXXXXXXXXX |
+	+---------------------------+
+		**/
+
+	// Read the tar file
 	tarReader := tar.NewReader(tarF)
+
+	// Go to the next entry in the tar file
+	_, err = tarReader.Next()
+
+	if err != nil {
+		return err
+	}
+
+	// Write the file to disk
 	io.Copy(out, tarReader)
 
 	return err
