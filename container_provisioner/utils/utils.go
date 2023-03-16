@@ -11,6 +11,9 @@ func WriteToFile(filename string, tarF io.ReadCloser) error {
 	// Create the file
 	out, err := os.Create(filename)
 	defer out.Close()
+	if err != nil {
+		return err
+	}
 
 	// Untar the file
 	// Note: This is not a generic untar function. It only works for a single file
