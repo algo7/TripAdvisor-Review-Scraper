@@ -1,6 +1,7 @@
 package containers
 
 import (
+	"container_provisioner/utils"
 	"context"
 	"io"
 	"os"
@@ -11,7 +12,8 @@ import (
 	"github.com/docker/docker/pkg/stdcopy"
 )
 
-func provision() {
+// Provision creates a container, runs it, tails the log and wait for it to exit
+func Provision() {
 	ctx := context.Background()
 
 	// Connect to the Docker daemon
@@ -59,6 +61,14 @@ func provision() {
 		panic(err)
 	}
 	stdcopy.StdCopy(os.Stdout, os.Stderr, out)
+
+	tarReader, _, err := cli.CopyFromContainer(ctx, resp.ID, "/puppeteer/reviews/All.csv")
+
+	if err != nil {
+		panic(err)
+	}
+
+	utils.WriteToFile("All.csv", tarReader)
 
 	// Wait for the container to exit
 	statusCh, errCh := cli.ContainerWait(ctx, resp.ID, container.WaitConditionNotRunning)
