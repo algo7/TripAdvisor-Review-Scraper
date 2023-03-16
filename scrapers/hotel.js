@@ -107,14 +107,17 @@ const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
  * Scrape the page
  * @param {Number} totalReviewCount - The total review count
  * @param {Array<String>} reviewPageUrls - The review page urls
- * @param {Number} position - The index of the hotel page in the list
+ * @param {Number} [position] - The index of the hotel page in the list
  * @param {String} hotelName - The name of the hotel
- * @param {String} hotelId - The id of the hotel
+ * @param {String} [hotelId] - The id of the hotel
  * @param {Object} browser - A browser instance
  * @returns {Promise<Object| Error>} - THe final data
  */
 const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hotelId, browser) => {
     try {
+
+        // If hotelId is not provided, set it to 'N/A'
+        if (!hotelId) hotelId = 'N/A';
 
         // Open a new page
         const page = await browser.getNewPage()

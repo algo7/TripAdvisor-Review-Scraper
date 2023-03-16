@@ -21,7 +21,7 @@ const dataDir = join(__dirname, './reviews/');
 const sourceDir = join(__dirname, './source/');
 
 // Environment variables
-let { SCRAPE_MODE, CONCURRENCY, LANGUAGE } = process.env;
+let { SCRAPE_MODE, CONCURRENCY, LANGUAGE, HOTEL_NAME, HOTEL_URL } = process.env;
 CONCURRENCY = parseInt(CONCURRENCY);
 if (!CONCURRENCY) CONCURRENCY = 2;
 if (!LANGUAGE || LANGUAGE !== 'fr') LANGUAGE = 'en';
@@ -53,7 +53,14 @@ const hotelScraperInit = async () => {
         }
 
 
-        const [rawData] = await Promise.all([
+        // Get the raw data from env variables or csv file
+        let rawData = {
+            hotelName: HOTEL_NAME,
+            hotelUrl: HOTEL_URL,
+        }
+
+        // If the env variables are not set, get the data from the csv file
+        if (!rawData.hotelName) [rawData] = await Promise.all([
             // Convert the csv to json
             csvToJSON(dataSourceHotel),
             // Get a browser instance
