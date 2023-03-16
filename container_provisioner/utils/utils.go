@@ -44,7 +44,10 @@ func WriteToFile(filename string, tarF io.ReadCloser) error {
 	}
 
 	// Write the file to disk
-	io.Copy(out, tarReader)
+	_, err = io.Copy(out, tarReader)
+	if err != nil {
+		return err
+	}
 
 	return err
 }
