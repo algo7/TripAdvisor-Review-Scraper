@@ -1,5 +1,5 @@
 // Dependencies
-import fs, { readFileSync, readdirSync, accessSync } from 'fs';
+import { readFileSync, readdirSync, accessSync } from 'fs';
 import { parse } from 'json2csv';
 import csvtojsonV2 from 'csvtojson';
 
@@ -10,7 +10,7 @@ import csvtojsonV2 from 'csvtojson';
  */
 const fileExists = (filePath) => {
     try {
-        access(filePath);
+        accessSync(filePath);
         return true;
     } catch (err) {
         return false;

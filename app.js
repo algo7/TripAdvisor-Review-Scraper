@@ -34,13 +34,11 @@ console.log(chalk.bold.blue(`Review Language ${chalk.bold.magenta(LANGUAGE)}`));
 // Check if the required directories exist, otherwise create them
 if (!fileExists(dataDir)) mkdirSync(dataDir);
 if (!fileExists(sourceDir)) mkdirSync(sourceDir);
-console.log(fileExists(dataDir))
 
 
 // Data source
 const dataSourceResto = join(__dirname, './source/restos.csv');
 const dataSourceHotel = join(__dirname, './source/hotels.csv');
-
 
 /**
  * Scrape the hotel pages
