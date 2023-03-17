@@ -121,7 +121,7 @@ func ValidateTripAdvisorHotelURL(url string) bool {
 
 // ValidateEmailAddress validates the EHL email address
 func ValidateEmailAddress(email string) bool {
-	regex := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(ehl\.ch)$`
+	regex := `^[a-z]+(\.[a-z]+)*@ehl\.ch$`
 	match, _ := regexp.MatchString(regex, email)
 	return match
 }
