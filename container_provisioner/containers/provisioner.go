@@ -26,10 +26,10 @@ func Provision(filePrefix string, uploadIdentifier string, hotelUrl string) {
 	utils.ErrorHandler(err)
 	defer cli.Close()
 
-	// Pull the image
-	reader, err := cli.ImagePull(ctx, "ghcr.io/algo7/tripadvisor-review-scraper/scrap:latest", types.ImagePullOptions{})
-	utils.ErrorHandler(err)
-	defer reader.Close()
+	// Pull the image => Disabled for now
+	// reader, err := cli.ImagePull(ctx, "ghcr.io/algo7/tripadvisor-review-scraper/scrap:latest", types.ImagePullOptions{})
+	// utils.ErrorHandler(err)
+	// defer reader.Close()
 
 	// Print the progress of the image pull
 	// _, err = io.Copy(os.Stdout, reader)
@@ -38,7 +38,7 @@ func Provision(filePrefix string, uploadIdentifier string, hotelUrl string) {
 	// Create the container. Container.ID contains the ID of the container
 	Container, err := cli.ContainerCreate(ctx,
 		&container.Config{
-			Image: "test:latest",
+			Image: "ghcr.io/algo7/tripadvisor-review-scraper/scrap:latest",
 			Env: []string{
 				"CONCURRENCY=1",
 				"SCRAPE_MODE=HOTEL",
