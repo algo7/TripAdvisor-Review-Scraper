@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Algo7 TripAdvisor Review Scraper</title>
+    <title>{{.Title}}</title>
     <style>
       /* CSS Style for input field */
       input[type='text'] {
@@ -38,8 +38,12 @@
     </style>
   </head>
   <body>
+    <h2
+      >There are currently {{.RunningContainers}} task(s) in the queue. Max
+      10.</h2
+    >
     <form action="/submit" method="post">
-      <label for="url">Enter URL:</label>
+      <label for="url"><h3>Enter URL:</h3></label>
       <br />
       <input
         type="text"

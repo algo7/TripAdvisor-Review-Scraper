@@ -3,13 +3,22 @@ package api
 import (
 	"container_provisioner/containers"
 	"container_provisioner/utils"
+	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 // getMain renders the main page
 func getMain(c *fiber.Ctx) error {
-	return c.Render("main", fiber.Map{})
+
+	// Get the number of running containers
+	runningContainers := containers.CountRunningContainer()
+	fmt.Println(runningContainers)
+
+	return c.Render("main", fiber.Map{
+		"Title":             "Algo7 TripAdvisor Scraper",
+		"RunningContainers": runningContainers,
+	})
 }
 
 // postProvision is the handler for the form submission
