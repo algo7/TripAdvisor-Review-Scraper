@@ -3,10 +3,11 @@ package api
 import (
 	"container_provisioner/containers"
 	"container_provisioner/utils"
-	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 )
+
+var R2Url = "https://storage.algo7.tools/reviews/"
 
 // getMain renders the main page
 func getMain(c *fiber.Ctx) error {
@@ -28,8 +29,6 @@ func postProvision(c *fiber.Ctx) error {
 
 	// Get the email from the form
 	email := c.FormValue("email")
-
-	utils.R2ListObjects()
 
 	// Validate the email
 	if !utils.ValidateEmailAddress(email) {
@@ -56,14 +55,20 @@ func postProvision(c *fiber.Ctx) error {
 			"Message": "Sorry, we are currently busy. Please try again later",
 		})
 	}
-	// Generate a random file name
+
+	// Generate a random file prefix
 	filePrefix := utils.GenerateUUID()
+	hotelName := utils.GetHotelNameFromURL(url)
 
 	// Provision the container via goroutine
 	go containers.Provision(filePrefix, url)
 
 	return c.Render("submission", fiber.Map{
-		"Title":   "Algo7 TripAdvisor Scraper",
-		"Message": fmt.Sprintf("Your request has been submitted. You will receive an email at %s when the data is ready", email),
+		"Title": "Algo7 TripAdvisor Scraper",
+		// "Message": fmt.Sprintf("Your request has been submitted. You will receive an email at %s when the data is ready", email),
+		"Message1": "Your request has been submitted. ",
+		"Message2": "Please check the following link for your data:",
+		"URL":      R2Url + filePrefix + "-" + "0" + "_" + hotelName + ".csv",
+		"Message4": "Your data should be available shortly.",
 	})
 }
