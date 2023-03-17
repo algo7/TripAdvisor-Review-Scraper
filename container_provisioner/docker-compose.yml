@@ -1,0 +1,37 @@
+version: '3.9'
+services:
+  # Service name
+  container_provisioner:
+    build: .
+    environment:
+      IS_CONTAINER: true
+    # Image name
+    image: ghcr.io/algo7/tripadvisor-review-scraper/container_provisioner:v1
+    volumes:
+      # The credentials folder is mounted to the container
+      - type: bind
+        source: ./credentials
+        target: /go/src/app/credentials
+        bind:
+          create_host_path: true
+      # Bind the docker socket to the container so that the provisioner can spin up new containers
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+
+    # Map the ports | bind to localhost
+    ports:
+      # Port in the container
+      - target: 3000
+        # Port used by the routing mesh
+        published: 3000
+        protocol: tcp
+    # Set up a dedicated network
+    networks:
+      - scraper
+
+## Config section
+# Define the network type
+networks:
+  scraper:
+    external: false

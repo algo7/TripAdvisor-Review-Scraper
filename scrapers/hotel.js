@@ -11,7 +11,6 @@ import chalk from 'chalk';
  */
 const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
     try {
-
         // Open a new page
         const page = await browser.getNewPage()
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
@@ -107,9 +106,9 @@ const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
  * Scrape the page
  * @param {Number} totalReviewCount - The total review count
  * @param {Array<String>} reviewPageUrls - The review page urls
- * @param {Number} position - The index of the hotel page in the list
+ * @param {Number} [position] - The index of the hotel page in the list
  * @param {String} hotelName - The name of the hotel
- * @param {String} hotelId - The id of the hotel
+ * @param {String} [hotelId] - The id of the hotel
  * @param {Object} browser - A browser instance
  * @returns {Promise<Object| Error>} - THe final data
  */
@@ -201,7 +200,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
             actualCount: reviewFlattened.length,
             position,
             allReviews: reviewFlattened,
-            fileName: `${position}_${reviewPageUrls[0].split('-')[4]} `,
+            fileName: `${position}_${reviewPageUrls[0].split('-')[4]}`,
         };
 
         return finalData;
@@ -215,8 +214,8 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
  * Start the scraping process
  * @param {String} hotelUrl - The url of the hotel page 
  * @param {String} hotelName - The name of the hotel
- * @param {String} hotelId - The id of the hotel
- * @param {Number} position - The index of the hotel page in the list
+ * @param {String} [hotelId] - The id of the hotel
+ * @param {Number} [position] - The index of the hotel page in the list
  * @param {Object} browser - A browser instance
  * @returns {Promise<Object | Error>} - The final data
  */

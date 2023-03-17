@@ -1,17 +1,16 @@
 // Dependencies
-import fs, { readFileSync, readdirSync } from 'fs';
-const { promises: { access, }, } = fs;
+import { readFileSync, readdirSync, accessSync } from 'fs';
 import { parse } from 'json2csv';
 import csvtojsonV2 from 'csvtojson';
 
 /**
  * Check if the given file exists
  * @param {String} filePath 
- * @returns {Promise<Boolean>}
+ * @returns {<Boolean>}
  */
-const fileExists = async (filePath) => {
+const fileExists = (filePath) => {
     try {
-        await access(filePath);
+        accessSync(filePath);
         return true;
     } catch (err) {
         return false;
@@ -77,7 +76,11 @@ const combine = (scrapeMode, dataDir) => {
                     };
                 }
                 const { hotelName, hotelId, title, content, } = review;
+
+                // Check if the hotel ID is supplied
+                if (!hotelId) return { hotelName, title, content, };
                 return { hotelName, hotelId, title, content, };
+
             });
 
         return extracted;
