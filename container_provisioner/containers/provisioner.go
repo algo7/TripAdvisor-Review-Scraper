@@ -17,7 +17,7 @@ func Provision(fileSuffix string, uploadIdentifier string, hotelUrl string) {
 	// Create the container. Container.ID contains the ID of the container
 	Container, err := cli.ContainerCreate(ctx,
 		&container.Config{
-			Image: "tripadvisor-review-scraper/scrape:latest",
+			Image: "ghcr.io/tripadvisor-review-scraper/scrape:latest",
 			// Env vars required by the js scraper containers
 			Env: []string{
 				"CONCURRENCY=1",
