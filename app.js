@@ -128,7 +128,7 @@ const hotelScraperInit = async () => {
         // If the scraper is being called by the container provisioner, then export the csv only
         if (IS_PROVISIONER) {
             await Promise.all([
-                writeFile(`${dataDir}${fileName}`, csvData),
+                writeFile(`${dataDir}${fileName}.csv`, csvData),
                 // Close the browser instance
                 browserInstance.closeBrowser(),
             ])
