@@ -16,10 +16,11 @@ func ErrorHandler(err error) {
 	}
 }
 
-func WriteToFile(filename string, tarF io.ReadCloser) error {
+// WriteToFile writes a file to disk
+func WriteToFile(fileName string, tarF io.ReadCloser) error {
 
 	// Create the file
-	out, err := os.Create(filename)
+	out, err := os.Create(fileName)
 	ErrorHandler(err)
 	defer out.Close()
 
@@ -56,4 +57,14 @@ func WriteToFile(filename string, tarF io.ReadCloser) error {
 	ErrorHandler(err)
 
 	return nil
+}
+
+// ReadFromFile reads a file from disk
+func ReadFromFile(fileName string) io.Reader {
+	// Read file
+	file, err := os.Open("Reviews.csv")
+	defer file.Close()
+	ErrorHandler(err)
+
+	return file
 }

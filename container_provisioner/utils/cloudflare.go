@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
+	"io"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -17,18 +17,13 @@ var (
 )
 
 // R2UploadObject upload an object to R2
-func R2UploadObject() {
-
-	// Read file
-	file, err := os.Open("Reviews.csv")
-	defer file.Close()
-	ErrorHandler(err)
+func R2UploadObject(fileName, fileData io.Reader) {
 
 	// Upload an object to R2
-	_, err = s3Client.PutObject(context.TODO(), &s3.PutObjectInput{
+	_, err := s3Client.PutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket: &bucketName,
 		Key:    aws.String("All.csv"),
-		Body:   file,
+		Body:   fileData,
 	})
 	ErrorHandler(err)
 }
