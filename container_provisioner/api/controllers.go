@@ -57,10 +57,10 @@ func postProvision(c *fiber.Ctx) error {
 	uploadIdentifier := c.FormValue("upload_identifier")
 
 	// Validate the uploadIdentifier field
-	if uploadIdentifier == "" {
+	if uploadIdentifier == "" || len(uploadIdentifier) > 20 {
 		return c.Render("submission", fiber.Map{
 			"Title":    "Algo7 TripAdvisor Scraper",
-			"Message1": "Please provide the identifier for the data",
+			"Message1": "Please provide a valid identifier",
 		})
 	}
 

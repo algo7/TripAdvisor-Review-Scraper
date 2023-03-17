@@ -129,5 +129,5 @@ func ValidateEmailAddress(email string) bool {
 // GenerateUUID generates a UUID
 func GenerateUUID() string {
 	uuid := uuid.New()
-	return uuid.String()[:8]
+	return uuid.String()[:11]
 }
