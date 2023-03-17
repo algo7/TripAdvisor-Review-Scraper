@@ -8,6 +8,8 @@ import (
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 type Creds struct {
@@ -110,4 +112,10 @@ func ValidateTripAdvisorHotelURL(url string) bool {
 	regex := `^https:\/\/www\.tripadvisor\.com\/Hotel_Review-g\d{6}-d\d{1,10}-Reviews-[\w-]{1,255}\.html$`
 	match, _ := regexp.MatchString(regex, url)
 	return match
+}
+
+// GenerateUUID generates a UUID
+func GenerateUUID() string {
+	uuid := uuid.New()
+	return uuid.String()
 }
