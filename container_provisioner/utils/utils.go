@@ -31,6 +31,9 @@ func ErrorHandler(err error) {
 // WriteToFileFromTarStream writes a file to disk
 func WriteToFileFromTarStream(tarF io.ReadCloser) string {
 
+	// Generate a random file name
+	filePrefix := GenerateUUID()
+
 	// Untar the file
 	// Note: This is not a generic untar function. It only works for a single file
 	/**
@@ -60,7 +63,7 @@ func WriteToFileFromTarStream(tarF io.ReadCloser) string {
 	ErrorHandler(err)
 
 	// Create the file
-	out, err := os.Create(tarHeader.Name)
+	out, err := os.Create(filePrefix + "_" + tarHeader.Name)
 	ErrorHandler(err)
 	defer out.Close()
 
