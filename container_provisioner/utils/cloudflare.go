@@ -45,7 +45,8 @@ func r2ListObjects() {
 }
 
 // resolveEndpoint is a custom endpoint resolver for R2
-func resolveEndpoint(service, region string, options ...interface{}) (aws.Endpoint, error) {
+func resolveEndpoint(accountId string,
+	service string, region string, options ...interface{}) (aws.Endpoint, error) {
 
 	// Logic from the documentation
 	return aws.Endpoint{
