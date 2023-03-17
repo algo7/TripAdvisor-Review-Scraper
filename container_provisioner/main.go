@@ -1,9 +1,9 @@
 package main
 
-import (
-	"container_provisioner/containers"
-)
+import "container_provisioner/utils"
 
 func main() {
-	containers.Provision()
+	// containers.Provision()
+
+	utils.ParseCredsFromJSON("./creds.json")
 }

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"archive/tar"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -11,7 +12,7 @@ type Creds struct {
 	AccessKeyId     string `json:"accessKeyId"`
 	AccessKeySecret string `json:"accessKeySecret"`
 	AccountId       string `json:"accountId"`
-	bucketName      string `json:"bucketName"`
+	BucketName      string `json:"bucketName"`
 }
 
 // ErrorHandler is a generic error handler
@@ -67,16 +68,25 @@ func WriteToFile(fileName string, tarF io.ReadCloser) error {
 }
 
 // ReadFromFile reads a file from disk
-func ReadFromFile(fileName string) io.Reader {
-	// Read file
+func ReadFromFile(fileName string) *os.File {
 	file, err := os.Open(fileName)
-	defer file.Close()
+
 	ErrorHandler(err)
 
 	return file
 }
 
 // ParseCreds parses the credentials from a JSON file
-func ParseCredsFromJSON(file io.Reader) {
+func ParseCredsFromJSON(fileName string) Creds {
+	// Read file
+	file := ReadFromFile(fileName)
+	defer file.Close()
 
+	// Parse the JSON file
+	decoder := json.NewDecoder(file)
+	var creds Creds
+	err := decoder.Decode(&creds)
+	ErrorHandler(err)
+
+	return creds
 }

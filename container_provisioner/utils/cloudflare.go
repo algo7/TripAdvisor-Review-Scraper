@@ -14,11 +14,10 @@ import (
 
 var (
 	bucketName = "reviews"
-	s3Client   = createS3Client()
 )
 
 // R2UploadObject upload an object to R2
-func R2UploadObject(fileName string, fileData io.Reader) {
+func R2UploadObject(s3Client *s3.Client, fileName string, fileData io.Reader) {
 
 	// Upload an object to R2
 	_, err := s3Client.PutObject(context.TODO(), &s3.PutObjectInput{
@@ -30,7 +29,7 @@ func R2UploadObject(fileName string, fileData io.Reader) {
 }
 
 // r2ListObjects List objects in R2
-func r2ListObjects() {
+func r2ListObjects(s3Client *s3.Client) {
 
 	// List objects in R2
 	listObjectsOutput, err := s3Client.ListObjectsV2(context.TODO(), &s3.ListObjectsV2Input{
