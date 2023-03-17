@@ -84,8 +84,7 @@ func R2ListObjects() []R2Obj {
 
 		// Enrich the full R2 object with the metadata
 		for k, v := range metaResp.Metadata {
-			fmt.Println(k, v)
-			// Check if the key is UploadedBy
+			// Check if the key is uploadedby
 			// Map keys are turned into lowercase by the SDK
 			if k == "uploadedby" {
 				r2Obj.Metadata = v
