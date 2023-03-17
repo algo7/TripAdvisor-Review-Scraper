@@ -28,6 +28,11 @@ func postProvision(c *fiber.Ctx) error {
 	// Get the email from the form
 	email := c.FormValue("email")
 
+	// Validate the email
+	if !utils.ValidateEmailAddress(email) {
+		return c.SendString("Invalid email")
+	}
+
 	// Check if the URL matches the regex
 	if !utils.ValidateTripAdvisorHotelURL(url) {
 		return c.SendString("Invalid URL")
