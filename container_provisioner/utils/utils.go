@@ -62,8 +62,10 @@ func WriteToFileFromTarStream(tarF io.ReadCloser) string {
 	tarHeader, err := tarReader.Next()
 	ErrorHandler(err)
 
+	fileNameToWrite := fmt.Sprintf("%s-%s", filePrefix, tarHeader.Name)
+
 	// Create the file
-	out, err := os.Create(filePrefix + "_" + tarHeader.Name)
+	out, err := os.Create(fileNameToWrite)
 	ErrorHandler(err)
 	defer out.Close()
 
@@ -72,7 +74,7 @@ func WriteToFileFromTarStream(tarF io.ReadCloser) string {
 	ErrorHandler(err)
 
 	// Return the file name
-	return tarHeader.Name
+	return fileNameToWrite
 }
 
 // ReadFromFile reads a file from disk
