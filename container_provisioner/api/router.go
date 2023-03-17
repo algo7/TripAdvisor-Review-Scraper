@@ -2,17 +2,16 @@ package api
 
 import (
 	"container_provisioner/utils"
-	"fmt"
 )
 
+// Router is the main router for the API
 func Router() {
 
 	app := ServerInstantiate()
 
-	app.Get("/", mainView)
+	app.Get("/", getMain)
+	app.Post("/submit", postProvision)
 
-	fmt.Println("Server started on port 3000")
 	err := app.Listen(":3000")
 	utils.ErrorHandler(err)
-
 }
