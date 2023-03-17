@@ -1,10 +1,17 @@
 package api
 
 import (
+	"container_provisioner/utils"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/template/html"
 )
 
 var (
+
+	// Initialize standard Go html template engine
+	engine = html.New("../Views/main.html", ".html")
+
 	// Custom config
 	App = fiber.New(fiber.Config{
 		Prefork:       true,
@@ -12,9 +19,11 @@ var (
 		StrictRouting: true,
 		ServerHeader:  "Algo7 TripAdvisor Scraper",
 		AppName:       "Algo7 TripAdvisor Scraper v1.0.0",
+		Views:         engine,
 	})
 )
 
 func ServerInit() {
-	App.Listen(":3000")
+	err := App.Listen(":3000")
+	utils.ErrorHandler(err)
 }
