@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	containers.Provision()
+	exportedFileName := containers.Provision()
 
 	// Read the creds from the JSON file
 	data := utils.ParseCredsFromJSON("./creds.json")
@@ -15,8 +15,8 @@ func main() {
 	s3Client := utils.CreateS3Client(data.AccessKeyId, data.AccessKeySecret, data.AccountId)
 
 	// Read the exported csv file
-	file := utils.ReadFromFile("Reviews.csv")
+	file := utils.ReadFromFile(exportedFileName)
 
-	utils.R2UploadObject(s3Client, data.BucketName, "test.txt", file)
-
+	// Upload the file to R2
+	utils.R2UploadObject(s3Client, data.BucketName, exportedFileName, file)
 }
