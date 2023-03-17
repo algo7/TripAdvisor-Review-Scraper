@@ -3,6 +3,8 @@ services:
   # Service name
   container_provisioner:
     build: .
+    environment:
+      IS_CONTAINER: true
     # Image name
     image: ghcr.io/algo7/tripadvisor-review-scraper/container_provisioner:v1
     volumes:
