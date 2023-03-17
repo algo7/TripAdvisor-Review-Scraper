@@ -143,8 +143,6 @@ func ParseTime(timeToParse string) string {
 	// Format the time string in a more readable way
 	formattedTime := t.Format("01/02/2006 15:04:05 MST")
 
-	fmt.Println(formattedTime)
-
 	return formattedTime
 }
 
