@@ -23,6 +23,14 @@ func postProvision(c *fiber.Ctx) error {
 		return c.SendString("Invalid URL")
 	}
 
+	// Get the number of running containers
+	runningContainers := containers.CountRunningContainer()
+
+	if runningContainers >= 5 {
+		return c.SendString("Sorry, we are currently busy. Please try again later")
+	}
+
+	// Provision the container
 	go containers.Provision(url)
 
 	return c.SendString("Your file will be to your email address when finished 👋")
