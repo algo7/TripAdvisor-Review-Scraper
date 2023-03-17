@@ -1,15 +1,18 @@
 package api
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"container_provisioner/utils"
+	"fmt"
 )
 
-var app = App
-
 func Router() {
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
 
-	// app.Post("/submit", scrape)
+	app := ServerInstantiate()
+
+	app.Get("/", mainView)
+
+	fmt.Println("Server started on port 3000")
+	err := app.Listen(":3000")
+	utils.ErrorHandler(err)
+
 }

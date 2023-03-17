@@ -6,9 +6,6 @@ import (
 
 func main() {
 
-	// Start the API server
-	api.ServerInit()
-
 	// Load the API routes
 	api.Router()
 
