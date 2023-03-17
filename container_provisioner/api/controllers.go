@@ -14,6 +14,7 @@ type Row struct {
 	FileName   string
 	Link       string
 	UploadedBy string
+	Date       string
 }
 
 // getMain renders the main page
@@ -34,6 +35,7 @@ func getMain(c *fiber.Ctx) error {
 			FileName:   r2Obj.Key,
 			Link:       R2Url + r2Obj.Key,
 			UploadedBy: r2Obj.Metadata,
+			Date:       r2Obj.LastModified,
 		}
 	}
 
