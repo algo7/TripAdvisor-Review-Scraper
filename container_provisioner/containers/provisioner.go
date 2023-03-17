@@ -83,7 +83,6 @@ func Provision() {
 	err = cli.ContainerRemove(ctx, Container.ID, types.ContainerRemoveOptions{
 		RemoveVolumes: true,
 		Force:         true,
-		RemoveLinks:   true,
 	})
 	utils.ErrorHandler(err)
 }
