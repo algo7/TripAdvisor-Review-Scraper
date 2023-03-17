@@ -72,7 +72,7 @@ func postProvision(c *fiber.Ctx) error {
 	// Get the number of running containers
 	runningContainers := containers.CountRunningContainer()
 
-	if runningContainers >= 5 {
+	if runningContainers >= 10 {
 		return c.Render("submission", fiber.Map{
 			"Title":    "Algo7 TripAdvisor Scraper",
 			"Message1": "Sorry, we are currently busy. Please try again later",

@@ -18,6 +18,7 @@ var (
 	data = ParseCredsFromJSON("./credentials/creds.json")
 	// Create a new R2 client
 	r2Client = CreateR2Client(data.AccessKeyId, data.AccessKeySecret, data.AccountId)
+	ctx      = context.TODO()
 )
 
 // R2 object struct
@@ -35,7 +36,7 @@ type R2Obj struct {
 func R2UploadObject(fileName string, uploadIdentifier string, fileData io.Reader) {
 
 	// Upload an object to R2
-	_, err := r2Client.PutObject(context.TODO(), &r2.PutObjectInput{
+	_, err := r2Client.PutObject(ctx, &r2.PutObjectInput{
 		Bucket: &data.BucketName,
 		Key:    aws.String(fileName),
 		Body:   fileData,
@@ -53,7 +54,7 @@ func R2UploadObject(fileName string, uploadIdentifier string, fileData io.Reader
 func R2ListObjects() []R2Obj {
 
 	// List objects in R2
-	listObjectsOutput, err := r2Client.ListObjectsV2(context.TODO(), &r2.ListObjectsV2Input{
+	listObjectsOutput, err := r2Client.ListObjectsV2(ctx, &r2.ListObjectsV2Input{
 		Bucket:     &data.BucketName,
 		FetchOwner: true,
 	})
@@ -77,7 +78,7 @@ func R2ListObjects() []R2Obj {
 		ErrorHandler(err)
 
 		// Call HeadObject to retrieve metadata for the object
-		metaResp, err := r2Client.HeadObject(context.TODO(), &r2.HeadObjectInput{
+		metaResp, err := r2Client.HeadObject(ctx, &r2.HeadObjectInput{
 			Bucket: &data.BucketName,
 			Key:    aws.String(r2Obj.Key),
 		})
@@ -111,7 +112,7 @@ func CreateR2Client(accessKeyId string, accessKeySecret string, accountId string
 	})
 
 	// Load the default configuration
-	cfg, err := config.LoadDefaultConfig(context.TODO(),
+	cfg, err := config.LoadDefaultConfig(ctx,
 		config.WithEndpointResolverWithOptions(r2Resolver),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKeyId, accessKeySecret, "")),
 	)
