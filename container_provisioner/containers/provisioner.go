@@ -38,6 +38,7 @@ func Provision() string {
 				"CONCURRENCY=1",
 				"SCRAPE_MODE=HOTEL",
 				"HOTEL_NAME=BRO",
+				"IS_PROVISIONER=true",
 				"HOTEL_URL=https://www.tripadvisor.com/Hotel_Review-g188107-d199124-Reviews-Hotel_Des_Voyageurs-Lausanne_Canton_of_Vaud.html"},
 		},
 		&container.HostConfig{

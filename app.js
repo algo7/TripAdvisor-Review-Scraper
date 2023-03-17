@@ -21,7 +21,11 @@ const dataDir = join(__dirname, './reviews/');
 const sourceDir = join(__dirname, './source/');
 
 // Environment variables
-let { SCRAPE_MODE, CONCURRENCY, LANGUAGE, HOTEL_NAME, HOTEL_URL } = process.env;
+let { SCRAPE_MODE, CONCURRENCY, LANGUAGE,
+    HOTEL_NAME, HOTEL_URL,
+    IS_PROVISIONER // If the scraper is being called by the container provisioner
+} = process.env;
+
 CONCURRENCY = parseInt(CONCURRENCY);
 if (!CONCURRENCY) CONCURRENCY = 2;
 if (!LANGUAGE || LANGUAGE !== 'fr') LANGUAGE = 'en';
@@ -47,6 +51,8 @@ const dataSourceHotel = join(__dirname, './source/hotels.csv');
 const hotelScraperInit = async () => {
     try {
 
+        // Get a browser instance
+        await browserInstance.launch()
 
         // Get the raw data from env variables or csv file
         let rawData = [
@@ -55,10 +61,6 @@ const hotelScraperInit = async () => {
                 webUrl: HOTEL_URL,
             }
         ]
-
-        // Get a browser instance
-        await browserInstance.launch()
-
 
         // If the env variables are not set, get the data from the csv file
         if (!rawData[0].name) {
@@ -69,13 +71,9 @@ const hotelScraperInit = async () => {
                 throw Error('Source file does not exist');
             }
 
-            [rawData] = await Promise.all([
-                // Convert the csv to json
-                csvToJSON(dataSourceHotel),
-                // Get a browser instance
-                browserInstance.launch()
-            ])
-        }
+            // Convert the csv to json
+            rawData = csvToJSON(dataSourceHotel)
+        };
 
         console.log(chalk.bold.yellow(`Scraping ${chalk.magenta(rawData.length)} Hotels`));
 
@@ -107,12 +105,13 @@ const hotelScraperInit = async () => {
         reviewInfo.push(finalData);
 
         // Write the review of each individual hotel to files
-        await Promise.all(
+        const fileName = await Promise.all(
             reviewInfo
                 .flat()
                 .map(async ({ finalData, fileName }) => {
                     const dataToWrite = JSON.stringify(finalData, null, 2);
                     await writeFile(`${dataDir}${fileName}.json`, dataToWrite);
+                    if (IS_PROVISIONER) return fileName;
                 })
         );
 
@@ -126,6 +125,18 @@ const hotelScraperInit = async () => {
         const csvData = reviewJSONToCsv(combinedData);
 
 
+        // If the scraper is being called by the container provisioner, then export the csv only
+        if (IS_PROVISIONER) {
+            await Promise.all([
+                writeFile(`${dataDir}${fileName}`, csvData),
+                // Close the browser instance
+                browserInstance.closeBrowser(),
+            ])
+
+            return 'Scraping Done';
+        }
+
+        // Otherwise, export both the csv and json
         await Promise.all([
             writeFile(`${dataDir}All.json`, jsonData),
             writeFile(`${dataDir}All.csv`, csvData),
@@ -134,6 +145,7 @@ const hotelScraperInit = async () => {
         ])
 
         return 'Scraping Done';
+
 
     } catch (err) {
         throw err;

@@ -115,9 +115,6 @@ const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
 const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hotelId, browser) => {
     try {
 
-        // If hotelId is not provided, set it to 'N/A'
-        if (!hotelId) hotelId = 'N/A';
-
         // Open a new page
         const page = await browser.getNewPage()
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
