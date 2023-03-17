@@ -62,7 +62,7 @@ func WriteToFile(fileName string, tarF io.ReadCloser) error {
 // ReadFromFile reads a file from disk
 func ReadFromFile(fileName string) io.Reader {
 	// Read file
-	file, err := os.Open("Reviews.csv")
+	file, err := os.Open(fileName)
 	defer file.Close()
 	ErrorHandler(err)
 
