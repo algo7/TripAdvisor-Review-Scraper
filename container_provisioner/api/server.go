@@ -10,7 +10,7 @@ import (
 var (
 
 	// Initialize standard Go html template engine
-	engine = html.New("../Views/main.html", ".html")
+	engine = html.New("./views", ".html")
 
 	// Custom config
 	App = fiber.New(fiber.Config{
