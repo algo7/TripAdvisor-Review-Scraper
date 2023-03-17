@@ -13,16 +13,17 @@ import (
 )
 
 var (
-	s3Client = createS3Client()
+	bucketName = "reviews"
+	s3Client   = createS3Client()
 )
 
 // R2UploadObject upload an object to R2
-func R2UploadObject(fileName, fileData io.Reader) {
+func R2UploadObject(fileName string, fileData io.Reader) {
 
 	// Upload an object to R2
 	_, err := s3Client.PutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket: &bucketName,
-		Key:    aws.String("All.csv"),
+		Key:    aws.String(fileName),
 		Body:   fileData,
 	})
 	ErrorHandler(err)
