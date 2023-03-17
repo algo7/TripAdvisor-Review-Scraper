@@ -82,7 +82,7 @@ func postProvision(c *fiber.Ctx) error {
 	filePrefix := utils.GenerateUUID()
 
 	// Get the hotel name from the URL
-	hotelName := utils.GetHotelNameFromURL(url)
+	// hotelName := utils.GetHotelNameFromURL(url)
 
 	// Provision the container via goroutine
 	go containers.Provision(filePrefix, uploadIdentifier, url)
@@ -91,8 +91,9 @@ func postProvision(c *fiber.Ctx) error {
 		"Title": "Algo7 TripAdvisor Scraper",
 		// "Message": fmt.Sprintf("Your request has been submitted. You will receive an email at %s when the data is ready", email),
 		"Message1": "Your request has been submitted. ",
-		"Message2": "Please check the following link for your data:",
-		"URL":      R2Url + filePrefix + "-" + "0" + "_" + hotelName + ".csv",
-		"Message4": "Your data should be available shortly.",
+		"Message2": "Return to the Home Page and Check for Your File.",
+		"Message3": "Your data should be available shortly.",
+		"UploadID": uploadIdentifier,
+		// "URL":      R2Url + filePrefix + "-" + "0" + "_" + hotelName + ".csv",
 	})
 }
