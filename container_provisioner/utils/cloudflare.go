@@ -46,7 +46,7 @@ func R2UploadObject(fileName string, fileData io.Reader) {
 	ErrorHandler(err)
 }
 
-// R2ListObjects List objects in R2
+// R2ListObjects List objects in R2 and return a string slice of the file names
 func R2ListObjects() []string {
 
 	// List objects in R2
