@@ -16,7 +16,7 @@ var (
 )
 
 // Provision creates a container, runs it, tails the log and wait for it to exit, and export the file name
-func Provision(hotelUrl string) {
+func Provision(filePrefix string, hotelUrl string) {
 
 	// Get the hotel name from the URL
 	hotelName := utils.GetHotelNameFromURL(hotelUrl)
@@ -87,7 +87,7 @@ func Provision(hotelUrl string) {
 	utils.ErrorHandler(err)
 
 	// Write the file to the host
-	exportedFileName := utils.WriteToFileFromTarStream(fileReader)
+	exportedFileName := utils.WriteToFileFromTarStream(filePrefix, fileReader)
 
 	// Read the exported csv file
 	file := utils.ReadFromFile(exportedFileName)

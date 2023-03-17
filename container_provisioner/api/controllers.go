@@ -56,9 +56,11 @@ func postProvision(c *fiber.Ctx) error {
 			"Message": "Sorry, we are currently busy. Please try again later",
 		})
 	}
+	// Generate a random file name
+	filePrefix := utils.GenerateUUID()
 
 	// Provision the container via goroutine
-	go containers.Provision(url)
+	go containers.Provision(filePrefix, url)
 
 	return c.Render("submission", fiber.Map{
 		"Title":   "Algo7 TripAdvisor Scraper",
