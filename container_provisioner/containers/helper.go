@@ -16,13 +16,6 @@ var (
 	cli = initializeDockerClient()
 )
 
-// initializeDockerClient initialize a new docker api client
-func initializeDockerClient() *client.Client {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	utils.ErrorHandler(err)
-	return cli
-}
-
 // CountRunningContainer lists the number of running containers
 func CountRunningContainer() int {
 
@@ -39,6 +32,13 @@ func CountRunningContainer() int {
 	}
 	// -1 otherwise the current process will also be counted as a running container
 	return len(containers) - 1
+}
+
+// initializeDockerClient initialize a new docker api client
+func initializeDockerClient() *client.Client {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	utils.ErrorHandler(err)
+	return cli
 }
 
 // pullImage pulls the given image from a registry
