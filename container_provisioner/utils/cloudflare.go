@@ -20,6 +20,17 @@ var (
 	r2Client = CreateR2Client(data.AccessKeyId, data.AccessKeySecret, data.AccountId)
 )
 
+// R2 object struct
+type R2Obj struct {
+	ChecksumAlgorithm string `json:"checksumAlgorithm"`
+	Etag              string `json:"Etag"`
+	Key               string `json:"Key"`
+	LastModified      string `json:"LastModified"`
+	Size              int64  `json:"Size"`
+	StorageClass      string `json:"StorageClass"`
+	Owner             string `json:"Owner"`
+}
+
 // R2UploadObject upload an object to R2
 func R2UploadObject(fileName string, fileData io.Reader) {
 
@@ -36,7 +47,7 @@ func R2UploadObject(fileName string, fileData io.Reader) {
 }
 
 // R2ListObjects List objects in R2
-func R2ListObjects() {
+func R2ListObjects() []string {
 
 	// List objects in R2
 	listObjectsOutput, err := r2Client.ListObjectsV2(context.TODO(), &r2.ListObjectsV2Input{
@@ -44,10 +55,23 @@ func R2ListObjects() {
 	})
 	ErrorHandler(err)
 
+	// String slice to hold the file names
+	fileNames := []string{}
+
+	// _ reqiored to ignore the error
 	for _, object := range listObjectsOutput.Contents {
-		obj, _ := json.MarshalIndent(object, "", "\t")
-		fmt.Println(string(obj))
+
+		obj, err := json.MarshalIndent(object, "", "\t")
+		ErrorHandler(err)
+
+		r2Obj := R2Obj{}
+
+		err = json.Unmarshal([]byte(obj), &r2Obj)
+		ErrorHandler(err)
+
+		fileNames = append(fileNames, r2Obj.Key)
 	}
+	return fileNames
 }
 
 // CreateR2Client creates a new R2 client
