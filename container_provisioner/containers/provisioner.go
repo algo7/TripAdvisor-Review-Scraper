@@ -2,7 +2,6 @@ package containers
 
 import (
 	"container_provisioner/utils"
-	"context"
 	"fmt"
 
 	"github.com/docker/docker/api/types"
@@ -11,9 +10,6 @@ import (
 
 // Provision creates a container, runs it, tails the log and wait for it to exit, and export the file name
 func Provision(filePrefix string, uploadIdentifier string, hotelUrl string) {
-	ctx := context.Background()
-	cli := initializeDockerClient()
-	defer cli.Close()
 
 	// Get the hotel name from the URL
 	hotelName := utils.GetHotelNameFromURL(hotelUrl)
@@ -21,7 +17,7 @@ func Provision(filePrefix string, uploadIdentifier string, hotelUrl string) {
 	// Create the container. Container.ID contains the ID of the container
 	Container, err := cli.ContainerCreate(ctx,
 		&container.Config{
-			Image: "ghcr.io/algo7/tripadvisor-review-scraper/scrap:latest",
+			Image: "scrap:latest",
 			// Env vars required by the js scraper containers
 			Env: []string{
 				"CONCURRENCY=1",
@@ -47,11 +43,16 @@ func Provision(filePrefix string, uploadIdentifier string, hotelUrl string) {
 	// Wait for the container to exit
 	statusCh, errCh := cli.ContainerWait(ctx, Container.ID, container.WaitConditionNotRunning)
 
-	// ContainerWait returns 2 channels. One for the status and one for the error
+	// ContainerWait returns 2 channels. One for the status and one for the wait error (not execution error)
 	select {
 	case err := <-errCh:
 		utils.ErrorHandler(err)
-	case <-statusCh:
+
+	case status := <-statusCh:
+		// If the container exited with non-zero status code, remove the container and return an error
+		if status.StatusCode != 0 {
+			removeContainer(Container.ID)
+		}
 	}
 
 	// The file path in the container
@@ -70,4 +71,5 @@ func Provision(filePrefix string, uploadIdentifier string, hotelUrl string) {
 	// Upload the file to R2
 	utils.R2UploadObject(exportedFileName, uploadIdentifier, file)
 
+	removeContainer(Container.ID)
 }

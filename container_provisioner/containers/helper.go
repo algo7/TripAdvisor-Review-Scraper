@@ -11,6 +11,11 @@ import (
 	"github.com/docker/docker/pkg/stdcopy"
 )
 
+var (
+	ctx = context.Background()
+	cli = initializeDockerClient()
+)
+
 func initializeDockerClient() *client.Client {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	utils.ErrorHandler(err)
@@ -19,9 +24,6 @@ func initializeDockerClient() *client.Client {
 
 // CountRunningContainer lists the number of running containers
 func CountRunningContainer() int {
-	ctx := context.Background()
-	cli := initializeDockerClient()
-	defer cli.Close()
 
 	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{
 		All: false, // Only running containers
@@ -33,9 +35,6 @@ func CountRunningContainer() int {
 
 // pullImage pulls the given image from a registry
 func pullImage(image string) {
-	ctx := context.Background()
-	cli := initializeDockerClient()
-	defer cli.Close()
 
 	reader, err := cli.ImagePull(ctx, image, types.ImagePullOptions{})
 	utils.ErrorHandler(err)
@@ -48,9 +47,6 @@ func pullImage(image string) {
 
 // tailLog tails the log of the container with the given ID
 func tailLog(containerId string) {
-	ctx := context.Background()
-	cli := initializeDockerClient()
-	defer cli.Close()
 
 	// Print the logs of the container
 	out, err := cli.ContainerLogs(ctx, containerId, types.ContainerLogsOptions{ShowStdout: true, Follow: true})
@@ -63,9 +59,6 @@ func tailLog(containerId string) {
 
 // removeContainer removes the container with the given ID
 func removeContainer(containerId string) {
-	ctx := context.Background()
-	cli := initializeDockerClient()
-	defer cli.Close()
 
 	// Remove the container
 	err := cli.ContainerRemove(ctx, containerId, types.ContainerRemoveOptions{
