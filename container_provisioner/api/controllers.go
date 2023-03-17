@@ -25,5 +25,5 @@ func postProvision(c *fiber.Ctx) error {
 
 	go containers.Provision(url)
 
-	return c.SendString("Hello, World 👋!" + url)
+	return c.SendString("Your file will be to your email address when finished 👋")
 }
