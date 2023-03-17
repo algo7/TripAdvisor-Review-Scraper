@@ -134,12 +134,15 @@
             required
           />
           <br />
-          <label for="email"><h3>Enter You EHL Email Address:</h3></label>
+          <label for="upload_identifier"
+            ><h3>Enter You Upload Identifier:</h3>
+            <h5>It's for you to find the file later</h5></label
+          >
           <input
             type="text"
-            id="email"
-            name="email"
-            placeholder="firstname.lastname@ehl.ch"
+            id="upload_identifier"
+            name="upload_identifier"
+            placeholder="rocket_fox"
             size="60"
             required
           />
@@ -157,6 +160,7 @@
           <thead>
             <tr>
               <th>File Name</th>
+              <th>Upload ID</th>
               <th>Link</th>
             </tr>
           </thead>
@@ -164,6 +168,7 @@
             {{range .Rows}}
             <tr>
               <td>{{.FileName}}</td>
+              <td>{{.UploadedBy}}</td>
               <td><a href="{{.Link}}">Link</a></td>
             </tr>
             {{end}}

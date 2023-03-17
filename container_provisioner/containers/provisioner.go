@@ -16,7 +16,7 @@ var (
 )
 
 // Provision creates a container, runs it, tails the log and wait for it to exit, and export the file name
-func Provision(filePrefix string, hotelUrl string) {
+func Provision(filePrefix string, uploadIdentifier string, hotelUrl string) {
 
 	// Get the hotel name from the URL
 	hotelName := utils.GetHotelNameFromURL(hotelUrl)
@@ -93,7 +93,7 @@ func Provision(filePrefix string, hotelUrl string) {
 	file := utils.ReadFromFile(exportedFileName)
 
 	// Upload the file to R2
-	utils.R2UploadObject(exportedFileName, file)
+	utils.R2UploadObject(exportedFileName, uploadIdentifier, file)
 
 	// Remove the container
 	err = cli.ContainerRemove(ctx, Container.ID, types.ContainerRemoveOptions{

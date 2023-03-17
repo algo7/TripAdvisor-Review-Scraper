@@ -28,17 +28,20 @@ type R2Obj struct {
 	LastModified      string `json:"LastModified"`
 	Size              int64  `json:"Size"`
 	StorageClass      string `json:"StorageClass"`
-	Owner             string `json:"Owner"`
+	Metadata          string
 }
 
 // R2UploadObject upload an object to R2
-func R2UploadObject(fileName string, fileData io.Reader) {
+func R2UploadObject(fileName string, uploadIdentifier string, fileData io.Reader) {
 
 	// Upload an object to R2
 	_, err := r2Client.PutObject(context.TODO(), &r2.PutObjectInput{
 		Bucket: &data.BucketName,
 		Key:    aws.String(fileName),
 		Body:   fileData,
+		Metadata: map[string]string{
+			"uploadedby": uploadIdentifier,
+		},
 	})
 	ErrorHandler(err)
 
@@ -47,18 +50,19 @@ func R2UploadObject(fileName string, fileData io.Reader) {
 }
 
 // R2ListObjects List objects in R2 and return a string slice of the file names
-func R2ListObjects() []string {
+func R2ListObjects() []R2Obj {
 
 	// List objects in R2
 	listObjectsOutput, err := r2Client.ListObjectsV2(context.TODO(), &r2.ListObjectsV2Input{
-		Bucket: &data.BucketName,
+		Bucket:     &data.BucketName,
+		FetchOwner: true,
 	})
 	ErrorHandler(err)
 
 	// String slice to hold the file names
-	fileNames := []string{}
+	files := []R2Obj{}
 
-	// _ reqiored to ignore the error
+	// _ required to ignore the error
 	for _, object := range listObjectsOutput.Contents {
 
 		// Marshal the object to JSON in a pretty format
@@ -72,11 +76,27 @@ func R2ListObjects() []string {
 		err = json.Unmarshal([]byte(obj), &r2Obj)
 		ErrorHandler(err)
 
-		// Append the file name to the string slice
-		fileNames = append(fileNames, r2Obj.Key)
+		// Call HeadObject to retrieve metadata for the object
+		metaResp, err := r2Client.HeadObject(context.TODO(), &r2.HeadObjectInput{
+			Bucket: &data.BucketName,
+			Key:    aws.String(r2Obj.Key),
+		})
+
+		// Enrich the full R2 object with the metadata
+		for k, v := range metaResp.Metadata {
+			fmt.Println(k, v)
+			// Check if the key is UploadedBy
+			// Map keys are turned into lowercase by the SDK
+			if k == "uploadedby" {
+				r2Obj.Metadata = v
+			}
+		}
+
+		// Append the object to the files slice
+		files = append(files, r2Obj)
 	}
 
-	return fileNames
+	return files
 }
 
 // CreateR2Client creates a new R2 client

@@ -10,24 +10,26 @@ import (
 var R2Url = "https://storage.algo7.tools/"
 
 type Row struct {
-	FileName string
-	Link     string
+	FileName   string
+	Link       string
+	UploadedBy string
 }
 
 // getMain renders the main page
 func getMain(c *fiber.Ctx) error {
 
 	// Get the list of objects from the R2 bucket
-	fileNames := utils.R2ListObjects()
+	r2Objs := utils.R2ListObjects()
 
 	// Create a slice of Row structs to hold the data for the table
-	rows := make([]Row, len(fileNames))
+	rows := make([]Row, len(r2Objs))
 
 	// Populate the rows slice with data from the fileNames array
-	for i, fileName := range fileNames {
+	for i, r2Obj := range r2Objs {
 		rows[i] = Row{
-			FileName: fileName,
-			Link:     R2Url + fileName,
+			FileName:   r2Obj.Key,
+			Link:       R2Url + r2Obj.Key,
+			UploadedBy: r2Obj.Metadata,
 		}
 	}
 
@@ -48,13 +50,13 @@ func postProvision(c *fiber.Ctx) error {
 	url := c.FormValue("url")
 
 	// Get the email from the form
-	email := c.FormValue("email")
+	uploadIdentifier := c.FormValue("upload_identifier")
 
-	// Validate the email
-	if !utils.ValidateEmailAddress(email) {
+	// Validate the uploadIdentifier field
+	if uploadIdentifier == "" {
 		return c.Render("submission", fiber.Map{
 			"Title":   "Algo7 TripAdvisor Scraper",
-			"Message": "Invalid email address",
+			"Message": "Please provide the identifier for the data",
 		})
 	}
 
@@ -83,7 +85,7 @@ func postProvision(c *fiber.Ctx) error {
 	hotelName := utils.GetHotelNameFromURL(url)
 
 	// Provision the container via goroutine
-	go containers.Provision(filePrefix, url)
+	go containers.Provision(filePrefix, uploadIdentifier, url)
 
 	return c.Render("submission", fiber.Map{
 		"Title": "Algo7 TripAdvisor Scraper",
