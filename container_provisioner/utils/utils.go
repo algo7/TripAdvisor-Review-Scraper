@@ -8,6 +8,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -130,4 +131,18 @@ func ValidateEmailAddress(email string) bool {
 func GenerateUUID() string {
 	uuid := uuid.New()
 	return uuid.String()[:11]
+}
+
+// ParseTime converts ISO 8601 time to a time.Time object
+func ParseTime(timeToParse string) string {
+	// Parse the time string
+	t, err := time.Parse("2006-01-02T15:04:05.000Z", timeToParse)
+	ErrorHandler(err)
+
+	// Format the time string in a more readable way
+	formattedTime := t.Format("01/02/2006 15:04:05 MST")
+
+	fmt.Println(formattedTime)
+
+	return formattedTime
 }
