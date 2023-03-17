@@ -6,7 +6,7 @@ services:
       CONCURRENCY: 10
       LANGUAGE: en
     # Dont touch anything below if you don't know what you are doing
-    image: ghcr.io/algo7/tripadvisor-review-scraper/scrap:latest
+    image: ghcr.io/algo7/tripadvisor-review-scraper/scrape:latest
     volumes:
       - source: ./reviews
         target: /puppeteer/reviews
