@@ -19,14 +19,17 @@ type Row struct {
 // getMain renders the main page
 func getMain(c *fiber.Ctx) error {
 
-	// Get the list of objects from the R2 bucket
+	// Get the list of objects from the R2 bucket (without metadata)
 	r2Objs := utils.R2ListObjects()
 
+	// Enrich the R2 objects with metadata
+	enrichedR2Objs := utils.R2EnrichMetaData(r2Objs)
+
 	// Create a slice of Row structs to hold the data for the table
-	rows := make([]Row, len(r2Objs))
+	rows := make([]Row, len(enrichedR2Objs))
 
 	// Populate the rows slice with data from the fileNames array
-	for i, r2Obj := range r2Objs {
+	for i, r2Obj := range enrichedR2Objs {
 		rows[i] = Row{
 			FileName:   r2Obj.Key,
 			Link:       R2Url + r2Obj.Key,

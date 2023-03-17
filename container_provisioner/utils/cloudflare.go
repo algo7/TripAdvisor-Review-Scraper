@@ -46,6 +46,7 @@ func R2UploadObject(fileName string, uploadIdentifier string, fileData io.Reader
 	})
 	ErrorHandler(err)
 
+	// Remove the file from the local filesystem
 	err = os.Remove(fileName)
 	ErrorHandler(err)
 }
@@ -60,9 +61,10 @@ func R2ListObjects() []R2Obj {
 	})
 	ErrorHandler(err)
 
-	// String slice to hold the file names
+	// String slice to hold the r2 object information
 	files := []R2Obj{}
 
+	// The logic below maps the JSON to the R2Obj struct and then appends the struct to the slice of the same type
 	// _ required to ignore the error
 	for _, object := range listObjectsOutput.Contents {
 
@@ -73,24 +75,9 @@ func R2ListObjects() []R2Obj {
 		// Create a new R2 object
 		r2Obj := R2Obj{}
 
-		// Unmarshal the JSON into a struct
+		// Unmarshal the JSON into the R2Obj struct
 		err = json.Unmarshal([]byte(obj), &r2Obj)
 		ErrorHandler(err)
-
-		// Call HeadObject to retrieve metadata for the object
-		metaResp, err := r2Client.HeadObject(ctx, &r2.HeadObjectInput{
-			Bucket: &data.BucketName,
-			Key:    aws.String(r2Obj.Key),
-		})
-
-		// Enrich the full R2 object with the metadata
-		for k, v := range metaResp.Metadata {
-			// Check if the key is uploadedby
-			// Map keys are turned into lowercase by the SDK
-			if k == "uploadedby" {
-				r2Obj.Metadata = v
-			}
-		}
 
 		// Append the object to the files slice
 		files = append(files, r2Obj)
@@ -121,4 +108,32 @@ func CreateR2Client(accessKeyId string, accessKeySecret string, accountId string
 	client := r2.NewFromConfig(cfg)
 
 	return client
+}
+
+// R2EnrichMetaData enriches the R2 object in the list with the metadata
+func R2EnrichMetaData(r2ObjectList []R2Obj) []R2Obj {
+
+	// A slice of map of string key-value pairs to hold the metadata
+	metaDataMap := []map[string]string{}
+
+	// Loop through the the R2 object list and get the metadata for each object
+	for _, r2Obj := range r2ObjectList {
+
+		// Call HeadObject to retrieve metadata for the object
+		metaResp, err := r2Client.HeadObject(ctx, &r2.HeadObjectInput{
+			Bucket: &data.BucketName,
+			Key:    aws.String(r2Obj.Key),
+		})
+		ErrorHandler(err)
+
+		// Append the metadata to the metaDataMap slice
+		metaDataMap = append(metaDataMap, metaResp.Metadata)
+	}
+
+	// Enrich the R2 object list with the metadata
+	for k, v := range metaDataMap {
+		r2ObjectList[k].Metadata = v["uploadedby"]
+	}
+
+	return r2ObjectList
 }
