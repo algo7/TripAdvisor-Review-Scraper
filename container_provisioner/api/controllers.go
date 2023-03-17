@@ -7,10 +7,29 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-var R2Url = "https://storage.algo7.tools/reviews/"
+var R2Url = "https://storage.algo7.tools/"
+
+type Row struct {
+	FileName string
+	Link     string
+}
 
 // getMain renders the main page
 func getMain(c *fiber.Ctx) error {
+
+	// Get the list of objects from the R2 bucket
+	fileNames := utils.R2ListObjects()
+
+	// Create a slice of Row structs to hold the data for the table
+	rows := make([]Row, len(fileNames))
+
+	// Populate the rows slice with data from the fileNames array
+	for i, fileName := range fileNames {
+		rows[i] = Row{
+			FileName: fileName,
+			Link:     R2Url + fileName,
+		}
+	}
 
 	// Get the number of running containers
 	runningContainers := containers.CountRunningContainer()
@@ -18,6 +37,7 @@ func getMain(c *fiber.Ctx) error {
 	return c.Render("main", fiber.Map{
 		"Title":             "Algo7 TripAdvisor Scraper",
 		"RunningContainers": runningContainers,
+		"Rows":              rows,
 	})
 }
 
@@ -58,6 +78,8 @@ func postProvision(c *fiber.Ctx) error {
 
 	// Generate a random file prefix
 	filePrefix := utils.GenerateUUID()
+
+	// Get the hotel name from the URL
 	hotelName := utils.GetHotelNameFromURL(url)
 
 	// Provision the container via goroutine

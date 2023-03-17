@@ -21,6 +21,10 @@
         border: none;
         border-radius: 4px;
         cursor: pointer;
+        display: block;
+        margin: 0 auto;
+        width: 100%;
+        max-width: 200px;
       }
 
       /* Center everything on the page */
@@ -35,6 +39,58 @@
         justify-content: center;
         align-items: center;
       }
+
+      /* Style the table*/
+      td,
+      th {
+        border: 1px solid #ddd;
+        padding: 8px;
+      }
+
+      tr:nth-child(even) {
+        background-color: #f2f2f2;
+      }
+
+      tr:hover {
+        background-color: #ddd;
+      }
+
+      th {
+        padding-top: 12px;
+        padding-bottom: 12px;
+        text-align: left;
+        background-color: #04aa6d;
+        color: white;
+      }
+
+      /* Flex box */
+      .flex-container {
+        display: flex;
+        height: 100%;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        max-width: 1200px;
+      }
+
+      .form-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        box-sizing: border-box;
+        background-color: #eee;
+        margin-right: 20px;
+      }
+
+      .table-container {
+        flex: 1;
+        padding: 20px;
+        box-sizing: border-box;
+        background-color: #fff;
+      }
     </style>
   </head>
   <body>
@@ -44,34 +100,61 @@
         location.reload();
       }
     </script>
-    <h2
-      >There are currently {{.RunningContainers}} task(s) in the queue. Max
-      10.</h2
-    >
-    <form action="/submit" method="post">
-      <label for="url"><h3>Enter URL:</h3></label>
 
-      <br />
-      <input
-        type="text"
-        id="url"
-        name="url"
-        placeholder="https://www.tripadvisor.com/Hotel_Review-g188107-d11761198-Reviews-Hotel_des_Patients-Lausanne_Canton_of_Vaud.html"
-        size="60"
-        required
-      />
-      <label for="email"><h3>Enter You EHL Email Address:</h3></label>
-      <input
-        type="text"
-        id="email"
-        name="email"
-        placeholder="firstname.lastname@ehl.ch"
-        size="60"
-        required
-      />
-      <br />
-      <br />
-      <input type="submit" value="Submit" />
-    </form>
+    <div class="flex-container">
+      <!-- Form -->
+      <div class="form-container">
+        <h2
+          >There are currently {{.RunningContainers}} task(s) in the queue. Max
+          10.</h2
+        >
+        <form action="/submit" method="post">
+          <label for="url"><h3>Enter URL:</h3></label>
+          <input
+            type="text"
+            id="url"
+            name="url"
+            placeholder="https://www.tripadvisor.com/Hotel_Review-g188107-d11761198-Reviews-Hotel_des_Patients-Lausanne_Canton_of_Vaud.html"
+            size="60"
+            required
+          />
+          <br />
+          <label for="email"><h3>Enter You EHL Email Address:</h3></label>
+          <input
+            type="text"
+            id="email"
+            name="email"
+            placeholder="firstname.lastname@ehl.ch"
+            size="60"
+            required
+          />
+          <br />
+          <br />
+          <input type="submit" value="Submit" />
+        </form>
+        <br />
+      </div>
+
+      <!-- Table -->
+      <div class="table-container">
+        <h2>Files that are currently available:</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>File Name</th>
+              <th>Link</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{range .Rows}}
+            <tr>
+              <td>{{.FileName}}</td>
+              <td><a href="{{.Link}}">Link</a></td>
+            </tr>
+            {{end}}
+          </tbody>
+        </table>
+      </div>
+    </div>
   </body>
 </html>
