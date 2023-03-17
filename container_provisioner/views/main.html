@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My Form</title>
+    <style>
+      /* CSS Style for input field */
+      input[type='text'] {
+        border: 2px solid #ccc;
+        border-radius: 4px;
+        padding: 10px;
+        font-size: 16px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      /* CSS Style for submit button */
+      input[type='submit'] {
+        background-color: #4caf50;
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      /* Center everything on the page */
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <form action="http://127.0.0.1:3000/submit" method="post">
+      <label for="url">Enter URL:</label>
+      <br />
+      <input
+        type="text"
+        id="url"
+        name="url"
+        placeholder="https://example.com"
+        size="60"
+      />
+      <br />
+      <br />
+      <input type="submit" value="Submit" />
+    </form>
+  </body>
+</html>
