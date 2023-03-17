@@ -59,7 +59,10 @@ func WriteToFileFromTarStream(fileSuffix string, tarF io.ReadCloser) string {
 	tarHeader, err := tarReader.Next()
 	ErrorHandler(err)
 
-	fileNameToWrite := fmt.Sprintf("%s-%s", tarHeader.Name, fileSuffix)
+	// Remove the _0 from the file name => the scraper adds the number based on the number of hotels
+	// But with the provisioner we do 1 hotel at a time
+	newFileName := strings.Replace(tarHeader.Name, "0_", "", 1)
+	fileNameToWrite := strings.Replace(newFileName, ".csv", "_"+fileSuffix+".csv", 1)
 
 	// Create the file
 	out, err := os.Create(fileNameToWrite)
@@ -126,5 +129,5 @@ func ValidateEmailAddress(email string) bool {
 // GenerateUUID generates a UUID
 func GenerateUUID() string {
 	uuid := uuid.New()
-	return uuid.String()
+	return uuid.String()[:8]
 }
