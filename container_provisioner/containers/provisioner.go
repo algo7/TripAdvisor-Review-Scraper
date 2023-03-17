@@ -12,8 +12,8 @@ import (
 	"github.com/docker/docker/pkg/stdcopy"
 )
 
-// Provision creates a container, runs it, tails the log and wait for it to exit
-func Provision() {
+// Provision creates a container, runs it, tails the log and wait for it to exit, and export the file name
+func Provision() string {
 	ctx := context.Background()
 
 	// Connect to the Docker daemon
@@ -66,8 +66,7 @@ func Provision() {
 	utils.ErrorHandler(err)
 
 	// Write the file to the host
-	err = utils.WriteToFile("Reviews.csv", fileReader)
-	utils.ErrorHandler(err)
+	exportedFileName := utils.WriteToFile(fileReader)
 
 	// Wait for the container to exit
 	statusCh, errCh := cli.ContainerWait(ctx, Container.ID, container.WaitConditionNotRunning)
@@ -85,4 +84,7 @@ func Provision() {
 		Force:         true,
 	})
 	utils.ErrorHandler(err)
+
+	// Return the exported file name
+	return exportedFileName
 }

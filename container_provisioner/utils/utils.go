@@ -25,12 +25,7 @@ func ErrorHandler(err error) {
 }
 
 // WriteToFile writes a file to disk
-func WriteToFile(fileName string, tarF io.ReadCloser) error {
-
-	// Create the file
-	out, err := os.Create(fileName)
-	ErrorHandler(err)
-	defer out.Close()
+func WriteToFile(tarF io.ReadCloser) string {
 
 	// Untar the file
 	// Note: This is not a generic untar function. It only works for a single file
@@ -56,15 +51,21 @@ func WriteToFile(fileName string, tarF io.ReadCloser) error {
 	// Read the tar file
 	tarReader := tar.NewReader(tarF)
 
-	// Go to the next entry in the tar file
-	_, err = tarReader.Next()
+	// Get the tar header and go to the next entry in the tar file
+	tarHeader, err := tarReader.Next()
 	ErrorHandler(err)
+
+	// Create the file
+	out, err := os.Create(tarHeader.Name)
+	ErrorHandler(err)
+	defer out.Close()
 
 	// Write the file to disk
 	_, err = io.Copy(out, tarReader)
 	ErrorHandler(err)
 
-	return nil
+	// Return the file name
+	return tarHeader.Name
 }
 
 // ReadFromFile reads a file from disk
