@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 )
 
 type Creds struct {
@@ -90,4 +91,15 @@ func ParseCredsFromJSON(fileName string) Creds {
 	ErrorHandler(err)
 
 	return creds
+}
+
+// GetHotelNameFromURL get the hotel name from the URL
+func GetHotelNameFromURL(url string) string {
+	// Split the url by "/"
+	splitURL := strings.Split(url, "-")
+
+	// Get the last element of the array
+	fileName := splitURL[4]
+
+	return fileName
 }

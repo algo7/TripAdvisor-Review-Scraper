@@ -3,6 +3,7 @@ package containers
 import (
 	"container_provisioner/utils"
 	"context"
+	"fmt"
 	"io"
 	"os"
 
@@ -13,7 +14,7 @@ import (
 )
 
 // Provision creates a container, runs it, tails the log and wait for it to exit, and export the file name
-func Provision() string {
+func Provision(hotelUrl string) string {
 	ctx := context.Background()
 
 	// Connect to the Docker daemon
@@ -39,7 +40,8 @@ func Provision() string {
 				"SCRAPE_MODE=HOTEL",
 				"HOTEL_NAME=BRO",
 				"IS_PROVISIONER=true",
-				"HOTEL_URL=https://www.tripadvisor.com/Hotel_Review-g188107-d199124-Reviews-Hotel_Des_Voyageurs-Lausanne_Canton_of_Vaud.html"},
+				"HOTEL_URL=" + hotelUrl,
+			},
 		},
 		&container.HostConfig{
 			AutoRemove: false, // Cant set to true otherwise the container got deleted before copying the file
@@ -62,8 +64,14 @@ func Provision() string {
 	_, err = stdcopy.StdCopy(os.Stdout, os.Stderr, out)
 	utils.ErrorHandler(err)
 
+	// Get the hotel name from the URL
+	hotelName := utils.GetHotelNameFromURL(hotelUrl)
+
+	// The file path in the container
+	filePathInContainer := fmt.Sprintf("/puppeteer/reviews/0_%s.csv", hotelName)
+
 	// Read the file from the container as a reader interface of a tar stream
-	fileReader, _, err := cli.CopyFromContainer(ctx, Container.ID, "/puppeteer/reviews/All.csv")
+	fileReader, _, err := cli.CopyFromContainer(ctx, Container.ID, filePathInContainer)
 	utils.ErrorHandler(err)
 
 	// Write the file to the host

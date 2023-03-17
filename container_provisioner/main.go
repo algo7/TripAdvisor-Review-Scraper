@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	exportedFileName := containers.Provision()
+	exportedFileName := containers.Provision("https://www.tripadvisor.com/Hotel_Review-g188107-d199124-Reviews-Hotel_Des_Voyageurs-Lausanne_Canton_of_Vaud.html")
 
 	// Read the creds from the JSON file
 	data := utils.ParseCredsFromJSON("./creds.json")
