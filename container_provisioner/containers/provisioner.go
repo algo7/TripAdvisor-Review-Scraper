@@ -11,8 +11,7 @@ import (
 )
 
 var (
-	data = utils.ParseCredsFromJSON("./creds.json")
-	ctx  = context.Background()
+	ctx = context.Background()
 )
 
 // Provision creates a container, runs it, tails the log and wait for it to exit, and export the file name

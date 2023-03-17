@@ -1,0 +1,13 @@
+version: '3.9'
+services:
+  # Service name
+  container_provisioner:
+    build: .
+    # Image name
+    image: go:go
+    volumes:
+      - type: bind
+        source: ./credentials
+        target: /go/credentials
+        bind:
+          create_host_path: true

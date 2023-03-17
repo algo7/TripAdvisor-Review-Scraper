@@ -15,7 +15,7 @@ import (
 
 var (
 	// Read the creds from the JSON file
-	data = ParseCredsFromJSON("./creds.json")
+	data = ParseCredsFromJSON("./credentials/creds.json")
 	// Create a new R2 client
 	r2Client = CreateR2Client(data.AccessKeyId, data.AccessKeySecret, data.AccountId)
 )
