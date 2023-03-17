@@ -6,7 +6,7 @@ import (
 
 var (
 	// Custom config
-	app = fiber.New(fiber.Config{
+	App = fiber.New(fiber.Config{
 		Prefork:       true,
 		CaseSensitive: true,
 		StrictRouting: true,
@@ -14,3 +14,7 @@ var (
 		AppName:       "Algo7 TripAdvisor Scraper v1.0.0",
 	})
 )
+
+func ServerInit() {
+	App.Listen(":3000")
+}
