@@ -43,8 +43,8 @@ func r2ListObjects(s3Client *s3.Client) {
 	}
 }
 
-// Create a new S3 client
-func createS3Client(accessKeyId string, accessKeySecret string, accountId string) *s3.Client {
+// CreateS3Client creates a new S3 client
+func CreateS3Client(accessKeyId string, accessKeySecret string, accountId string) *s3.Client {
 
 	// Logic from the documentation
 	r2Resolver := aws.EndpointResolverWithOptionsFunc(func(service string, region string, options ...interface{}) (aws.Endpoint, error) {
