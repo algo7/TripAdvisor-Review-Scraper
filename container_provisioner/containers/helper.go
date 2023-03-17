@@ -16,6 +16,7 @@ var (
 	cli = initializeDockerClient()
 )
 
+// initializeDockerClient initialize a new docker api client
 func initializeDockerClient() *client.Client {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	utils.ErrorHandler(err)
