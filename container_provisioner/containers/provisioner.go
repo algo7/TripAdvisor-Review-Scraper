@@ -21,6 +21,9 @@ var (
 // Provision creates a container, runs it, tails the log and wait for it to exit, and export the file name
 func Provision(hotelUrl string) {
 
+	// Get the hotel name from the URL
+	hotelName := utils.GetHotelNameFromURL(hotelUrl)
+
 	// Connect to the Docker daemon
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	utils.ErrorHandler(err)
@@ -42,7 +45,7 @@ func Provision(hotelUrl string) {
 			Env: []string{
 				"CONCURRENCY=1",
 				"SCRAPE_MODE=HOTEL",
-				"HOTEL_NAME=BRO",
+				"HOTEL_NAME=" + hotelName,
 				"IS_PROVISIONER=true",
 				"HOTEL_URL=" + hotelUrl,
 			},
@@ -78,9 +81,6 @@ func Provision(hotelUrl string) {
 		utils.ErrorHandler(err)
 	case <-statusCh:
 	}
-
-	// Get the hotel name from the URL
-	hotelName := utils.GetHotelNameFromURL(hotelUrl)
 
 	// The file path in the container
 	filePathInContainer := fmt.Sprintf("/puppeteer/reviews/0_%s.csv", hotelName)
