@@ -135,5 +135,7 @@ func R2EnrichMetaData(r2ObjectList []R2Obj) []R2Obj {
 		r2ObjectList[k].Metadata = v["uploadedby"]
 	}
 
+	fmt.Println(sortStructByTime(r2ObjectList))
+
 	return r2ObjectList
 }

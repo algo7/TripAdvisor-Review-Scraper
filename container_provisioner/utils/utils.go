@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 
@@ -133,7 +134,7 @@ func GenerateUUID() string {
 	return uuid.String()[:11]
 }
 
-// ParseTime converts ISO 8601 time to a time.Time object
+// ParseTime converts ISO 8601 time to a more readable format
 func ParseTime(timeToParse string) string {
 	// Parse the time string
 	t, err := time.Parse("2006-01-02T15:04:05.000Z", timeToParse)
@@ -145,4 +146,28 @@ func ParseTime(timeToParse string) string {
 	fmt.Println(formattedTime)
 
 	return formattedTime
+}
+
+// sortStructByTime sorts R2Obj struct by time
+func sortStructByTime(R2Obj []R2Obj) []R2Obj {
+
+	// Define the comparator function
+	less := func(i, j int) bool {
+
+		t1, err := time.Parse(time.RFC3339Nano, R2Obj[i].LastModified)
+		if err != nil {
+			return false // error handling
+		}
+
+		t2, err := time.Parse(time.RFC3339Nano, R2Obj[j].LastModified)
+		if err != nil {
+			return false // error handling
+		}
+		return t1.Before(t2)
+	}
+
+	// Sort the logs using the comparator function
+	sort.Slice(R2Obj, less)
+
+	return R2Obj
 }
