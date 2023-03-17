@@ -12,12 +12,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-var (
-	bucketName = "reviews"
-)
-
 // R2UploadObject upload an object to R2
-func R2UploadObject(s3Client *s3.Client, fileName string, fileData io.Reader) {
+func R2UploadObject(s3Client *s3.Client, bucketName string, fileName string, fileData io.Reader) {
 
 	// Upload an object to R2
 	_, err := s3Client.PutObject(context.TODO(), &s3.PutObjectInput{

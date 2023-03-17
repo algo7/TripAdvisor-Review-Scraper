@@ -17,6 +17,6 @@ func main() {
 	// Read the exported csv file
 	file := utils.ReadFromFile("Reviews.csv")
 
-	utils.R2UploadObject(s3Client, "test.txt", file)
+	utils.R2UploadObject(s3Client, data.BucketName, "test.txt", file)
 
 }
