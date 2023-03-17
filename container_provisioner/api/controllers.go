@@ -45,7 +45,7 @@ func postProvision(c *fiber.Ctx) error {
 		return c.SendString("Sorry, we are currently busy. Please try again later")
 	}
 
-	// Provision the container
+	// Provision the container via goroutine
 	go containers.Provision(url)
 
 	return c.SendString("Your file will be to your email address when finished 👋. Please check your email" + " " + email + " " + "for the file")
