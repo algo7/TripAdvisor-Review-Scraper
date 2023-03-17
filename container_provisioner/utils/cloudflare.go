@@ -61,16 +61,21 @@ func R2ListObjects() []string {
 	// _ reqiored to ignore the error
 	for _, object := range listObjectsOutput.Contents {
 
+		// Marshal the object to JSON in a pretty format
 		obj, err := json.MarshalIndent(object, "", "\t")
 		ErrorHandler(err)
 
+		// Create a new R2 object
 		r2Obj := R2Obj{}
 
+		// Unmarshal the JSON into a struct
 		err = json.Unmarshal([]byte(obj), &r2Obj)
 		ErrorHandler(err)
 
+		// Append the file name to the string slice
 		fileNames = append(fileNames, r2Obj.Key)
 	}
+
 	return fileNames
 }
 
