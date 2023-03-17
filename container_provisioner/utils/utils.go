@@ -29,7 +29,7 @@ func ErrorHandler(err error) {
 }
 
 // WriteToFileFromTarStream writes a file to disk
-func WriteToFileFromTarStream(filePrefix string, tarF io.ReadCloser) string {
+func WriteToFileFromTarStream(fileSuffix string, tarF io.ReadCloser) string {
 
 	// Untar the file
 	// Note: This is not a generic untar function. It only works for a single file
@@ -59,7 +59,7 @@ func WriteToFileFromTarStream(filePrefix string, tarF io.ReadCloser) string {
 	tarHeader, err := tarReader.Next()
 	ErrorHandler(err)
 
-	fileNameToWrite := fmt.Sprintf("%s-%s", filePrefix, tarHeader.Name)
+	fileNameToWrite := fmt.Sprintf("%s-%s", tarHeader.Name, fileSuffix)
 
 	// Create the file
 	out, err := os.Create(fileNameToWrite)

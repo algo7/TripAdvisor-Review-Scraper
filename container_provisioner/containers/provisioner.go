@@ -9,7 +9,7 @@ import (
 )
 
 // Provision creates a container, runs it, tails the log and wait for it to exit, and export the file name
-func Provision(filePrefix string, uploadIdentifier string, hotelUrl string) {
+func Provision(fileSuffix string, uploadIdentifier string, hotelUrl string) {
 
 	// Get the hotel name from the URL
 	hotelName := utils.GetHotelNameFromURL(hotelUrl)
@@ -63,7 +63,7 @@ func Provision(filePrefix string, uploadIdentifier string, hotelUrl string) {
 	utils.ErrorHandler(err)
 
 	// Write the file to the host
-	exportedFileName := utils.WriteToFileFromTarStream(filePrefix, fileReader)
+	exportedFileName := utils.WriteToFileFromTarStream(fileSuffix, fileReader)
 
 	// Read the exported csv file
 	file := utils.ReadFromFile(exportedFileName)

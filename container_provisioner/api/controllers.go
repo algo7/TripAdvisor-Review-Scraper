@@ -83,13 +83,13 @@ func postProvision(c *fiber.Ctx) error {
 	}
 
 	// Generate a random file prefix
-	filePrefix := utils.GenerateUUID()
+	fileSuffix := utils.GenerateUUID()
 
 	// Get the hotel name from the URL
 	// hotelName := utils.GetHotelNameFromURL(url)
 
 	// Provision the container via goroutine
-	go containers.Provision(filePrefix, uploadIdentifier, url)
+	go containers.Provision(fileSuffix, uploadIdentifier, url)
 
 	return c.Render("submission", fiber.Map{
 		"Title": "Algo7 TripAdvisor Scraper",
@@ -98,6 +98,6 @@ func postProvision(c *fiber.Ctx) error {
 		"Message2": "Return to the Home Page and Check for Your File.",
 		"Message3": "Your data should be available shortly.",
 		"UploadID": fmt.Sprintf("Your Upload ID: %s", uploadIdentifier),
-		// "URL":      R2Url + filePrefix + "-" + "0" + "_" + hotelName + ".csv",
+		// "URL":      R2Url + fileSuffix + "-" + "0" + "_" + hotelName + ".csv",
 	})
 }
