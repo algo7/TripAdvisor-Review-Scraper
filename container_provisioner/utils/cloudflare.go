@@ -44,23 +44,19 @@ func r2ListObjects() {
 	}
 }
 
-// resolveEndpoint is a custom endpoint resolver for R2
-func resolveEndpoint(accountId string,
-	service string, region string, options ...interface{}) (aws.Endpoint, error) {
-
-	// Logic from the documentation
-	return aws.Endpoint{
-		URL: fmt.Sprintf("https://%s.r2.cloudflarestorage.com", accountId),
-	}, nil
-
-}
-
 // Create a new S3 client
-func createS3Client() *s3.Client {
+func createS3Client(accessKeyId string, accessKeySecret string, accountId string) *s3.Client {
 
 	// Logic from the documentation
-	r2Resolver := aws.EndpointResolverWithOptionsFunc(resolveEndpoint)
+	r2Resolver := aws.EndpointResolverWithOptionsFunc(func(service string, region string, options ...interface{}) (aws.Endpoint, error) {
 
+		// Logic from the documentation
+		return aws.Endpoint{
+			URL: fmt.Sprintf("https://%s.r2.cloudflarestorage.com", accountId),
+		}, nil
+	})
+
+	// Load the default configuration
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithEndpointResolverWithOptions(r2Resolver),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKeyId, accessKeySecret, "")),
