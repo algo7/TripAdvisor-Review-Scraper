@@ -71,5 +71,6 @@ func Provision(filePrefix string, uploadIdentifier string, hotelUrl string) {
 	// Upload the file to R2
 	utils.R2UploadObject(exportedFileName, uploadIdentifier, file)
 
+	// Remove the container
 	removeContainer(Container.ID)
 }
