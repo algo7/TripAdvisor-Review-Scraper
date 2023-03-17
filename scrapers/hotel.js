@@ -203,7 +203,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
             actualCount: reviewFlattened.length,
             position,
             allReviews: reviewFlattened,
-            fileName: `${position}_${reviewPageUrls[0].split('-')[4]} `,
+            fileName: `${position}_${reviewPageUrls[0].split('-')[4]}`,
         };
 
         return finalData;
