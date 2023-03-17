@@ -76,7 +76,11 @@ const combine = (scrapeMode, dataDir) => {
                     };
                 }
                 const { hotelName, hotelId, title, content, } = review;
+
+                // Check if the hotel ID is supplied
+                if (!hotelId) return { hotelName, title, content, };
                 return { hotelName, hotelId, title, content, };
+
             });
 
         return extracted;
