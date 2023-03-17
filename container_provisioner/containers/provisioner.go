@@ -10,11 +10,18 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
-	"github.com/docker/docker/pkg/stdcopy"
+)
+
+var (
+	// Read the creds from the JSON file
+	data = utils.ParseCredsFromJSON("./creds.json")
+
+	// Create a new R3 client
+	r2Client = utils.CreateR2Client(data.AccessKeyId, data.AccessKeySecret, data.AccountId)
 )
 
 // Provision creates a container, runs it, tails the log and wait for it to exit, and export the file name
-func Provision(hotelUrl string) string {
+func Provision(hotelUrl string) {
 	ctx := context.Background()
 
 	// Connect to the Docker daemon
@@ -56,13 +63,24 @@ func Provision(hotelUrl string) string {
 	err = cli.ContainerStart(ctx, Container.ID, types.ContainerStartOptions{})
 	utils.ErrorHandler(err)
 
-	// Print the logs of the container
-	out, err := cli.ContainerLogs(ctx, Container.ID, types.ContainerLogsOptions{ShowStdout: true, Follow: true})
-	utils.ErrorHandler(err)
+	// Log tailing disabled for now
+	// // Print the logs of the container
+	// out, err := cli.ContainerLogs(ctx, Container.ID, types.ContainerLogsOptions{ShowStdout: true, Follow: true})
+	// utils.ErrorHandler(err)
 
-	// Docker log uses multiplexed streams to send stdout and stderr in the connection. This function separates them
-	_, err = stdcopy.StdCopy(os.Stdout, os.Stderr, out)
-	utils.ErrorHandler(err)
+	// // Docker log uses multiplexed streams to send stdout and stderr in the connection. This function separates them
+	// _, err = stdcopy.StdCopy(os.Stdout, os.Stderr, out)
+	// utils.ErrorHandler(err)
+
+	// Wait for the container to exit
+	statusCh, errCh := cli.ContainerWait(ctx, Container.ID, container.WaitConditionNotRunning)
+
+	// ContainerWait returns 2 channels. One for the status and one for the error
+	select {
+	case err := <-errCh:
+		utils.ErrorHandler(err)
+	case <-statusCh:
+	}
 
 	// Get the hotel name from the URL
 	hotelName := utils.GetHotelNameFromURL(hotelUrl)
@@ -77,15 +95,11 @@ func Provision(hotelUrl string) string {
 	// Write the file to the host
 	exportedFileName := utils.WriteToFileFromTarStream(fileReader)
 
-	// Wait for the container to exit
-	statusCh, errCh := cli.ContainerWait(ctx, Container.ID, container.WaitConditionNotRunning)
+	// Read the exported csv file
+	file := utils.ReadFromFile(exportedFileName)
 
-	// ContainerWait returns 2 channels. One for the status and one for the error
-	select {
-	case err := <-errCh:
-		utils.ErrorHandler(err)
-	case <-statusCh:
-	}
+	// Upload the file to R2
+	utils.R2UploadObject(r2Client, data.BucketName, exportedFileName, file)
 
 	// Remove the container
 	err = cli.ContainerRemove(ctx, Container.ID, types.ContainerRemoveOptions{
@@ -94,6 +108,4 @@ func Provision(hotelUrl string) string {
 	})
 	utils.ErrorHandler(err)
 
-	// Return the exported file name
-	return exportedFileName
 }

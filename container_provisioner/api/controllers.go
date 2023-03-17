@@ -1,6 +1,7 @@
 package api
 
 import (
+	"container_provisioner/containers"
 	"container_provisioner/utils"
 
 	"github.com/gofiber/fiber/v2"
@@ -21,6 +22,8 @@ func postProvision(c *fiber.Ctx) error {
 	if !utils.ValidateTripAdvisorHotelURL(url) {
 		return c.SendString("Invalid URL")
 	}
+
+	go containers.Provision(url)
 
 	return c.SendString("Hello, World 👋!" + url)
 }
