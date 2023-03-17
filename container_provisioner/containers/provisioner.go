@@ -31,15 +31,22 @@ func Provision() {
 	utils.ErrorHandler(err)
 
 	// Create the container. resp.ID contains the ID of the container
-	resp, err := cli.ContainerCreate(ctx, &container.Config{
-		Image: "test:latest",
-		Env: []string{
-			"CONCURRENCY=1",
-			"SCRAPE_MODE=HOTEL",
-			"HOTEL_NAME=BRO",
-			"HOTEL_URL=https://www.tripadvisor.com/Hotel_Review-g188107-d199124-Reviews-Hotel_Des_Voyageurs-Lausanne_Canton_of_Vaud.html"},
-		Tty: false,
-	}, nil, nil, nil, "")
+	resp, err := cli.ContainerCreate(ctx,
+		&container.Config{
+			Image: "test:latest",
+			Env: []string{
+				"CONCURRENCY=1",
+				"SCRAPE_MODE=HOTEL",
+				"HOTEL_NAME=BRO",
+				"HOTEL_URL=https://www.tripadvisor.com/Hotel_Review-g188107-d199124-Reviews-Hotel_Des_Voyageurs-Lausanne_Canton_of_Vaud.html"},
+		},
+		&container.HostConfig{
+			AutoRemove: true,
+		},
+		nil, // NetworkConfig
+		nil, // Platform
+		"",  // Container name
+	)
 	utils.ErrorHandler(err)
 
 	// Start the container
@@ -54,9 +61,11 @@ func Provision() {
 	_, err = stdcopy.StdCopy(os.Stdout, os.Stderr, out)
 	utils.ErrorHandler(err)
 
+	// Read the file from the container as a reader interface of a tar stream
 	fileReader, _, err := cli.CopyFromContainer(ctx, resp.ID, "/puppeteer/reviews/All.csv")
 	utils.ErrorHandler(err)
 
+	// Write the file to the host
 	err = utils.WriteToFile("Reviews.csv", fileReader)
 	utils.ErrorHandler(err)
 
