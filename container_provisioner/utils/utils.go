@@ -7,6 +7,13 @@ import (
 	"os"
 )
 
+type Creds struct {
+	AccessKeyId     string `json:"accessKeyId"`
+	AccessKeySecret string `json:"accessKeySecret"`
+	AccountId       string `json:"accountId"`
+	bucketName      string `json:"bucketName"`
+}
+
 // ErrorHandler is a generic error handler
 func ErrorHandler(err error) {
 	if err != nil {
@@ -67,4 +74,9 @@ func ReadFromFile(fileName string) io.Reader {
 	ErrorHandler(err)
 
 	return file
+}
+
+// ParseCreds parses the credentials from a JSON file
+func ParseCredsFromJSON(file io.Reader) {
+
 }
