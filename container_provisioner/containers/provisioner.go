@@ -18,20 +18,17 @@ func Provision() {
 
 	// Connect to the Docker daemon
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		panic(err)
-	}
+	utils.ErrorHandler(err)
 	defer cli.Close()
 
 	// Pull the image
 	reader, err := cli.ImagePull(ctx, "ghcr.io/algo7/tripadvisor-review-scraper/scrap:latest", types.ImagePullOptions{})
-	if err != nil {
-		panic(err)
-	}
+	utils.ErrorHandler(err)
 	defer reader.Close()
 
 	// Print the progress of the image pull
-	io.Copy(os.Stdout, reader)
+	_, err = io.Copy(os.Stdout, reader)
+	utils.ErrorHandler(err)
 
 	// Create the container. resp.ID contains the ID of the container
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
@@ -43,41 +40,33 @@ func Provision() {
 			"HOTEL_URL=https://www.tripadvisor.com/Hotel_Review-g188107-d199124-Reviews-Hotel_Des_Voyageurs-Lausanne_Canton_of_Vaud.html"},
 		Tty: false,
 	}, nil, nil, nil, "")
-
-	if err != nil {
-		panic(err)
-	}
+	utils.ErrorHandler(err)
 
 	// Start the container
-	cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{})
-
-	if err != nil {
-		panic(err)
-	}
+	err = cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{})
+	utils.ErrorHandler(err)
 
 	// Print the logs of the container
 	out, err := cli.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{ShowStdout: true, Follow: true})
-	if err != nil {
-		panic(err)
-	}
-	stdcopy.StdCopy(os.Stdout, os.Stderr, out)
+	utils.ErrorHandler(err)
 
-	tarReader, _, err := cli.CopyFromContainer(ctx, resp.ID, "/puppeteer/reviews/All.csv")
+	// Docker log uses multiplexed streams to send stdout and stderr in the connection. This function separates them
+	_, err = stdcopy.StdCopy(os.Stdout, os.Stderr, out)
+	utils.ErrorHandler(err)
 
-	if err != nil {
-		panic(err)
-	}
+	fileReader, _, err := cli.CopyFromContainer(ctx, resp.ID, "/puppeteer/reviews/All.csv")
+	utils.ErrorHandler(err)
 
-	utils.WriteToFile("All.csv", tarReader)
+	err = utils.WriteToFile("Reviews.csv", fileReader)
+	utils.ErrorHandler(err)
 
 	// Wait for the container to exit
 	statusCh, errCh := cli.ContainerWait(ctx, resp.ID, container.WaitConditionNotRunning)
+
+	// ContainerWait returns 2 channels. One for the status and one for the error
 	select {
 	case err := <-errCh:
-		if err != nil {
-			panic(err)
-		}
+		utils.ErrorHandler(err)
 	case <-statusCh:
-
 	}
 }

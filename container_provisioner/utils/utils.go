@@ -2,18 +2,26 @@ package utils
 
 import (
 	"archive/tar"
+	"fmt"
 	"io"
 	"os"
 )
+
+// ErrorHandler is a generic error handler
+func ErrorHandler(err error) {
+	if err != nil {
+		formattedError := fmt.Errorf("Error: %w", err)
+		fmt.Println(formattedError)
+		os.Exit(0)
+	}
+}
 
 func WriteToFile(filename string, tarF io.ReadCloser) error {
 
 	// Create the file
 	out, err := os.Create(filename)
+	ErrorHandler(err)
 	defer out.Close()
-	if err != nil {
-		return err
-	}
 
 	// Untar the file
 	// Note: This is not a generic untar function. It only works for a single file
@@ -41,17 +49,11 @@ func WriteToFile(filename string, tarF io.ReadCloser) error {
 
 	// Go to the next entry in the tar file
 	_, err = tarReader.Next()
-
-	if err != nil {
-		return err
-	}
+	ErrorHandler(err)
 
 	// Write the file to disk
 	_, err = io.Copy(out, tarReader)
-
-	if err != nil {
-		return err
-	}
+	ErrorHandler(err)
 
 	return nil
 }
