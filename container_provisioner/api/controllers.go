@@ -3,6 +3,7 @@ package api
 import (
 	"container_provisioner/containers"
 	"container_provisioner/utils"
+	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -25,7 +26,7 @@ func postProvision(c *fiber.Ctx) error {
 
 	// Get the number of running containers
 	runningContainers := containers.CountRunningContainer()
-
+	fmt.Println(runningContainers)
 	if runningContainers >= 5 {
 		return c.SendString("Sorry, we are currently busy. Please try again later")
 	}

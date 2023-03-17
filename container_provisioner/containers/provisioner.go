@@ -116,7 +116,9 @@ func CountRunningContainer() int {
 	utils.ErrorHandler(err)
 	defer cli.Close()
 
-	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{})
+	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{
+		All: false, // Only running containers
+	})
 	utils.ErrorHandler(err)
 
 	return len(containers)
