@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"strings"
 )
 
@@ -102,4 +103,11 @@ func GetHotelNameFromURL(url string) string {
 	fileName := splitURL[4]
 
 	return fileName
+}
+
+// ValidateTripAdvisorURL validates the TripAdvisor Hotel URL
+func ValidateTripAdvisorHotelURL(url string) bool {
+	regex := `^https:\/\/www\.tripadvisor\.com\/Hotel_Review-g\d{6}-d\d{1,10}-Reviews-[\w-]{1,255}\.html$`
+	match, _ := regexp.MatchString(regex, url)
+	return match
 }
