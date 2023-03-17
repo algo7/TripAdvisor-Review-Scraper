@@ -30,8 +30,8 @@ func Provision() {
 	_, err = io.Copy(os.Stdout, reader)
 	utils.ErrorHandler(err)
 
-	// Create the container. resp.ID contains the ID of the container
-	resp, err := cli.ContainerCreate(ctx,
+	// Create the container. Container.ID contains the ID of the container
+	Container, err := cli.ContainerCreate(ctx,
 		&container.Config{
 			Image: "test:latest",
 			Env: []string{
@@ -50,11 +50,11 @@ func Provision() {
 	utils.ErrorHandler(err)
 
 	// Start the container
-	err = cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{})
+	err = cli.ContainerStart(ctx, Container.ID, types.ContainerStartOptions{})
 	utils.ErrorHandler(err)
 
 	// Print the logs of the container
-	out, err := cli.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{ShowStdout: true, Follow: true})
+	out, err := cli.ContainerLogs(ctx, Container.ID, types.ContainerLogsOptions{ShowStdout: true, Follow: true})
 	utils.ErrorHandler(err)
 
 	// Docker log uses multiplexed streams to send stdout and stderr in the connection. This function separates them
@@ -62,7 +62,7 @@ func Provision() {
 	utils.ErrorHandler(err)
 
 	// Read the file from the container as a reader interface of a tar stream
-	fileReader, _, err := cli.CopyFromContainer(ctx, resp.ID, "/puppeteer/reviews/All.csv")
+	fileReader, _, err := cli.CopyFromContainer(ctx, Container.ID, "/puppeteer/reviews/All.csv")
 	utils.ErrorHandler(err)
 
 	// Write the file to the host
@@ -70,13 +70,20 @@ func Provision() {
 	utils.ErrorHandler(err)
 
 	// Wait for the container to exit
-	statusCh, errCh := cli.ContainerWait(ctx, resp.ID, container.WaitConditionNotRunning)
+	statusCh, errCh := cli.ContainerWait(ctx, Container.ID, container.WaitConditionNotRunning)
 
 	// ContainerWait returns 2 channels. One for the status and one for the error
 	select {
 	case err := <-errCh:
 		utils.ErrorHandler(err)
 	case <-statusCh:
-
 	}
+
+	// Remove the container
+	err = cli.ContainerRemove(ctx, Container.ID, types.ContainerRemoveOptions{
+		RemoveVolumes: true,
+		Force:         true,
+		RemoveLinks:   true,
+	})
+	utils.ErrorHandler(err)
 }
