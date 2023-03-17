@@ -25,7 +25,7 @@ func R2UploadObject(s3Client *s3.Client, bucketName string, fileName string, fil
 }
 
 // r2ListObjects List objects in R2
-func r2ListObjects(s3Client *s3.Client) {
+func r2ListObjects(s3Client *s3.Client, bucketName string) {
 
 	// List objects in R2
 	listObjectsOutput, err := s3Client.ListObjectsV2(context.TODO(), &s3.ListObjectsV2Input{
