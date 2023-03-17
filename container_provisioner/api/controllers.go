@@ -3,7 +3,6 @@ package api
 import (
 	"container_provisioner/containers"
 	"container_provisioner/utils"
-	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -13,7 +12,6 @@ func getMain(c *fiber.Ctx) error {
 
 	// Get the number of running containers
 	runningContainers := containers.CountRunningContainer()
-	fmt.Println(runningContainers)
 
 	return c.Render("main", fiber.Map{
 		"Title":             "Algo7 TripAdvisor Scraper",
