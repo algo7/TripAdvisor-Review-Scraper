@@ -24,8 +24,8 @@ func ErrorHandler(err error) {
 	}
 }
 
-// WriteToFile writes a file to disk
-func WriteToFile(tarF io.ReadCloser) string {
+// WriteToFileFromTarStream writes a file to disk
+func WriteToFileFromTarStream(tarF io.ReadCloser) string {
 
 	// Untar the file
 	// Note: This is not a generic untar function. It only works for a single file

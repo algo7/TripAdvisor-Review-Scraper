@@ -66,7 +66,7 @@ func Provision() string {
 	utils.ErrorHandler(err)
 
 	// Write the file to the host
-	exportedFileName := utils.WriteToFile(fileReader)
+	exportedFileName := utils.WriteToFileFromTarStream(fileReader)
 
 	// Wait for the container to exit
 	statusCh, errCh := cli.ContainerWait(ctx, Container.ID, container.WaitConditionNotRunning)
