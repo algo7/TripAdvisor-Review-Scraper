@@ -24,7 +24,7 @@ func ErrorHandler(err error) {
 	if err != nil {
 		formattedError := fmt.Errorf("Error: %w", err)
 		fmt.Println(formattedError)
-		os.Exit(0)
+		panic(err)
 	}
 }
 

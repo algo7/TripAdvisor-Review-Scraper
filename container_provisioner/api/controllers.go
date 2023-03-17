@@ -3,6 +3,7 @@ package api
 import (
 	"container_provisioner/containers"
 	"container_provisioner/utils"
+	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -55,16 +56,16 @@ func postProvision(c *fiber.Ctx) error {
 	// Validate the uploadIdentifier field
 	if uploadIdentifier == "" {
 		return c.Render("submission", fiber.Map{
-			"Title":   "Algo7 TripAdvisor Scraper",
-			"Message": "Please provide the identifier for the data",
+			"Title":    "Algo7 TripAdvisor Scraper",
+			"Message1": "Please provide the identifier for the data",
 		})
 	}
 
 	// Check if the URL matches the regex
 	if !utils.ValidateTripAdvisorHotelURL(url) {
 		return c.Render("submission", fiber.Map{
-			"Title":   "Algo7 TripAdvisor Scraper",
-			"Message": "Invalid URL",
+			"Title":    "Algo7 TripAdvisor Scraper",
+			"Message1": "Invalid URL",
 		})
 	}
 
@@ -73,8 +74,8 @@ func postProvision(c *fiber.Ctx) error {
 
 	if runningContainers >= 5 {
 		return c.Render("submission", fiber.Map{
-			"Title":   "Algo7 TripAdvisor Scraper",
-			"Message": "Sorry, we are currently busy. Please try again later",
+			"Title":    "Algo7 TripAdvisor Scraper",
+			"Message1": "Sorry, we are currently busy. Please try again later",
 		})
 	}
 
@@ -93,7 +94,7 @@ func postProvision(c *fiber.Ctx) error {
 		"Message1": "Your request has been submitted. ",
 		"Message2": "Return to the Home Page and Check for Your File.",
 		"Message3": "Your data should be available shortly.",
-		"UploadID": uploadIdentifier,
+		"UploadID": fmt.Sprintf("Your Upload ID: %s", uploadIdentifier),
 		// "URL":      R2Url + filePrefix + "-" + "0" + "_" + hotelName + ".csv",
 	})
 }
