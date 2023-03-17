@@ -4,10 +4,26 @@ services:
   container_provisioner:
     build: .
     # Image name
-    image: go:go
+    image: go:go1
     volumes:
       - type: bind
         source: ./credentials
-        target: /go/credentials
+        target: /go/src/app/credentials
         bind:
           create_host_path: true
+    # Map the ports | bind to localhost
+    ports:
+      # Port in the container
+      - target: 3000
+        # Port used by the routing mesh
+        published: 3000
+        protocol: tcp
+    # Set up a dedicated network
+    networks:
+      - scraper
+
+## Config section
+# Define the network type
+networks:
+  scraper:
+    external: false
