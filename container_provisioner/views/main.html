@@ -38,6 +38,12 @@
     </style>
   </head>
   <body>
+    <script>
+      if (window.performance.navigation.type === 2) {
+        // reload the page if the user navigated back using the "Back" button
+        location.reload();
+      }
+    </script>
     <h2
       >There are currently {{.RunningContainers}} task(s) in the queue. Max
       10.</h2
