@@ -4,8 +4,6 @@ import (
 	"container_provisioner/utils"
 	"context"
 	"fmt"
-	"io"
-	"os"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -34,8 +32,8 @@ func Provision(hotelUrl string) {
 	defer reader.Close()
 
 	// Print the progress of the image pull
-	_, err = io.Copy(os.Stdout, reader)
-	utils.ErrorHandler(err)
+	// _, err = io.Copy(os.Stdout, reader)
+	// utils.ErrorHandler(err)
 
 	// Create the container. Container.ID contains the ID of the container
 	Container, err := cli.ContainerCreate(ctx,
