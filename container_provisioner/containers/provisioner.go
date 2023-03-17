@@ -11,11 +11,8 @@ import (
 )
 
 var (
-	// Read the creds from the JSON file
 	data = utils.ParseCredsFromJSON("./creds.json")
 	ctx  = context.Background()
-	// Create a new R3 client
-	r2Client = utils.CreateR2Client(data.AccessKeyId, data.AccessKeySecret, data.AccountId)
 )
 
 // Provision creates a container, runs it, tails the log and wait for it to exit, and export the file name
@@ -96,7 +93,7 @@ func Provision(hotelUrl string) {
 	file := utils.ReadFromFile(exportedFileName)
 
 	// Upload the file to R2
-	utils.R2UploadObject(r2Client, data.BucketName, exportedFileName, file)
+	utils.R2UploadObject(exportedFileName, file)
 
 	// Remove the container
 	err = cli.ContainerRemove(ctx, Container.ID, types.ContainerRemoveOptions{

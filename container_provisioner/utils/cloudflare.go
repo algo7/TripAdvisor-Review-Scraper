@@ -13,12 +13,19 @@ import (
 	r2 "github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
+var (
+	// Read the creds from the JSON file
+	data = ParseCredsFromJSON("./creds.json")
+	// Create a new R2 client
+	r2Client = CreateR2Client(data.AccessKeyId, data.AccessKeySecret, data.AccountId)
+)
+
 // R2UploadObject upload an object to R2
-func R2UploadObject(r2Client *r2.Client, bucketName string, fileName string, fileData io.Reader) {
+func R2UploadObject(fileName string, fileData io.Reader) {
 
 	// Upload an object to R2
 	_, err := r2Client.PutObject(context.TODO(), &r2.PutObjectInput{
-		Bucket: &bucketName,
+		Bucket: &data.BucketName,
 		Key:    aws.String(fileName),
 		Body:   fileData,
 	})
@@ -28,12 +35,12 @@ func R2UploadObject(r2Client *r2.Client, bucketName string, fileName string, fil
 	ErrorHandler(err)
 }
 
-// r2ListObjects List objects in R2
-func r2ListObjects(r2Client *r2.Client, bucketName string) {
+// R2ListObjects List objects in R2
+func R2ListObjects() {
 
 	// List objects in R2
 	listObjectsOutput, err := r2Client.ListObjectsV2(context.TODO(), &r2.ListObjectsV2Input{
-		Bucket: &bucketName,
+		Bucket: &data.BucketName,
 	})
 	ErrorHandler(err)
 

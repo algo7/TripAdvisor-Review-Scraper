@@ -29,6 +29,8 @@ func postProvision(c *fiber.Ctx) error {
 	// Get the email from the form
 	email := c.FormValue("email")
 
+	utils.R2ListObjects()
+
 	// Validate the email
 	if !utils.ValidateEmailAddress(email) {
 		return c.Render("submission", fiber.Map{
