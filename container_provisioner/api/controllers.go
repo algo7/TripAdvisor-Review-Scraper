@@ -3,6 +3,7 @@ package api
 import (
 	"container_provisioner/containers"
 	"container_provisioner/utils"
+	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -30,23 +31,35 @@ func postProvision(c *fiber.Ctx) error {
 
 	// Validate the email
 	if !utils.ValidateEmailAddress(email) {
-		return c.SendString("Invalid email")
+		return c.Render("submission", fiber.Map{
+			"Title":   "Algo7 TripAdvisor Scraper",
+			"Message": "Invalid email address",
+		})
 	}
 
 	// Check if the URL matches the regex
 	if !utils.ValidateTripAdvisorHotelURL(url) {
-		return c.SendString("Invalid URL")
+		return c.Render("submission", fiber.Map{
+			"Title":   "Algo7 TripAdvisor Scraper",
+			"Message": "Invalid URL",
+		})
 	}
 
 	// Get the number of running containers
 	runningContainers := containers.CountRunningContainer()
 
 	if runningContainers >= 5 {
-		return c.SendString("Sorry, we are currently busy. Please try again later")
+		return c.Render("submission", fiber.Map{
+			"Title":   "Algo7 TripAdvisor Scraper",
+			"Message": "Sorry, we are currently busy. Please try again later",
+		})
 	}
 
 	// Provision the container via goroutine
 	go containers.Provision(url)
 
-	return c.SendString("Your file will be to your email address when finished 👋. Please check your email" + " " + email + " " + "for the file")
+	return c.Render("submission", fiber.Map{
+		"Title":   "Algo7 TripAdvisor Scraper",
+		"Message": fmt.Sprintf("Your request has been submitted. You will receive an email at %s when the data is ready", email),
+	})
 }
