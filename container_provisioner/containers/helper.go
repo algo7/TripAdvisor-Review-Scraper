@@ -25,12 +25,19 @@ func initializeDockerClient() *client.Client {
 // CountRunningContainer lists the number of running containers
 func CountRunningContainer() int {
 
+	// Determine if the current process is running inside a container
+	isContainer := os.Getenv("IS_CONTAINER")
+
 	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{
 		All: false, // Only running containers
 	})
 	utils.ErrorHandler(err)
 
-	return len(containers)
+	if isContainer == "" {
+		return len(containers)
+	}
+	// -1 otherwise the current process will also be counted as a running container
+	return len(containers) - 1
 }
 
 // pullImage pulls the given image from a registry
