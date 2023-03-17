@@ -41,7 +41,7 @@ func Provision() {
 				"HOTEL_URL=https://www.tripadvisor.com/Hotel_Review-g188107-d199124-Reviews-Hotel_Des_Voyageurs-Lausanne_Canton_of_Vaud.html"},
 		},
 		&container.HostConfig{
-			AutoRemove: true,
+			AutoRemove: false, // Cant set to true otherwise the container got deleted before copying the file
 		},
 		nil, // NetworkConfig
 		nil, // Platform
@@ -77,5 +77,6 @@ func Provision() {
 	case err := <-errCh:
 		utils.ErrorHandler(err)
 	case <-statusCh:
+
 	}
 }
