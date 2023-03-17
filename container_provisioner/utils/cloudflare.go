@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -21,6 +22,9 @@ func R2UploadObject(r2Client *r2.Client, bucketName string, fileName string, fil
 		Key:    aws.String(fileName),
 		Body:   fileData,
 	})
+	ErrorHandler(err)
+
+	err = os.Remove(fileName)
 	ErrorHandler(err)
 }
 
