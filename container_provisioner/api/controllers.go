@@ -4,10 +4,8 @@ import (
 	"container_provisioner/containers"
 	"container_provisioner/utils"
 	"fmt"
-	"log"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/websocket/v2"
 )
 
 var R2Url = "https://storage.algo7.tools/"
@@ -106,17 +104,15 @@ func postProvision(c *fiber.Ctx) error {
 	})
 }
 
-// getStream takes a WebSocket connection and a container ID then calls the wsHandler function which streams logs to the WebSocket connection
-func getStream(c *websocket.Conn) {
-	// Get the container ID from the query parameter
-	containerId := c.Query("container_id")
+// getLogs returns the logs for a given container
+func getLogs(c *fiber.Ctx) error {
+	containerId := c.Params("id")
 	if containerId == "" {
-		log.Printf("No container ID provided\n")
-		errMessage := "Error: No container ID provided"
-		c.WriteMessage(websocket.TextMessage, []byte(errMessage))
-		return
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Container ID is required"})
 	}
 
-	// Call the wsHandler function with the container ID
-	wsHandler(c, containerId)
+	logsReader := containers.TailLog(containerId)
+
+	return c.SendStream(logsReader)
+
 }
