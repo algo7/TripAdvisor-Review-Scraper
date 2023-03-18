@@ -6,7 +6,7 @@ services:
     environment:
       IS_CONTAINER: true
     # Image name
-    image: ghcr.io/algo7/tripadvisor-review-scraper/container_provisioner:v1
+    image: ghcr.io/algo7/tripadvisor-review-scraper/container_provisioner:latest
     volumes:
       # The credentials folder is mounted to the container
       - type: bind
