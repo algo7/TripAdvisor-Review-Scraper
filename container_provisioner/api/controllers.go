@@ -4,8 +4,10 @@ import (
 	"container_provisioner/containers"
 	"container_provisioner/utils"
 	"fmt"
+	"log"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/websocket/v2"
 )
 
 var R2Url = "https://storage.algo7.tools/"
@@ -102,4 +104,18 @@ func postProvision(c *fiber.Ctx) error {
 		"UploadID": fmt.Sprintf("Your Upload ID: %s", uploadIdentifier),
 		// "URL":      R2Url + fileSuffix + "-" + "0" + "_" + hotelName + ".csv",
 	})
+}
+
+func getStream(c *websocket.Conn) {
+	// Get the container ID from the query parameter
+	containerId := c.Query("container_id")
+	if containerId == "" {
+		log.Printf("No container ID provided\n")
+		errMessage := "Error: No container ID provided"
+		c.WriteMessage(websocket.TextMessage, []byte(errMessage))
+		return
+	}
+
+	// Call the wsHandler function with the container ID
+	wsHandler(c, containerId)
 }
