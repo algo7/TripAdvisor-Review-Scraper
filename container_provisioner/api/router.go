@@ -11,7 +11,7 @@ func Router() {
 
 	app.Get("/", getMain)
 	app.Post("/submit", postProvision)
-	app.Use("/ws/:id", wsHandler)
+	app.Get("/ws", websocket.New(func(c *websocket.Conn))
 
 	err := app.Listen(":3000")
 	utils.ErrorHandler(err)
