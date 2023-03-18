@@ -145,7 +145,6 @@ func getLogs(c *fiber.Ctx) error {
 }
 
 // getRunningJobs renders a table of running containers
-// getMain renders the main page
 func getRunningTasks(c *fiber.Ctx) error {
 
 	// Get ids of all running containers
