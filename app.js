@@ -3,7 +3,7 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import fs, { mkdirSync, } from 'fs';
 const { promises: { writeFile, }, } = fs;
-import Chalk from 'chalk';
+import { Chalk } from 'chalk';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -29,7 +29,7 @@ let { SCRAPE_MODE, CONCURRENCY, LANGUAGE,
 CONCURRENCY = parseInt(CONCURRENCY);
 if (!CONCURRENCY) CONCURRENCY = 2;
 if (!LANGUAGE || LANGUAGE !== 'fr') LANGUAGE = 'en';
-
+if (!SCRAPE_MODE) SCRAPE_MODE = 'HOTEL';
 
 // Set the color level of the chalk instance
 // 1 = basic color support (16 colors)

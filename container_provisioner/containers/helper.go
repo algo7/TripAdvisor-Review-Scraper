@@ -16,13 +16,43 @@ var (
 	cli = initializeDockerClient()
 )
 
+// initializeDockerClient initialize a new docker api client
+func initializeDockerClient() *client.Client {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	utils.ErrorHandler(err)
+	return cli
+}
+
+// pullImage pulls the given image from a registry
+func pullImage(image string) {
+
+	reader, err := cli.ImagePull(ctx, image, types.ImagePullOptions{})
+	utils.ErrorHandler(err)
+	defer reader.Close()
+
+	// Print the progress of the image pull
+	_, err = io.Copy(os.Stdout, reader)
+	utils.ErrorHandler(err)
+}
+
+// removeContainer removes the container with the given ID
+func removeContainer(containerId string) {
+
+	// Remove the container
+	err := cli.ContainerRemove(ctx, containerId, types.ContainerRemoveOptions{
+		RemoveVolumes: true,
+		Force:         true,
+	})
+	utils.ErrorHandler(err)
+}
+
 // CreateContainer creates a container then returns the container ID
 func CreateContainer(hotelName string, hotelUrl string) string {
 
 	// Create the container. Container.ID contains the ID of the container
 	Container, err := cli.ContainerCreate(ctx,
 		&container.Config{
-			Image: "ghcr.io/algo7/tripadvisor-review-scraper/scrape:latest",
+			Image: "scrape:latest",
 			// Env vars required by the js scraper containers
 			Env: []string{
 				"CONCURRENCY=1",
@@ -62,25 +92,6 @@ func CountRunningContainer() int {
 	return len(containers) - 1
 }
 
-// initializeDockerClient initialize a new docker api client
-func initializeDockerClient() *client.Client {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	utils.ErrorHandler(err)
-	return cli
-}
-
-// pullImage pulls the given image from a registry
-func pullImage(image string) {
-
-	reader, err := cli.ImagePull(ctx, image, types.ImagePullOptions{})
-	utils.ErrorHandler(err)
-	defer reader.Close()
-
-	// Print the progress of the image pull
-	_, err = io.Copy(os.Stdout, reader)
-	utils.ErrorHandler(err)
-}
-
 // tailLog tails the log of the container with the given ID
 func TailLog(containerId string) io.Reader {
 
@@ -93,15 +104,4 @@ func TailLog(containerId string) io.Reader {
 	// utils.ErrorHandler(err)
 
 	return out
-}
-
-// removeContainer removes the container with the given ID
-func removeContainer(containerId string) {
-
-	// Remove the container
-	err := cli.ContainerRemove(ctx, containerId, types.ContainerRemoveOptions{
-		RemoveVolumes: true,
-		Force:         true,
-	})
-	utils.ErrorHandler(err)
 }

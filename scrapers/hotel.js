@@ -1,5 +1,8 @@
 // Dependencies
-import Chalk from 'chalk';
+import { Chalk } from 'chalk';
+
+// Environment variables
+let { IS_PROVISIONER } = process.env;
 
 // Set the color level of the chalk instance
 // 1 = basic color support (16 colors)
