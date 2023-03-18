@@ -70,16 +70,18 @@ func postProvision(c *fiber.Ctx) error {
 	// Validate the uploadIdentifier field
 	if uploadIdentifier == "" || len(uploadIdentifier) > 20 {
 		return c.Render("submission", fiber.Map{
-			"Title":    "Algo7 TripAdvisor Scraper",
-			"Message1": "Please provide a valid identifier",
+			"Title":      "Algo7 TripAdvisor Scraper",
+			"Message1":   "Please provide a valid identifier",
+			"ReturnHome": true,
 		})
 	}
 
 	// Check if the URL matches the regex
 	if !utils.ValidateTripAdvisorHotelURL(url) {
 		return c.Render("submission", fiber.Map{
-			"Title":    "Algo7 TripAdvisor Scraper",
-			"Message1": "Invalid URL",
+			"Title":      "Algo7 TripAdvisor Scraper",
+			"Message1":   "Invalid URL",
+			"ReturnHome": true,
 		})
 	}
 
@@ -88,8 +90,9 @@ func postProvision(c *fiber.Ctx) error {
 
 	if runningContainers >= 5 {
 		return c.Render("submission", fiber.Map{
-			"Title":    "Algo7 TripAdvisor Scraper",
-			"Message1": "Sorry, we are currently busy. Please try again later",
+			"Title":      "Algo7 TripAdvisor Scraper",
+			"Message1":   "Sorry, we are currently busy. Please try again later",
+			"ReturnHome": true,
 		})
 	}
 
@@ -110,7 +113,9 @@ func postProvision(c *fiber.Ctx) error {
 		"Message3":    "Once it's done, you can return to the main page to download the data",
 		"ContainerId": containerId,
 		"UploadID":    fmt.Sprintf("Your Upload ID: %s", uploadIdentifier),
+		"ReturnHome":  false,
 		// "URL":      R2Url + fileSuffix + "-" + "0" + "_" + hotelName + ".csv",
+
 	})
 }
 

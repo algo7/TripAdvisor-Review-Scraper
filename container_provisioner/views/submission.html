@@ -26,11 +26,19 @@
   <body>
     <h2>{{.Message1}}</h2>
     <h2>{{.Message2}}</h2>
+
+    <!-- Show diff clickable button depending on if the queue if full or not -->
+    {{if .ReturnHome}}
+    <h2><a href="/">Return Home</a></h2>
+
+    {{else}}
     <h2
       ><a href="/logs-viewer?container_id={{.ContainerId}}"
         >View Progress</a
       ></h2
     >
+    {{end}}
+
     <h2>{{.Message3}}</h2>
     <h2 style="color: red">{{.UploadID}}</h2>
     <!-- <p><a href="{{.URL}}">{{.URL}}</a></p> -->
