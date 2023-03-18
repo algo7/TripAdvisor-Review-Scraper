@@ -4,6 +4,7 @@ import (
 	"container_provisioner/containers"
 	"container_provisioner/utils"
 	"fmt"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -115,6 +116,19 @@ func getLogs(c *fiber.Ctx) error {
 	containerId := c.Params("id")
 	if containerId == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Container ID is required"})
+	}
+
+	// Get ids of all running containers
+	existingContainers := containers.ListContainers()
+
+	// If there are no running containers
+	if len(existingContainers) == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "No containers are running right now"})
+	}
+
+	// If the running containers do not include the containerId
+	if !strings.Contains(strings.Join(existingContainers, ","), containerId) {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Container does not exist"})
 	}
 
 	// Get the logs for the container
