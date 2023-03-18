@@ -24,10 +24,12 @@ const customChalk = new Chalk({ level: colorLevel });
 const extractAllReviewPageUrls = async (restoUrl, position, language, browser) => {
     try {
 
+        // Generate a random user agent
+        const agent = randUserAgent("desktop");
 
         // Open a new page
         const page = await browser.getNewPage()
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
+        await page.setUserAgent(agent);
 
         // Navigate to the resto page
         await page.goto(restoUrl);
@@ -203,9 +205,13 @@ const extractAllReviewPageUrls = async (restoUrl, position, language, browser) =
 const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, restoId, language, browser) => {
     try {
 
+        // Generate a random user agent
+        const agent = randUserAgent("desktop");
+
+
         // Open a new page
         const page = await browser.getNewPage()
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
+        await page.setUserAgent(agent);
 
         // Array to hold all the reviews 
         const allReviews = [];

@@ -1,5 +1,8 @@
 // Dependencies
 import { Chalk } from 'chalk';
+import randUserAgent from "rand-user-agent";
+
+
 
 // Environment variables
 let { IS_PROVISIONER } = process.env;
@@ -25,9 +28,13 @@ const customChalk = new Chalk({ level: colorLevel });
  */
 const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
     try {
-        // Open a new page
+
+        // Generate a random user agent
+        const agent = randUserAgent("desktop");
+
+        // Open a new page with the generated user agent
         const page = await browser.getNewPage()
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
+        await page.setUserAgent(agent);
 
         // Navigate to the hotel page
         await page.goto(hotelUrl);
@@ -129,9 +136,12 @@ const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
 const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hotelId, browser) => {
     try {
 
+        // Generate a random user agent
+        const agent = randUserAgent("desktop");
+
         // Open a new page
         const page = await browser.getNewPage()
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
+        await page.setUserAgent(agent);
 
         // Array to hold the review info
         const allReviews = [];
