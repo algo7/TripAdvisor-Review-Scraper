@@ -159,11 +159,14 @@ func getRunningTasks(c *fiber.Ctx) error {
 
 	// Populate the slice of RunningTask structs with data from the containerIds array
 	for i, containerId := range containerIds {
-		runningTasks[i] = RunningTask{
-			ContainerId: containerId.ID[:12],
-			Url:         fmt.Sprintf("/logs-viewer?container_id=%s", containerId.ID),
-			TaskOwner:   containerId.TaskOwner,
-			HotelName:   containerId.HotelName,
+		// Exclude the container that runs app itself
+		if containerId.TaskOwner != "" {
+			runningTasks[i] = RunningTask{
+				ContainerId: containerId.ID[:12],
+				Url:         fmt.Sprintf("/logs-viewer?container_id=%s", containerId.ID),
+				TaskOwner:   containerId.TaskOwner,
+				HotelName:   containerId.HotelName,
+			}
 		}
 	}
 
