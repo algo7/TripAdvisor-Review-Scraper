@@ -116,7 +116,7 @@ func TailLog(containerId string) io.Reader {
 	out, err := cli.ContainerLogs(context.Background(), containerId, types.ContainerLogsOptions{
 		ShowStdout: true,
 		Details:    true,
-		ShowStderr: true,
+		ShowStderr: false,
 		Timestamps: false,
 		Follow:     true})
 	utils.ErrorHandler(err)
