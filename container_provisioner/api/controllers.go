@@ -157,10 +157,12 @@ func getRunningTasks(c *fiber.Ctx) error {
 	// Populate the slice of RunningTask structs with data from the containerIds array
 	for i, containerId := range containerIds {
 		runningTasks[i] = RunningTask{
-			ContainerId: containerId,
+			ContainerId: containerId[:12],
 			Url:         fmt.Sprintf("/logs-viewer?container_id=%s", containerId),
 		}
 	}
+
+	fmt.Println(runningTasks)
 
 	// The page status message
 	currentTaskStatus := "There are no running tasks"
