@@ -105,13 +105,12 @@ const hotelScraperInit = async () => {
         reviewInfo.push(finalData);
 
         // Write the review of each individual hotel to files
-        const fileName = await Promise.all(
+        await Promise.all(
             reviewInfo
                 .flat()
                 .map(async ({ finalData, fileName }) => {
                     const dataToWrite = JSON.stringify(finalData, null, 2);
                     await writeFile(`${dataDir}${fileName}.json`, dataToWrite);
-                    if (IS_PROVISIONER) return fileName;
                 })
         );
 
@@ -128,7 +127,7 @@ const hotelScraperInit = async () => {
         // If the scraper is being called by the container provisioner, then export the csv only
         if (IS_PROVISIONER) {
             await Promise.all([
-                writeFile(`${dataDir}${fileName}.csv`, csvData),
+                writeFile(`${dataDir}All.csv`, csvData),
                 // Close the browser instance
                 browserInstance.closeBrowser(),
             ])
