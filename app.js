@@ -66,7 +66,7 @@ const hotelScraperInit = async () => {
         if (!rawData[0].name) {
 
             // Check if the source file exists
-            const sourceFileAvailable = await fileExists(dataSourceHotel);
+            const sourceFileAvailable = fileExists(dataSourceHotel);
             if (!sourceFileAvailable) {
                 throw Error('Source file does not exist');
             }
@@ -160,7 +160,7 @@ const restoScraperInit = async () => {
     try {
 
         // Check if the source file exists
-        const sourceFileAvailable = await fileExists(dataSourceResto);
+        const sourceFileAvailable = fileExists(dataSourceResto);
         if (!sourceFileAvailable) {
             throw Error('Source file does not exist');
         }
