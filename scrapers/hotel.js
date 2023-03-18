@@ -147,17 +147,17 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
             // Determin current URL
             const currentURL = page.url();
 
+            // Progress Report
             if (!IS_PROVISIONER) {
-                // Progress Report
                 console.log({
                     'Scraping': currentURL,
                     'Pages Left': reviewPageUrls.length - 1 - index,
-                    'Progress': `${Math.round(((index + 1) / reviewPageUrls.length * 100), 1)}% `,
+                    'Progress': `${Math.round(((index + 1) / reviewPageUrls.length * 100), 1)}%`,
                 });
             } else {
-                console.log("Scraping", currentURL)
-                console.log("Pages Left", reviewPageUrls.length - 1 - index)
-                console.log("Progress", `${Math.round(((index + 1) / reviewPageUrls.length * 100), 1)}% `)
+                console.log("Scraping: ", currentURL)
+                console.log("Pages Left: ", `${reviewPageUrls.length - 1 - index}`)
+                console.log("Progress: ", `${Math.round(((index + 1) / reviewPageUrls.length * 100), 1)}%`)
             }
 
 
