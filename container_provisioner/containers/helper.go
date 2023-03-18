@@ -70,6 +70,7 @@ func CreateContainer(hotelName string, hotelUrl string, uploadIdentifier string)
 				"IS_PROVISIONER=true",
 				"HOTEL_URL=" + hotelUrl,
 			},
+			Tty: true,
 		},
 		&container.HostConfig{
 			AutoRemove: false, // Cant set to true otherwise the container got deleted before copying the file
@@ -112,7 +113,12 @@ func TailLog(containerId string) io.Reader {
 	defer cli.Close()
 
 	// Print the logs of the container
-	out, err := cli.ContainerLogs(context.Background(), containerId, types.ContainerLogsOptions{ShowStdout: true, Follow: true})
+	out, err := cli.ContainerLogs(context.Background(), containerId, types.ContainerLogsOptions{
+		ShowStdout: true,
+		Details:    true,
+		ShowStderr: true,
+		Timestamps: true,
+		Follow:     true})
 	utils.ErrorHandler(err)
 
 	// // Docker log uses multiplexed streams to send stdout and stderr in the connection. This function separates them
