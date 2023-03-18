@@ -12,27 +12,54 @@
         padding: 0;
         background-color: #000;
         height: 100vh;
-        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      #logs-container {
+        position: relative; /* Set position to relative */
+        width: 50%; /* Set a fixed width for the logs container */
+        height: 75%; /* Set a smaller height for the logs container */
       }
       #logs {
         white-space: pre-wrap;
-        position: center;
         font-family: monospace;
         color: #00ff00;
         padding: 1rem;
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        overflow-y: scroll;
+        background-color: #000;
+        border: 1px solid #00ff00;
+        border-radius: 5px;
+        position: absolute; /* Set position to absolute */
+        top: 50px; /* Set top to move the logs div down */
+        bottom: 0; /* Set bottom to stretch the logs div to the bottom of the container */
+        left: 0; /* Set left to align the logs div with the container */
+        right: 0; /* Set right to align the logs div with the container */
+        overflow-y: auto;
+        margin-bottom: -4rem;
+      }
+      #title-text {
+        text-align: center;
+        color: #fff;
+        position: absolute; /* Set position to absolute */
+        top: 0; /* Set top to align the log viewer div with the container */
+        left: 0; /* Set left to align the log viewer div with the container */
+        right: 0; /* Set right to align the log viewer div with the container */
+        height: 30px; /* Set a fixed height for the log viewer div */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1; /* Set a higher z-index to display on top */
+        margin-bottom: 2rem;
       }
     </style>
   </head>
   <body>
-    <h1>Logs Viewer</h1>
-    <div id="logs"></div>
-
+    <div id="logs-container">
+      <div id="title-text">
+        <h1>Log Viewer</h1>
+      </div>
+      <div id="logs"></div>
+    </div>
     <script>
       const logsElement = document.getElementById('logs');
 
