@@ -279,6 +279,7 @@ init()
 
 // Report Logic
 setInterval(async () => {
+    // Standalone mode
     if (!IS_PROVISIONER) {
         // Get tab stats
         const report = await browserInstance.reportTabStats()
@@ -289,4 +290,9 @@ setInterval(async () => {
         // Exit if no tab is in use and browser is being loaded
         if (inUse === 0 && typeof (openedPage) !== 'string') process.exit(0);
     }
+
+    // Container provisioner mode
+    fs.readdirSync(dataDir)
+        .forEach(file => { if (file === "All.csv") process.exit(0); });
+
 }, 5000);

@@ -117,7 +117,7 @@ func TailLog(containerId string) io.Reader {
 		ShowStdout: true,
 		Details:    true,
 		ShowStderr: true,
-		Timestamps: true,
+		Timestamps: false,
 		Follow:     true})
 	utils.ErrorHandler(err)
 
