@@ -9,8 +9,8 @@ import (
 	"github.com/docker/docker/client"
 )
 
-// Provision creates a container, runs it, tails the log and wait for it to exit, and export the file name
-func Provision(fileSuffix string, uploadIdentifier string, hotelUrl string) {
+// Scrape creates a container, runs it, tails the log and wait for it to exit, and export the file name
+func Scrape(uploadIdentifier string, hotelName string, containerId string) {
 
 	// Dedicated context and client for each function call
 	ctx1 := context.Background()
@@ -18,37 +18,12 @@ func Provision(fileSuffix string, uploadIdentifier string, hotelUrl string) {
 	utils.ErrorHandler(err)
 	defer cli1.Close()
 
-	// Get the hotel name from the URL
-	hotelName := utils.GetHotelNameFromURL(hotelUrl)
-
-	// Create the container. Container.ID contains the ID of the container
-	Container, err := cli1.ContainerCreate(ctx1,
-		&container.Config{
-			Image: "ghcr.io/algo7/tripadvisor-review-scraper/scrape:latest",
-			// Env vars required by the js scraper containers
-			Env: []string{
-				"CONCURRENCY=1",
-				"SCRAPE_MODE=HOTEL",
-				"HOTEL_NAME=" + hotelName,
-				"IS_PROVISIONER=true",
-				"HOTEL_URL=" + hotelUrl,
-			},
-		},
-		&container.HostConfig{
-			AutoRemove: false, // Cant set to true otherwise the container got deleted before copying the file
-		},
-		nil, // NetworkConfig
-		nil, // Platform
-		"",  // Container name
-	)
-	utils.ErrorHandler(err)
-
 	// Start the container
-	err = cli1.ContainerStart(ctx1, Container.ID, types.ContainerStartOptions{})
+	err = cli1.ContainerStart(ctx1, containerId, types.ContainerStartOptions{})
 	utils.ErrorHandler(err)
 
 	// Wait for the container to exit
-	statusCh, errCh := cli1.ContainerWait(ctx1, Container.ID, container.WaitConditionNotRunning)
+	statusCh, errCh := cli1.ContainerWait(ctx1, containerId, container.WaitConditionNotRunning)
 
 	// ContainerWait returns 2 channels. One for the status and one for the wait error (not execution error)
 	select {
@@ -58,7 +33,7 @@ func Provision(fileSuffix string, uploadIdentifier string, hotelUrl string) {
 	case status := <-statusCh:
 		// If the container exited with non-zero status code, remove the container and return an error
 		if status.StatusCode != 0 {
-			removeContainer(Container.ID)
+			removeContainer(containerId)
 			return
 		}
 	}
@@ -67,8 +42,11 @@ func Provision(fileSuffix string, uploadIdentifier string, hotelUrl string) {
 	filePathInContainer := "/puppeteer/reviews/All.csv"
 
 	// Read the file from the container as a reader interface of a tar stream
-	fileReader, _, err := cli1.CopyFromContainer(ctx1, Container.ID, filePathInContainer)
+	fileReader, _, err := cli1.CopyFromContainer(ctx1, containerId, filePathInContainer)
 	utils.ErrorHandler(err)
+
+	// Generate a random file prefix
+	fileSuffix := utils.GenerateUUID()
 
 	// Write the file to the host
 	exportedFileName := utils.WriteToFileFromTarStream(hotelName, fileSuffix, fileReader)
@@ -80,5 +58,5 @@ func Provision(fileSuffix string, uploadIdentifier string, hotelUrl string) {
 	utils.R2UploadObject(exportedFileName, uploadIdentifier, file)
 
 	// Remove the container
-	removeContainer(Container.ID)
+	removeContainer(containerId)
 }

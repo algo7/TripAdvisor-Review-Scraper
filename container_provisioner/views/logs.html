@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Logs Viewer</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #000;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      #logs-container {
+        position: relative; /* Set position to relative */
+        width: 50%; /* Set a fixed width for the logs container */
+        height: 75%; /* Set a smaller height for the logs container */
+      }
+      #logs {
+        white-space: pre-wrap;
+        font-family: monospace;
+        color: #00ff00;
+        padding: 1rem;
+        background-color: #000;
+        border: 1px solid #00ff00;
+        border-radius: 5px;
+        position: absolute; /* Set position to absolute */
+        top: 50px; /* Set top to move the logs div down */
+        bottom: 0; /* Set bottom to stretch the logs div to the bottom of the container */
+        left: 0; /* Set left to align the logs div with the container */
+        right: 0; /* Set right to align the logs div with the container */
+        overflow-y: auto;
+        margin-bottom: -4rem;
+      }
+      #title-text {
+        text-align: center;
+        color: #fff;
+        position: absolute; /* Set position to absolute */
+        top: 0; /* Set top to align the log viewer div with the container */
+        left: 0; /* Set left to align the log viewer div with the container */
+        right: 0; /* Set right to align the log viewer div with the container */
+        height: 30px; /* Set a fixed height for the log viewer div */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1; /* Set a higher z-index to display on top */
+        margin-bottom: 2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="logs-container">
+      <div id="title-text">
+        <h1>Log Viewer</h1>
+      </div>
+      <div id="logs"></div>
+    </div>
+    <script>
+      const logsElement = document.getElementById('logs');
+
+      // Get the container ID from the query parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      const containerId = urlParams.get('container_id');
+      const url = `/logs/${containerId}`;
+
+      fetch(url)
+        .then((response) => {
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+
+          const processStream = async () => {
+            let done, value;
+            do {
+              ({ done, value } = await reader.read());
+              if (value) {
+                const text = decoder.decode(value);
+                logsElement.textContent += text;
+                // Scroll to the bottom of the logs div
+                logsElement.scrollTop = logsElement.scrollHeight;
+              }
+            } while (!done);
+          };
+
+          processStream().catch((error) => {
+            console.error('Error processing log stream:', error);
+          });
+        })
+        .catch((error) => {
+          console.error('Error fetching logs:', error);
+        });
+    </script>
+  </body>
+</html>

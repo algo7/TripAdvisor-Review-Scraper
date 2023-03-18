@@ -84,22 +84,42 @@ func postProvision(c *fiber.Ctx) error {
 		})
 	}
 
-	// Generate a random file prefix
-	fileSuffix := utils.GenerateUUID()
-
 	// Get the hotel name from the URL
-	// hotelName := utils.GetHotelNameFromURL(url)
+	hotelName := utils.GetHotelNameFromURL(url)
 
-	// Provision the container via goroutine
-	go containers.Provision(fileSuffix, uploadIdentifier, url)
+	// Create the container
+	containerId := containers.CreateContainer(hotelName, url)
+
+	// Start the scraping container via goroutine
+	go containers.Scrape(uploadIdentifier, hotelName, containerId)
 
 	return c.Render("submission", fiber.Map{
 		"Title": "Algo7 TripAdvisor Scraper",
 		// "Message": fmt.Sprintf("Your request has been submitted. You will receive an email at %s when the data is ready", email),
-		"Message1": "Your request has been submitted. ",
-		"Message2": "Return to the Home Page and Check for Your File.",
-		"Message3": "Your data should be available shortly.",
-		"UploadID": fmt.Sprintf("Your Upload ID: %s", uploadIdentifier),
+		"Message1":    "Your request has been submitted. ",
+		"Message2":    "Return to the Home Page and Check for Your File.",
+		"Message3":    "Your data should be available shortly.",
+		"UploadID":    fmt.Sprintf("Your Upload ID: %s", uploadIdentifier),
+		"ContainerId": containerId,
 		// "URL":      R2Url + fileSuffix + "-" + "0" + "_" + hotelName + ".csv",
 	})
+}
+
+// getLogsViewer renders the logs viewer page
+func getLogsViewer(c *fiber.Ctx) error {
+	return c.SendFile("./views/logs.html")
+}
+
+// getLogs returns the logs for a given container
+func getLogs(c *fiber.Ctx) error {
+	containerId := c.Params("id")
+	if containerId == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Container ID is required"})
+	}
+
+	// Get the logs for the container
+	logsReader := containers.TailLog(containerId)
+
+	// Send the stream to the client
+	return c.SendStream(logsReader)
 }
