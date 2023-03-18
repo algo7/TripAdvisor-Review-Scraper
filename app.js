@@ -1,7 +1,7 @@
 // Dependencies
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import fs, { mkdirSync, } from 'fs';
+import fs, { mkdirSync, readdirSync } from 'fs';
 const { promises: { writeFile, }, } = fs;
 import { Chalk } from 'chalk';
 const __filename = fileURLToPath(import.meta.url);
@@ -143,6 +143,11 @@ const hotelScraperInit = async () => {
                 // Close the browser instance
                 browserInstance.closeBrowser(),
             ])
+
+            fs.readdirSync(dataDir)
+                .forEach(file => {
+                    console.log(file);
+                });
 
             return 'Scraping Done';
         }
