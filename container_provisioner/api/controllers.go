@@ -88,10 +88,13 @@ func postProvision(c *fiber.Ctx) error {
 	fileSuffix := utils.GenerateUUID()
 
 	// Get the hotel name from the URL
-	// hotelName := utils.GetHotelNameFromURL(url)
+	hotelName := utils.GetHotelNameFromURL(url)
 
-	// Provision the container via goroutine
-	go containers.Provision(fileSuffix, uploadIdentifier, url)
+	// Create the container
+	containerId := containers.CreateContainer(hotelName, url)
+
+	// Start the scraping container via goroutine
+	go containers.Scrape(fileSuffix, uploadIdentifier, hotelName, containerId)
 
 	return c.Render("submission", fiber.Map{
 		"Title": "Algo7 TripAdvisor Scraper",

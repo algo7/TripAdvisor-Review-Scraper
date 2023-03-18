@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 )
 
@@ -14,6 +15,34 @@ var (
 	ctx = context.Background()
 	cli = initializeDockerClient()
 )
+
+// CreateContainer creates a container then returns the container ID
+func CreateContainer(hotelName string, hotelUrl string) string {
+
+	// Create the container. Container.ID contains the ID of the container
+	Container, err := cli.ContainerCreate(ctx,
+		&container.Config{
+			Image: "ghcr.io/algo7/tripadvisor-review-scraper/scrape:latest",
+			// Env vars required by the js scraper containers
+			Env: []string{
+				"CONCURRENCY=1",
+				"SCRAPE_MODE=HOTEL",
+				"HOTEL_NAME=" + hotelName,
+				"IS_PROVISIONER=true",
+				"HOTEL_URL=" + hotelUrl,
+			},
+		},
+		&container.HostConfig{
+			AutoRemove: false, // Cant set to true otherwise the container got deleted before copying the file
+		},
+		nil, // NetworkConfig
+		nil, // Platform
+		"",  // Container name
+	)
+	utils.ErrorHandler(err)
+
+	return Container.ID
+}
 
 // CountRunningContainer lists the number of running containers
 func CountRunningContainer() int {
