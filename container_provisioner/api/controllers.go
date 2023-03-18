@@ -106,6 +106,7 @@ func postProvision(c *fiber.Ctx) error {
 	})
 }
 
+// getStream takes a WebSocket connection and a container ID then calls the wsHandler function which streams logs to the WebSocket connection
 func getStream(c *websocket.Conn) {
 	// Get the container ID from the query parameter
 	containerId := c.Query("container_id")
