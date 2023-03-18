@@ -87,8 +87,6 @@ const hotelScraperInit = async () => {
             rawData = await csvToJSON(dataSourceHotel)
         };
 
-        console.log(rawData);
-
         // Array to hold the processed data
         const reviewInfo = []
 
