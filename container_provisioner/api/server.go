@@ -15,7 +15,7 @@ func ServerInstantiate() *fiber.App {
 
 	// Delims sets the action delimiters to the specified strings
 	engine.Delims("{{", "}}") // Optional. Default: engine delimiters
-	// engine.Reload(true)
+	engine.Reload(true)
 	// Custom config
 	app := fiber.New(fiber.Config{
 		Prefork:       true,

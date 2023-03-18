@@ -137,3 +137,12 @@ func getLogs(c *fiber.Ctx) error {
 	// Send the stream to the client
 	return c.SendStream(logsReader)
 }
+
+// getRunningJobs renders a table of running containers
+// getMain renders the main page
+func getRunningJob(c *fiber.Ctx) error {
+
+	return c.Render("jobs", fiber.Map{
+		"Title": "Algo7 TripAdvisor Scraper",
+	})
+}
