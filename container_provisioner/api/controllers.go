@@ -5,7 +5,6 @@ import (
 	"container_provisioner/utils"
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -22,6 +21,8 @@ type Row struct {
 type RunningTask struct {
 	ContainerId string
 	Url         string
+	TaskOwner   string
+	HotelName   string
 }
 
 // getMain renders the main page
@@ -133,8 +134,11 @@ func getLogs(c *fiber.Ctx) error {
 	}
 
 	// If the running containers do not include the containerId
-	if !strings.Contains(strings.Join(existingContainers, ","), containerId) {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Container does not exist"})
+	for _, container := range existingContainers {
+		if container.ID == containerId {
+			break
+		}
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Container ID is invalid"})
 	}
 
 	// Get the logs for the container
@@ -156,8 +160,10 @@ func getRunningTasks(c *fiber.Ctx) error {
 	// Populate the slice of RunningTask structs with data from the containerIds array
 	for i, containerId := range containerIds {
 		runningTasks[i] = RunningTask{
-			ContainerId: containerId[:12],
-			Url:         fmt.Sprintf("/logs-viewer?container_id=%s", containerId),
+			ContainerId: containerId.ID[:12],
+			Url:         fmt.Sprintf("/logs-viewer?container_id=%s", containerId.ID),
+			TaskOwner:   containerId.TaskOwner,
+			HotelName:   containerId.HotelName,
 		}
 	}
 

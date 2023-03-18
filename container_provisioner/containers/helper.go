@@ -54,8 +54,8 @@ func CreateContainer(hotelName string, hotelUrl string, uploadIdentifier string)
 		&container.Config{
 			Image: "scrape:latest",
 			Labels: map[string]string{
-				"Owner": uploadIdentifier,
-				"Hotel": hotelName,
+				"TaskOwner": uploadIdentifier,
+				"Hotel":     hotelName,
 			},
 			// Env vars required by the js scraper containers
 			Env: []string{
@@ -110,18 +110,28 @@ func TailLog(containerId string) io.Reader {
 	return out
 }
 
-// ListContainers lists all the containers and return the container IDs
-func ListContainers() []string {
+type Container struct {
+	ID        string
+	TaskOwner string
+	HotelName string
+}
 
-	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{})
+// ListContainers lists all the containers and return the container IDs
+func ListContainers() []Container {
+
+	containersInfo, err := cli.ContainerList(ctx, types.ContainerListOptions{})
 	utils.ErrorHandler(err)
 
-	// Slice to hold container ids
-	containerIds := []string{}
+	// Map container list result into custom container struct
+	containers := make([]Container, len(containersInfo))
 
-	for _, container := range containers {
-		containerIds = append(containerIds, container.ID)
+	for i, containerInfo := range containersInfo {
+		containers[i] = Container{
+			ID:        containerInfo.ID,
+			TaskOwner: containerInfo.Labels["TaskOwner"],
+			HotelName: containerInfo.Labels["Hotel"],
+		}
 	}
 
-	return containerIds
+	return containers
 }
