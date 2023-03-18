@@ -3,7 +3,6 @@ package containers
 import (
 	"container_provisioner/utils"
 	"context"
-	"fmt"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -60,18 +59,19 @@ func Provision(fileSuffix string, uploadIdentifier string, hotelUrl string) {
 		// If the container exited with non-zero status code, remove the container and return an error
 		if status.StatusCode != 0 {
 			removeContainer(Container.ID)
+			return
 		}
 	}
 
 	// The file path in the container
-	filePathInContainer := fmt.Sprintf("/puppeteer/reviews/0_%s.csv", hotelName)
+	filePathInContainer := "/puppeteer/reviews/All.csv"
 
 	// Read the file from the container as a reader interface of a tar stream
 	fileReader, _, err := cli1.CopyFromContainer(ctx1, Container.ID, filePathInContainer)
 	utils.ErrorHandler(err)
 
 	// Write the file to the host
-	exportedFileName := utils.WriteToFileFromTarStream(fileSuffix, fileReader)
+	exportedFileName := utils.WriteToFileFromTarStream(hotelName, fileSuffix, fileReader)
 
 	// Read the exported csv file
 	file := utils.ReadFromFile(exportedFileName)

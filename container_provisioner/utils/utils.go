@@ -31,7 +31,7 @@ func ErrorHandler(err error) {
 }
 
 // WriteToFileFromTarStream writes a file to disk
-func WriteToFileFromTarStream(fileSuffix string, tarF io.ReadCloser) string {
+func WriteToFileFromTarStream(fileName string, fileSuffix string, tarF io.ReadCloser) string {
 
 	// Untar the file
 	// Note: This is not a generic untar function. It only works for a single file
@@ -58,13 +58,10 @@ func WriteToFileFromTarStream(fileSuffix string, tarF io.ReadCloser) string {
 	tarReader := tar.NewReader(tarF)
 
 	// Get the tar header and go to the next entry in the tar file
-	tarHeader, err := tarReader.Next()
+	_, err := tarReader.Next()
 	ErrorHandler(err)
 
-	// Remove the _0 from the file name => the scraper adds the number based on the number of hotels
-	// But with the provisioner we do 1 hotel at a time
-	newFileName := strings.Replace(tarHeader.Name, "0_", "", 1)
-	fileNameToWrite := strings.Replace(newFileName, ".csv", "_"+fileSuffix+".csv", 1)
+	fileNameToWrite := fileName + "-" + fileSuffix + ".csv"
 
 	// Create the file
 	out, err := os.Create(fileNameToWrite)
