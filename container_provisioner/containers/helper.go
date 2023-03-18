@@ -105,3 +105,19 @@ func TailLog(containerId string) io.Reader {
 
 	return out
 }
+
+// ListContainers lists all the containers and return the container IDs
+func ListContainers() []string {
+
+	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{})
+	utils.ErrorHandler(err)
+
+	// Slice to hold container ids
+	containerIds := []string{}
+
+	for _, container := range containers {
+		containerIds = append(containerIds, container.ID)
+	}
+
+	return containerIds
+}
