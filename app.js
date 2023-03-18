@@ -84,10 +84,10 @@ const hotelScraperInit = async () => {
             }
 
             // Convert the csv to json
-            rawData = csvToJSON(dataSourceHotel)
+            rawData = await csvToJSON(dataSourceHotel)
         };
 
-        console.log(customChalk.bold.yellow(`Scraping ${customChalk.magenta(rawData.length)} Hotels`));
+        console.log(rawData);
 
         // Array to hold the processed data
         const reviewInfo = []
