@@ -31,7 +31,8 @@
     "json2csv": "^5.0.7",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-adblocker": "^2.13.6",
-    "puppeteer-extra-plugin-block-resources": "^2.4.3"
+    "puppeteer-extra-plugin-block-resources": "^2.4.3",
+    "rand-user-agent": "^2.0.4"
   },
   "devDependencies": {
     "eslint": "^8.36.0"
