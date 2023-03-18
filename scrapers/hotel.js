@@ -1,5 +1,16 @@
 // Dependencies
-import chalk from 'chalk';
+import Chalk from 'chalk';
+
+// Set the color level of the chalk instance
+// 1 = basic color support (16 colors)
+let colorLevel = 1;
+
+// If the scraper is being called by the container provisioner, set the color level to 0
+if (IS_PROVISIONER) {
+    colorLevel = 0;
+}
+const customChalk = new Chalk({ level: colorLevel });
+
 
 
 /**
@@ -24,7 +35,7 @@ const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
         // Determin current URL
         const currentURL = page.url();
 
-        console.log(`${chalk.bold.white.dim('Gathering Info: ')}${currentURL.split('-')[4]} ${position}`);
+        console.log(`${customChalk.bold.white.dim('Gathering Info: ')}${currentURL.split('-')[4]} ${position}`);
 
         /**
          * In browser code:

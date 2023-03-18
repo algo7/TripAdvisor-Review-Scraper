@@ -1,5 +1,11 @@
 // Dependencies
-import chalk from 'chalk';
+import Chalk from 'chalk';
+
+if (IS_PROVISIONER) {
+    colorLevel = 0;
+}
+const customChalk = new Chalk({ level: colorLevel });
+
 
 
 /**
@@ -58,7 +64,7 @@ const extractAllReviewPageUrls = async (restoUrl, position, language, browser) =
         // Determin current URL
         const currentURL = page.url();
 
-        console.log(`${chalk.bold.white.dim('Gathering Info: ')}${currentURL.split('-')[4]} ${position}`);
+        console.log(`${customChalk.bold.white.dim('Gathering Info: ')}${currentURL.split('-')[4]} ${position}`);
 
         /**
          * In browser code:

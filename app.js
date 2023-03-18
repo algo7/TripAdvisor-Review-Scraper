@@ -3,7 +3,7 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import fs, { mkdirSync, } from 'fs';
 const { promises: { writeFile, }, } = fs;
-import chalk from 'chalk';
+import Chalk from 'chalk';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -31,9 +31,21 @@ if (!CONCURRENCY) CONCURRENCY = 2;
 if (!LANGUAGE || LANGUAGE !== 'fr') LANGUAGE = 'en';
 
 
-console.log(chalk.bold.blue(`The Scraper is Running in ${chalk.bold.magenta(SCRAPE_MODE)} Mode`));
-console.log(chalk.bold.blue(`Concurrency Setting ${chalk.bold.magenta(CONCURRENCY || 2)}`));
-console.log(chalk.bold.blue(`Review Language ${chalk.bold.magenta(LANGUAGE)}`));
+// Set the color level of the chalk instance
+// 1 = basic color support (16 colors)
+let colorLevel = 1;
+
+// If the scraper is being called by the container provisioner, set the color level to 0
+if (IS_PROVISIONER) {
+    colorLevel = 0;
+}
+const customChalk = new Chalk({ level: colorLevel });
+
+
+
+console.log(customChalk.bold.blue(`The Scraper is Running in ${customChalk.bold.magenta(SCRAPE_MODE)} Mode`));
+console.log(customChalk.bold.blue(`Concurrency Setting ${customChalk.bold.magenta(CONCURRENCY || 2)}`));
+console.log(customChalk.bold.blue(`Review Language ${customChalk.bold.magenta(LANGUAGE)}`));
 
 // Check if the required directories exist, otherwise create them
 if (!fileExists(dataDir)) mkdirSync(dataDir);
@@ -75,7 +87,7 @@ const hotelScraperInit = async () => {
             rawData = csvToJSON(dataSourceHotel)
         };
 
-        console.log(chalk.bold.yellow(`Scraping ${chalk.magenta(rawData.length)} Hotels`));
+        console.log(customChalk.bold.yellow(`Scraping ${customChalk.magenta(rawData.length)} Hotels`));
 
         // Array to hold the processed data
         const reviewInfo = []
@@ -171,7 +183,7 @@ const restoScraperInit = async () => {
             browserInstance.launch()
         ])
 
-        console.log(chalk.bold.yellow(`Scraping ${chalk.magenta(rawData.length)} Restaurants`));
+        console.log(customChalk.bold.yellow(`Scraping ${customChalk.magenta(rawData.length)} Restaurants`));
 
         // Array to hold the processed data
         const reviewInfo = []
@@ -253,7 +265,7 @@ const init = async () => {
 
 // Start the program
 init()
-    .then(msg => console.log(chalk.bold.green(msg)))
+    .then(msg => console.log(customChalk.bold.green(msg)))
     .catch(err => {
         console.log(err);
         process.exit(1);
