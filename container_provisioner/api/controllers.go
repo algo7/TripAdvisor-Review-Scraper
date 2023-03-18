@@ -104,6 +104,11 @@ func postProvision(c *fiber.Ctx) error {
 	})
 }
 
+// getLogsViewer renders the logs viewer page
+func getLogsViewer(c *fiber.Ctx) error {
+	return c.SendFile("./views/logs.html")
+}
+
 // getLogs returns the logs for a given container
 func getLogs(c *fiber.Ctx) error {
 	containerId := c.Params("id")
@@ -111,8 +116,9 @@ func getLogs(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Container ID is required"})
 	}
 
+	// Get the logs for the container
 	logsReader := containers.TailLog(containerId)
 
+	// Send the stream to the client
 	return c.SendStream(logsReader)
-
 }
