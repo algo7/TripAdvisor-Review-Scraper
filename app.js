@@ -104,7 +104,7 @@ const hotelScraperInit = async () => {
         const finalData = await dataProcessor(processQueue)
         reviewInfo.push(finalData);
 
-        // Write the review of each individual hotel to files
+        // Write the review of each individual hotel to json files
         await Promise.all(
             reviewInfo
                 .flat()
