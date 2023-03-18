@@ -2,20 +2,26 @@ package containers
 
 import (
 	"container_provisioner/utils"
+	"context"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/client"
 )
 
 // Scrape creates a container, runs it, tails the log and wait for it to exit, and export the file name
 func Scrape(uploadIdentifier string, hotelName string, containerId string) {
 
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	utils.ErrorHandler(err)
+	defer cli.Close()
+
 	// Start the container
-	err := cli.ContainerStart(ctx, containerId, types.ContainerStartOptions{})
+	err = cli.ContainerStart(context.Background(), containerId, types.ContainerStartOptions{})
 	utils.ErrorHandler(err)
 
 	// Wait for the container to exit
-	statusCh, errCh := cli.ContainerWait(ctx, containerId, container.WaitConditionNotRunning)
+	statusCh, errCh := cli.ContainerWait(context.Background(), containerId, container.WaitConditionNotRunning)
 
 	// ContainerWait returns 2 channels. One for the status and one for the wait error (not execution error)
 	select {
@@ -34,7 +40,7 @@ func Scrape(uploadIdentifier string, hotelName string, containerId string) {
 	filePathInContainer := "/puppeteer/reviews/All.csv"
 
 	// Read the file from the container as a reader interface of a tar stream
-	fileReader, _, err := cli.CopyFromContainer(ctx, containerId, filePathInContainer)
+	fileReader, _, err := cli.CopyFromContainer(context.Background(), containerId, filePathInContainer)
 	utils.ErrorHandler(err)
 
 	// Generate a random file prefix

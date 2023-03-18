@@ -11,11 +11,6 @@ import (
 	"github.com/docker/docker/client"
 )
 
-var (
-	ctx = context.Background()
-	cli = initializeDockerClient()
-)
-
 // initializeDockerClient initialize a new docker api client
 func initializeDockerClient() *client.Client {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -25,8 +20,11 @@ func initializeDockerClient() *client.Client {
 
 // pullImage pulls the given image from a registry
 func pullImage(image string) {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	utils.ErrorHandler(err)
+	defer cli.Close()
 
-	reader, err := cli.ImagePull(ctx, image, types.ImagePullOptions{})
+	reader, err := cli.ImagePull(context.Background(), image, types.ImagePullOptions{})
 	utils.ErrorHandler(err)
 	defer reader.Close()
 
@@ -37,9 +35,12 @@ func pullImage(image string) {
 
 // removeContainer removes the container with the given ID
 func removeContainer(containerId string) {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	utils.ErrorHandler(err)
+	defer cli.Close()
 
 	// Remove the container
-	err := cli.ContainerRemove(ctx, containerId, types.ContainerRemoveOptions{
+	err = cli.ContainerRemove(context.Background(), containerId, types.ContainerRemoveOptions{
 		RemoveVolumes: true,
 		Force:         true,
 	})
@@ -49,8 +50,12 @@ func removeContainer(containerId string) {
 // CreateContainer creates a container then returns the container ID
 func CreateContainer(hotelName string, hotelUrl string, uploadIdentifier string) string {
 
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	utils.ErrorHandler(err)
+	defer cli.Close()
+
 	// Create the container. Container.ID contains the ID of the container
-	Container, err := cli.ContainerCreate(ctx,
+	Container, err := cli.ContainerCreate(context.Background(),
 		&container.Config{
 			Image: "ghcr.io/algo7/tripadvisor-review-scraper/scrape:latest",
 			Labels: map[string]string{
@@ -81,10 +86,14 @@ func CreateContainer(hotelName string, hotelUrl string, uploadIdentifier string)
 // CountRunningContainer lists the number of running containers
 func CountRunningContainer() int {
 
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	utils.ErrorHandler(err)
+	defer cli.Close()
+
 	// Determine if the current process is running inside a container
 	isContainer := os.Getenv("IS_CONTAINER")
 
-	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{
+	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{
 		All: false, // Only running containers
 	})
 	utils.ErrorHandler(err)
@@ -98,9 +107,12 @@ func CountRunningContainer() int {
 
 // tailLog tails the log of the container with the given ID
 func TailLog(containerId string) io.Reader {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	utils.ErrorHandler(err)
+	defer cli.Close()
 
 	// Print the logs of the container
-	out, err := cli.ContainerLogs(ctx, containerId, types.ContainerLogsOptions{ShowStdout: true, Follow: true})
+	out, err := cli.ContainerLogs(context.Background(), containerId, types.ContainerLogsOptions{ShowStdout: true, Follow: true})
 	utils.ErrorHandler(err)
 
 	// // Docker log uses multiplexed streams to send stdout and stderr in the connection. This function separates them
@@ -118,8 +130,11 @@ type Container struct {
 
 // ListContainers lists all the containers and return the container IDs
 func ListContainers() []Container {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	utils.ErrorHandler(err)
+	defer cli.Close()
 
-	containersInfo, err := cli.ContainerList(ctx, types.ContainerListOptions{})
+	containersInfo, err := cli.ContainerList(context.Background(), types.ContainerListOptions{})
 	utils.ErrorHandler(err)
 
 	// Map container list result into custom container struct
