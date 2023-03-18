@@ -5,6 +5,7 @@ import (
 	"container_provisioner/utils"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -133,11 +134,16 @@ func getLogs(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "No containers are running right now"})
 	}
 
-	// If the running containers do not include the containerId
+	// Existing container ids
+	runningContainersIds := []string{}
+
+	// Extract the running container ids
 	for _, container := range existingContainers {
-		if container.ID == containerId {
-			break
-		}
+		runningContainersIds = append(runningContainersIds, container.ID)
+	}
+
+	// If the running containers do not include the containerId
+	if !strings.Contains(strings.Join(runningContainersIds, ","), containerId) {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Container ID is invalid"})
 	}
 
