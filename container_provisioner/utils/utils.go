@@ -26,7 +26,7 @@ func ErrorHandler(err error) {
 	if err != nil {
 		formattedError := fmt.Errorf("Error: %w", err)
 		fmt.Println(formattedError)
-		panic(err)
+		fmt.Print(err)
 	}
 }
 
