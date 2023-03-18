@@ -26,7 +26,7 @@ func ErrorHandler(err error) {
 	if err != nil {
 		formattedError := fmt.Errorf("Error: %w", err)
 		fmt.Println(formattedError)
-		os.Exit(1)
+		panic(err)
 	}
 }
 
@@ -137,7 +137,7 @@ func GenerateUUID() string {
 // ParseTime converts ISO 8601 time to a more readable format
 func ParseTime(timeToParse string) string {
 	// Parse the time string
-	t, err := time.Parse("2006-01-02T15:04:05.000Z", timeToParse)
+	t, err := time.Parse(time.RFC3339Nano, timeToParse)
 	ErrorHandler(err)
 
 	// Format the time string in a more readable way

@@ -46,19 +46,47 @@
       }
 
       /* Style the table*/
+      table {
+        border-collapse: collapse;
+        table-layout: fixed;
+        width: 150%;
+      }
+
       td,
       th {
         border: 1px solid #ddd;
         padding: 8px;
         text-align: center;
+        word-wrap: break-word;
+        white-space: pre-wrap;
+      }
+
+      /* First column */
+      td:first-child {
+        width: 300px;
+      }
+
+      th:first-child {
+        width: 300px;
+      }
+
+      th:nth-child(3) {
+        width: 50px;
+      }
+      td:nth-child(3) {
+        width: 50px;
       }
 
       tr:nth-child(even) {
         background-color: #fcf3f3;
+        word-wrap: break-word;
+        white-space: pre-wrap;
       }
 
       tr:hover {
         background-color: grey;
+        word-wrap: break-word;
+        white-space: pre-wrap;
       }
 
       th {
@@ -101,8 +129,11 @@
       .table-container {
         flex: 1;
         padding: 0px;
+        flex-direction: column;
         box-sizing: border-box;
         background-color: #fff;
+        word-wrap: break-word;
+        white-space: pre-wrap;
       }
     </style>
   </head>
@@ -115,8 +146,8 @@
     </script>
     <div class="top-container">
       <h2
-        >There are currently {{.RunningContainers}} task(s) in the queue. Max
-        10.</h2
+        >There is (are) currently {{.RunningContainers}} task(s) in the queue.
+        Max 10.</h2
       >
     </div>
     <div class="flex-container">
