@@ -10,7 +10,7 @@ import (
 )
 
 // Scrape creates a container, runs it, tails the log and wait for it to exit, and export the file name
-func Scrape(fileSuffix string, uploadIdentifier string, hotelName string, containerId string) {
+func Scrape(uploadIdentifier string, hotelName string, containerId string) {
 
 	// Dedicated context and client for each function call
 	ctx1 := context.Background()
@@ -44,6 +44,9 @@ func Scrape(fileSuffix string, uploadIdentifier string, hotelName string, contai
 	// Read the file from the container as a reader interface of a tar stream
 	fileReader, _, err := cli1.CopyFromContainer(ctx1, containerId, filePathInContainer)
 	utils.ErrorHandler(err)
+
+	// Generate a random file prefix
+	fileSuffix := utils.GenerateUUID()
 
 	// Write the file to the host
 	exportedFileName := utils.WriteToFileFromTarStream(hotelName, fileSuffix, fileReader)
