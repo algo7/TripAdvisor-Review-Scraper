@@ -1,12 +1,13 @@
 # base image
-FROM node:slim AS base
+FROM node:19-slim AS base
 LABEL "org.opencontainers.image.source" = "https://github.com/algo7/TripAdvisor-Review-Scraper"
 
 # Set the working directory
 WORKDIR /puppeteer
 
 # Install libs for Puppeteer
-RUN apt update && apt upgrade -y && apt --no-install-recommends install -y libnss3 libxss1 libasound2 libatk-bridge2.0-0 libgtk-3-0 libdrm-dev libgbm-dev && mkdir reviews source && chown -R node:node reviews source
+RUN apt update && apt upgrade -y && apt --no-install-recommends install -y libnss3 libxss1 libasound2 libatk-bridge2.0-0 libgtk-3-0 libdrm-dev libgbm-dev && mkdir reviews source && chown -R node:node reviews source && npm config set update-notifier false
+
 
 # Copy the pkg json files
 COPY package.json package-lock.json ./
