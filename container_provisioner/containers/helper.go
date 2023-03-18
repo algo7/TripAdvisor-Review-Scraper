@@ -47,12 +47,16 @@ func removeContainer(containerId string) {
 }
 
 // CreateContainer creates a container then returns the container ID
-func CreateContainer(hotelName string, hotelUrl string) string {
+func CreateContainer(hotelName string, hotelUrl string, uploadIdentifier string) string {
 
 	// Create the container. Container.ID contains the ID of the container
 	Container, err := cli.ContainerCreate(ctx,
 		&container.Config{
 			Image: "scrape:latest",
+			Labels: map[string]string{
+				"Owner": uploadIdentifier,
+				"Hotel": hotelName,
+			},
 			// Env vars required by the js scraper containers
 			Env: []string{
 				"CONCURRENCY=1",

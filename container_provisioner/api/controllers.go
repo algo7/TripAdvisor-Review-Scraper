@@ -95,7 +95,7 @@ func postProvision(c *fiber.Ctx) error {
 	hotelName := utils.GetHotelNameFromURL(url)
 
 	// Create the container
-	containerId := containers.CreateContainer(hotelName, url)
+	containerId := containers.CreateContainer(hotelName, url, uploadIdentifier)
 
 	// Start the scraping container via goroutine
 	go containers.Scrape(uploadIdentifier, hotelName, containerId)
