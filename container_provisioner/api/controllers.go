@@ -167,8 +167,6 @@ func getRunningTasks(c *fiber.Ctx) error {
 		}
 	}
 
-	fmt.Println(runningTasks)
-
 	// The page status message
 	currentTaskStatus := "There are no running tasks"
 
