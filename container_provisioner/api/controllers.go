@@ -97,10 +97,10 @@ func postProvision(c *fiber.Ctx) error {
 		"Title": "Algo7 TripAdvisor Scraper",
 		// "Message": fmt.Sprintf("Your request has been submitted. You will receive an email at %s when the data is ready", email),
 		"Message1":    "Your request has been submitted. ",
-		"Message2":    "Return to the Home Page and Check for Your File.",
-		"Message3":    "Your data should be available shortly.",
-		"UploadID":    fmt.Sprintf("Your Upload ID: %s", uploadIdentifier),
+		"Message2":    "You can check the progress of your request below",
+		"Message3":    "Once it's done, you can return to the main page to download the data",
 		"ContainerId": containerId,
+		"UploadID":    fmt.Sprintf("Your Upload ID: %s", uploadIdentifier),
 		// "URL":      R2Url + fileSuffix + "-" + "0" + "_" + hotelName + ".csv",
 	})
 }
