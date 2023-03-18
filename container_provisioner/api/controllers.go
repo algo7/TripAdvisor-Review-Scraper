@@ -1,11 +1,14 @@
 package api
 
 import (
+	"bufio"
 	"container_provisioner/containers"
 	"container_provisioner/utils"
 	"fmt"
+	"log"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/websocket/v2"
 )
 
 var R2Url = "https://storage.algo7.tools/"
@@ -102,4 +105,26 @@ func postProvision(c *fiber.Ctx) error {
 		"UploadID": fmt.Sprintf("Your Upload ID: %s", uploadIdentifier),
 		// "URL":      R2Url + fileSuffix + "-" + "0" + "_" + hotelName + ".csv",
 	})
+}
+
+func wsHandler(c *websocket.Conn) {
+	defer c.Close()
+
+	containers.TailLog(c.Params("id"))
+
+	// Create a scanner to read logs line by line
+	scanner := bufio.NewScanner(reader)
+
+	// Stream logs to the WebSocket connection
+	for scanner.Scan() {
+		err = c.WriteMessage(websocket.TextMessage, scanner.Bytes())
+		if err != nil {
+			log.Printf("Error sending log to WebSocket: %s\n", err)
+			return
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		log.Printf("Error reading logs: %s\n", err)
+		return
+	}
 }

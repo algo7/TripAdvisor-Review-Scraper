@@ -8,7 +8,6 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
-	"github.com/docker/docker/pkg/stdcopy"
 )
 
 var (
@@ -54,15 +53,17 @@ func pullImage(image string) {
 }
 
 // tailLog tails the log of the container with the given ID
-func tailLog(containerId string) {
+func TailLog(containerId string) io.Reader {
 
 	// Print the logs of the container
 	out, err := cli.ContainerLogs(ctx, containerId, types.ContainerLogsOptions{ShowStdout: true, Follow: true})
 	utils.ErrorHandler(err)
 
-	// Docker log uses multiplexed streams to send stdout and stderr in the connection. This function separates them
-	_, err = stdcopy.StdCopy(os.Stdout, os.Stderr, out)
-	utils.ErrorHandler(err)
+	// // Docker log uses multiplexed streams to send stdout and stderr in the connection. This function separates them
+	// _, err = stdcopy.StdCopy(os.Stdout, os.Stderr, out)
+	// utils.ErrorHandler(err)
+
+	return out
 }
 
 // removeContainer removes the container with the given ID

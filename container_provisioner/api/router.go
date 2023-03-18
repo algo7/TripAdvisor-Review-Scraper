@@ -11,6 +11,7 @@ func Router() {
 
 	app.Get("/", getMain)
 	app.Post("/submit", postProvision)
+	app.Use("/ws/:id", wsHandler)
 
 	err := app.Listen(":3000")
 	utils.ErrorHandler(err)
