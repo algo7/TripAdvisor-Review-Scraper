@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{.Title}}</title>
+    <style>
+      /* Center everything on the page */
+      html,
+      body {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+      }
+
+      body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      /* Style the table*/
+      table {
+        border-collapse: collapse;
+        table-layout: fixed;
+        width: 100%;
+      }
+
+      td,
+      th {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+        word-wrap: break-word;
+        white-space: pre-wrap;
+      }
+
+      tr:nth-child(even) {
+        background-color: #fcf3f3;
+        word-wrap: break-word;
+        white-space: pre-wrap;
+      }
+
+      tr:hover {
+        background-color: grey;
+        word-wrap: break-word;
+        white-space: pre-wrap;
+      }
+
+      th {
+        padding-top: 12px;
+        padding-bottom: 12px;
+        background-color: #04aa6d;
+        color: white;
+      }
+
+      /* Flex box */
+      .top-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding-top: 1px;
+      }
+
+      .table-container {
+        flex: 1;
+        padding: 0px;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        box-sizing: border-box;
+        background-color: #fff;
+        word-wrap: break-word;
+        white-space: pre-wrap;
+        margin: -300px auto 0; /* Updated margin-top value */
+      }
+      .flex-container {
+        display: flex;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: 1200px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="top-container">
+      <h1>{{.CurrentTasksStatus}}</h1>
+    </div>
+
+    <div class="flex-container">
+      <!-- Table -->
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Running Tasks</th>
+              <th>Link</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{range .RunningTask}}
+            <tr>
+              <td>{{.ContainerId}}</td>
+              <td><a href="{{.Url}}">View Logs</a></td>
+            </tr>
+            {{end}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>

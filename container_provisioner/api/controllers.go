@@ -4,6 +4,7 @@ import (
 	"container_provisioner/containers"
 	"container_provisioner/utils"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -18,6 +19,11 @@ type Row struct {
 	Date       string
 }
 
+type RunningTask struct {
+	ContainerId string
+	Url         string
+}
+
 // getMain renders the main page
 func getMain(c *fiber.Ctx) error {
 
@@ -30,7 +36,7 @@ func getMain(c *fiber.Ctx) error {
 	// Create a slice of Row structs to hold the data for the table
 	rows := make([]Row, len(enrichedR2Objs))
 
-	// Populate the rows slice with data from the fileNames array
+	// Populate the slice of Row struct with data from the fileNames array
 	for i, r2Obj := range enrichedR2Objs {
 		rows[i] = Row{
 			FileName:   r2Obj.Key,
@@ -140,9 +146,32 @@ func getLogs(c *fiber.Ctx) error {
 
 // getRunningJobs renders a table of running containers
 // getMain renders the main page
-func getRunningJob(c *fiber.Ctx) error {
+func getRunningTasks(c *fiber.Ctx) error {
 
-	return c.Render("jobs", fiber.Map{
-		"Title": "Algo7 TripAdvisor Scraper",
+	// Get ids of all running containers
+	containerIds := containers.ListContainers()
+
+	// Create a slice of RunningTask structs to hold the data for the table
+	runningTasks := make([]RunningTask, len(containerIds))
+
+	// Populate the slice of RunningTask structs with data from the containerIds array
+	for i, containerId := range containerIds {
+		runningTasks[i] = RunningTask{
+			ContainerId: containerId,
+			Url:         fmt.Sprintf("/logs-viewer?container_id=%s", containerId),
+		}
+	}
+
+	// The page status message
+	currentTaskStatus := "There are no running tasks"
+
+	if len(containerIds) > 0 {
+		currentTaskStatus = fmt.Sprintf("%s task(s) running", strconv.Itoa(len(containerIds)))
+	}
+
+	return c.Render("tasks", fiber.Map{
+		"Title":             "Algo7 TripAdvisor Scraper",
+		"RunningTasks":      runningTasks,
+		"CurrentTaskStatus": currentTaskStatus,
 	})
 }
