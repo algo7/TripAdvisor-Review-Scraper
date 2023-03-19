@@ -5,6 +5,7 @@ services:
     build: .
     environment:
       IS_CONTAINER: true
+      REDIS_HOST: redis
     # Image name
     image: ghcr.io/algo7/tripadvisor-review-scraper/container_provisioner:latest
     volumes:
