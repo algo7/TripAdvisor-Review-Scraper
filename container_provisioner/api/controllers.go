@@ -2,7 +2,9 @@ package api
 
 import (
 	"container_provisioner/containers"
+	"container_provisioner/database"
 	"container_provisioner/utils"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -29,6 +31,30 @@ type RunningTask struct {
 // getMain renders the main page
 func getMain(c *fiber.Ctx) error {
 
+	// Get the number of running containers
+	runningContainers := containers.CountRunningContainer()
+
+	// Check if the R2 objects list is cached
+	cachedObjectsList := database.CacheLookUp("r2StorageObjectsList")
+
+	// If the R2 objects list is cached, return the cached value
+	if cachedObjectsList != "" {
+
+		// Decode the JSON encoded byte slice into a slice of EnrichedR2Objs structs
+		var enrichedR2Objs = []EnrichedR2Objs{}
+		err := json.Unmarshal([]byte(cachedObjectsList), &enrichedR2Objs)
+		utils.ErrorHandler(err)
+
+		return c.Render("main", fiber.Map{
+			"Title":             "Algo7 TripAdvisor Scraper",
+			"RunningContainers": runningContainers,
+			"Rows":              enrichedR2Objs,
+		})
+
+	}
+
+	// If the value is not cached, get the list of objects from R2 and cache it
+
 	// Get the list of objects from the R2 bucket (without metadata)
 	r2Objs := utils.R2ListObjects()
 
@@ -48,8 +74,8 @@ func getMain(c *fiber.Ctx) error {
 		}
 	}
 
-	// Get the number of running containers
-	runningContainers := containers.CountRunningContainer()
+	// Store the encoded byte slice into redis
+	database.SetCache("r2StorageObjectsList", enrichedR2Objs)
 
 	return c.Render("main", fiber.Map{
 		"Title":             "Algo7 TripAdvisor Scraper",

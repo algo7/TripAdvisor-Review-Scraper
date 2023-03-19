@@ -3,6 +3,7 @@ package database
 import (
 	"container_provisioner/utils"
 	"context"
+	"encoding/json"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -16,11 +17,16 @@ var (
 	})
 )
 
-// SetCache sets the given value to the r2 storage object list key
-func SetCache(key string, value []byte) {
+// SetCache store the given value in redis
+func SetCache(key string, value any) {
+
+	// Encode the slice of Row structs into a byte slice
+	encodedValue, err := json.Marshal(value)
+	utils.ErrorHandler(err)
+
 	ctx := context.Background()
 	// Timeout set to 5 minutes
-	err := rdb.Set(ctx, key, value, time.Minute*5).Err()
+	err = rdb.Set(ctx, key, string(encodedValue), time.Minute*5).Err()
 	utils.ErrorHandler(err)
 }
 
