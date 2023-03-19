@@ -3,6 +3,7 @@ package database
 import (
 	"container_provisioner/utils"
 	"context"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -14,6 +15,14 @@ var (
 		DB:       0,  // use default DB
 	})
 )
+
+// SetCache sets the r2 storage object list in the cache
+func SetCache(value string) {
+	ctx := context.Background()
+	// Timeout set to 5 minutes
+	err := rdb.Set(ctx, "r2StorageObjectsList", value, time.Minute*5).Err()
+	utils.ErrorHandler(err)
+}
 
 // CacheLookUp checks if the r2 storage object list exists in the cache
 func CacheLookUp() string {
