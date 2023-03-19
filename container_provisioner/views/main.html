@@ -49,7 +49,7 @@
       table {
         border-collapse: collapse;
         table-layout: auto;
-        width: 150%;
+        width: 100%;
       }
 
       td,
@@ -62,11 +62,11 @@
       }
 
       /* First column */
-      td:first-child {
+      td:nth-child(1) {
         width: 300px;
       }
 
-      th:first-child {
+      th:nth-child(1) {
         width: 300px;
       }
 
@@ -126,6 +126,8 @@
         background-color: #fff;
         word-wrap: break-word;
         white-space: pre-wrap;
+        max-height: 80%;
+        overflow-y: auto;
       }
     </style>
     <script>
@@ -175,6 +177,19 @@
           <input type="submit" value="Submit" />
         </form>
         <br />
+
+        <h2 style="text-align: center">
+          For any bugs or issues, please contact me at:
+          <a
+            href="mailto:support@algo7.tools?subject=Scraper Bugs&body=Example Body"
+            >support@algo7.tools</a
+          >
+        </h2>
+        <h2 style="text-align: center">
+          <a href="https://github.com/algo7/TripAdvisor-Review-Scraper"
+            >Source Code</a
+          >
+        </h2>
       </div>
 
       <!-- Table -->
@@ -202,17 +217,5 @@
         </table>
       </div>
     </div>
-    <h2>
-      For any bugs or issues, please contact me at:
-      <a
-        href="mailto:support@algo7.tools?subject=Scraper Bugs&body=Example Body"
-        >support@algo7.tools</a
-      >
-    </h2>
-    <h2>
-      <a href="https://github.com/algo7/TripAdvisor-Review-Scraper"
-        >Source Code</a
-      >
-    </h2>
   </body>
 </html>
