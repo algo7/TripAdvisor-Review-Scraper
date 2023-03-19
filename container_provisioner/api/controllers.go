@@ -211,7 +211,7 @@ func getRunningTasks(c *fiber.Ctx) error {
 	currentTaskStatus := "There are no running tasks"
 
 	if len(Containers) > 0 {
-		currentTaskStatus = fmt.Sprintf("%s task(s) running", strconv.Itoa(len(Containers)-1))
+		currentTaskStatus = fmt.Sprintf("%s task(s) running", strconv.Itoa(len(Containers)-2))
 	}
 
 	return c.Render("tasks", fiber.Map{

@@ -102,8 +102,8 @@ func CountRunningContainer() int {
 	if isContainer == "" {
 		return len(containers)
 	}
-	// -1 otherwise the current process will also be counted as a running container
-	return len(containers) - 1
+	// 21 otherwise the current process and redis will also be counted as a running container
+	return len(containers) - 2
 }
 
 // tailLog tails the log of the container with the given ID
