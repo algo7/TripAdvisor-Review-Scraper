@@ -26,7 +26,7 @@ const customChalk = new Chalk({ level: colorLevel });
 const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
     try {
 
-        // Open a new page with the generated user agent
+        // Open a new page 
         const page = await browser.getNewPage()
 
         // Navigate to the hotel page
@@ -129,12 +129,8 @@ const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
 const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hotelId, browser) => {
     try {
 
-        // Generate a random user agent
-        const agent = randUserAgent("desktop");
-
         // Open a new page
         const page = await browser.getNewPage()
-        await page.setUserAgent(agent);
 
         // Array to hold the review info
         const allReviews = [];

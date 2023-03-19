@@ -102,10 +102,10 @@ class Browser {
         if (!this.browser) {
             this.browser = await this.launch()
             const newPage = await this.browser.newPage()
-            newPage.setDefaultTimeout(0);
-            newPage.setDefaultNavigationTimeout(0)
+            await newPage.setDefaultTimeout(0);
+            await newPage.setDefaultNavigationTimeout(0)
             // Generate a random user agent
-            await newPage.setUserAgent(randUserAgent("desktop"));
+            await newPage.setUserAgent(randUserAgent("desktop"))
             this.pageInUse.push(newPage)
 
             return newPage
@@ -119,8 +119,9 @@ class Browser {
 
         if (openedPage < CONCURRENCY) {
             const newPage = await this.browser.newPage()
-            newPage.setDefaultTimeout(0);
-            newPage.setDefaultNavigationTimeout(0)
+            await newPage.setDefaultTimeout(0);
+            await newPage.setDefaultNavigationTimeout(0)
+            await newPage.setUserAgent(randUserAgent("desktop"))
             this.pageInUse.push(newPage)
             return newPage
         }
