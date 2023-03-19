@@ -12,7 +12,7 @@ import (
 
 var R2Url = "https://storage.algo7.tools/"
 
-type Row struct {
+type EnrichedR2Objs struct {
 	FileName   string
 	Link       string
 	UploadedBy string
@@ -36,11 +36,11 @@ func getMain(c *fiber.Ctx) error {
 	R2ObjMetaData := utils.R2EnrichMetaData(r2Objs)
 
 	// Create a slice of Row structs to hold the data for the table
-	enrichedR2Objs := make([]Row, len(R2ObjMetaData))
+	enrichedR2Objs := make([]EnrichedR2Objs, len(R2ObjMetaData))
 
 	// Populate the slice of Row struct with data from the fileNames array
 	for i, r2Obj := range R2ObjMetaData {
-		enrichedR2Objs[i] = Row{
+		enrichedR2Objs[i] = EnrichedR2Objs{
 			FileName:   r2Obj.Key,
 			Link:       R2Url + r2Obj.Key,
 			UploadedBy: r2Obj.Metadata,
@@ -48,7 +48,6 @@ func getMain(c *fiber.Ctx) error {
 		}
 	}
 
-	fmt.Print(enrichedR2Objs)
 	// Get the number of running containers
 	runningContainers := containers.CountRunningContainer()
 
@@ -164,20 +163,20 @@ func getLogs(c *fiber.Ctx) error {
 func getRunningTasks(c *fiber.Ctx) error {
 
 	// Get ids of all running containers
-	containerIds := containers.ListContainers()
+	Containers := containers.ListContainers()
 
 	// Create a slice of RunningTask structs to hold the data for the table
-	runningTasks := make([]RunningTask, len(containerIds))
+	runningTasks := make([]RunningTask, len(Containers))
 
-	// Populate the slice of RunningTask structs with data from the containerIds array
-	for i, containerId := range containerIds {
+	// Populate the slice of RunningTask structs with data from the Containers array
+	for i, container := range Containers {
 		// Exclude the container that runs app itself
-		if containerId.TaskOwner != "" {
+		if container.TaskOwner != "" {
 			runningTasks[i] = RunningTask{
-				ContainerId: containerId.ID[:12],
-				Url:         fmt.Sprintf("/logs-viewer?container_id=%s", containerId.ID),
-				TaskOwner:   containerId.TaskOwner,
-				HotelName:   containerId.HotelName,
+				ContainerId: container.ID[:12],
+				Url:         fmt.Sprintf("/logs-viewer?container_id=%s", container.ID),
+				TaskOwner:   container.TaskOwner,
+				HotelName:   container.HotelName,
 			}
 		}
 	}
@@ -185,8 +184,8 @@ func getRunningTasks(c *fiber.Ctx) error {
 	// The page status message
 	currentTaskStatus := "There are no running tasks"
 
-	if len(containerIds) > 0 {
-		currentTaskStatus = fmt.Sprintf("%s task(s) running", strconv.Itoa(len(containerIds)-1))
+	if len(Containers) > 0 {
+		currentTaskStatus = fmt.Sprintf("%s task(s) running", strconv.Itoa(len(Containers)-1))
 	}
 
 	return c.Render("tasks", fiber.Map{

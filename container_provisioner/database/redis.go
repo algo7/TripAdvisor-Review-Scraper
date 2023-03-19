@@ -16,20 +16,20 @@ var (
 	})
 )
 
-// SetCache sets the r2 storage object list in the cache
-func SetCache(value string) {
+// SetCache sets the given value to the r2 storage object list key
+func SetCache(key string, value []byte) {
 	ctx := context.Background()
 	// Timeout set to 5 minutes
-	err := rdb.Set(ctx, "r2StorageObjectsList", value, time.Minute*5).Err()
+	err := rdb.Set(ctx, key, value, time.Minute*5).Err()
 	utils.ErrorHandler(err)
 }
 
-// CacheLookUp checks if the r2 storage object list exists in the cache
-func CacheLookUp() string {
+// CacheLookUp checks if the given value exists in the cache, returns the value if it exists
+func CacheLookUp(key string) string {
 
 	ctx := context.Background()
 
-	cachedObjectsList, err := rdb.Get(ctx, "r2StorageObjectsList").Result()
+	cachedObjectsList, err := rdb.Get(ctx, key).Result()
 
 	// If the key does not exist, return an empty string
 	if err == redis.Nil {
