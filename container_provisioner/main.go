@@ -7,8 +7,10 @@ import (
 
 func main() {
 
+	// Check if the redis server is up and running
+	database.RedisConnectionCheck()
+
 	// Load the API routes
 	api.Router()
 
-	database.RedisConnectionCheck()
 }
