@@ -67,4 +67,4 @@ jobs:
 
       # Push the image to the registry
       - name: Push Image
-        run: docker compose -f ./container_provisioner/docker-compose.yml push
+        run: docker compose -f ./container_provisioner/docker-compose-ci.yml push
