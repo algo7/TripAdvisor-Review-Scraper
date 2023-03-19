@@ -2,6 +2,7 @@
 import puppeteer from 'puppeteer-extra'
 import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
 import blockResourcesPlugin from 'puppeteer-extra-plugin-block-resources';
+import randUserAgent from "rand-user-agent";
 
 
 // Environments variables
@@ -103,7 +104,10 @@ class Browser {
             const newPage = await this.browser.newPage()
             newPage.setDefaultTimeout(0);
             newPage.setDefaultNavigationTimeout(0)
+            // Generate a random user agent
+            await newPage.setUserAgent(randUserAgent("desktop"));
             this.pageInUse.push(newPage)
+
             return newPage
         }
 

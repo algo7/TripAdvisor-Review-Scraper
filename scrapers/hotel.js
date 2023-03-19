@@ -1,8 +1,5 @@
 // Dependencies
 import { Chalk } from 'chalk';
-import randUserAgent from "rand-user-agent";
-
-
 
 // Environment variables
 let { IS_PROVISIONER } = process.env;
@@ -29,12 +26,8 @@ const customChalk = new Chalk({ level: colorLevel });
 const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
     try {
 
-        // Generate a random user agent
-        const agent = randUserAgent("desktop");
-
         // Open a new page with the generated user agent
         const page = await browser.getNewPage()
-        await page.setUserAgent(agent);
 
         // Navigate to the hotel page
         await page.goto(hotelUrl);
