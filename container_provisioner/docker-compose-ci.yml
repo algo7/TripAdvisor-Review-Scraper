@@ -7,7 +7,7 @@ services:
       IS_CONTAINER: true
       REDIS_HOST: redis:6379
     # Image name
-    image: go:go
+    image: ghcr.io/algo7/tripadvisor-review-scraper/container_provisioner:latest
     volumes:
       # The credentials folder is mounted to the container
       - type: bind
