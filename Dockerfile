@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # base image
 FROM node:19-slim AS base
 LABEL "org.opencontainers.image.source" = "https://github.com/algo7/TripAdvisor-Review-Scraper"
