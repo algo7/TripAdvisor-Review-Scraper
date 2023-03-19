@@ -48,7 +48,7 @@
       /* Style the table*/
       table {
         border-collapse: collapse;
-        table-layout: fixed;
+        table-layout: auto;
         width: 150%;
       }
 
@@ -97,14 +97,6 @@
       }
 
       /* Flex box */
-      .top-container {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        padding-top: 100px;
-      }
 
       .flex-container {
         display: flex;
@@ -127,7 +119,7 @@
       }
 
       .table-container {
-        overflow-y: scroll;
+        flex: 1;
         padding: 0px;
         flex-direction: column;
         box-sizing: border-box;
@@ -144,16 +136,15 @@
     </script>
   </head>
   <body>
-    <div class="top-container">
-      <h2
-        >There is (are) currently
-        <a href="/tasks">{{.RunningContainers}}</a> task(s) in the queue. Max
-        10.</h2
-      >
-    </div>
     <div class="flex-container">
       <!-- Form -->
       <div class="form-container">
+        <h2 style="text-align: center"
+          >There is (are) currently
+          <a href="/tasks">{{.RunningContainers}}</a> task(s) in the queue. Max
+          10.</h2
+        >
+
         <form action="/submit" method="post">
           <label for="url"><h3>Enter URL (hotel links only):</h3></label>
           <h4>*must be tripadvisor.com, not .fr or or others.</h4>
@@ -188,8 +179,8 @@
 
       <!-- Table -->
       <div class="table-container">
-        <h3>Files that are currently available:</h3>
         <table>
+          <h2>Files that are currently available:</h2>
           <thead>
             <tr>
               <th>File Name</th>
