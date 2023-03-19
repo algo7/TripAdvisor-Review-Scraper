@@ -33,14 +33,14 @@ func getMain(c *fiber.Ctx) error {
 	r2Objs := utils.R2ListObjects()
 
 	// Enrich the R2 objects with metadata
-	enrichedR2Objs := utils.R2EnrichMetaData(r2Objs)
+	R2ObjMetaData := utils.R2EnrichMetaData(r2Objs)
 
 	// Create a slice of Row structs to hold the data for the table
-	rows := make([]Row, len(enrichedR2Objs))
+	enrichedR2Objs := make([]Row, len(R2ObjMetaData))
 
 	// Populate the slice of Row struct with data from the fileNames array
-	for i, r2Obj := range enrichedR2Objs {
-		rows[i] = Row{
+	for i, r2Obj := range R2ObjMetaData {
+		enrichedR2Objs[i] = Row{
 			FileName:   r2Obj.Key,
 			Link:       R2Url + r2Obj.Key,
 			UploadedBy: r2Obj.Metadata,
@@ -54,7 +54,7 @@ func getMain(c *fiber.Ctx) error {
 	return c.Render("main", fiber.Map{
 		"Title":             "Algo7 TripAdvisor Scraper",
 		"RunningContainers": runningContainers,
-		"Rows":              rows,
+		"Rows":              enrichedR2Objs,
 	})
 }
 
