@@ -31,6 +31,20 @@ services:
     networks:
       - scraper
 
+  # Service name
+  redis:
+    # Image name
+    image: redis:alpine
+    # Map the ports | bind to localhost
+    ports:
+      # Port in the container
+      - target: 6379
+        # Port used by the routing mesh
+        published: 6379
+        protocol: tcp
+    # Set up a dedicated network
+    networks:
+      - scraper
 ## Config section
 # Define the network type
 networks:
