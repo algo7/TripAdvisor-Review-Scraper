@@ -20,13 +20,17 @@ FROM base as build
 COPY go.mod go.sum ./
 
 # Download packages
-RUN go mod tidy
+RUN apk add upx && go mod tidy
 
 # Copy the rest
 COPY . .
 
 # Compile
-RUN CGO_ENABLED=0 go build -o /go/bin/app
+RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o /go/bin/app_orig
+
+
+# Compress
+RUN upx --best -o /go/bin/app /go/bin/app_orig
 
 
 # Stage 3
