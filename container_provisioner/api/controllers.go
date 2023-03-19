@@ -48,6 +48,7 @@ func getMain(c *fiber.Ctx) error {
 		}
 	}
 
+	fmt.Print(enrichedR2Objs)
 	// Get the number of running containers
 	runningContainers := containers.CountRunningContainer()
 

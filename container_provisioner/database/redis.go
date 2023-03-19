@@ -1,40 +1,37 @@
 package database
 
 import (
+	"container_provisioner/utils"
 	"context"
-	"fmt"
 
 	"github.com/redis/go-redis/v9"
 )
 
-func main() {
-	ctx := context.Background()
-
-	rdb := redis.NewClient(&redis.Options{
+var (
+	rdb = redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
+)
 
-	err := rdb.Set(ctx, "key", "value", 0).Err()
-	if err != nil {
-		panic(err)
-	}
+// CacheLookUp checks if the r2 storage object list exists in the cache
+func CacheLookUp() string {
 
-	val, err := rdb.Get(ctx, "key").Result()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("key", val)
+	ctx := context.Background()
 
-	val2, err := rdb.Get(ctx, "key2").Result()
+	cachedObjectsList, err := rdb.Get(ctx, "r2StorageObjectsList").Result()
+
+	// If the key does not exist, return an empty string
 	if err == redis.Nil {
-		fmt.Println("key2 does not exist")
-	} else if err != nil {
-		panic(err)
-	} else {
-		fmt.Println("key2", val2)
+		return ""
 	}
-	// Output: key value
-	// key2 does not exist
+
+	// If actual error
+	if err != nil {
+		utils.ErrorHandler(err)
+	}
+
+	// If the key exists, return the value
+	return cachedObjectsList
 }
