@@ -55,7 +55,7 @@ jobs:
       # Build the image
       - name: Build Image
         run: |
-          docker compose -f ./container_provisioner/docker-compose.yml build
+          docker compose -f ./container_provisioner/docker-compose-ci.yml build
       # Login to GitHub Container Registry
       - name: Registry Login
         uses: docker/login-action@v1
