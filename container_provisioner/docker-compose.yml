@@ -2,12 +2,14 @@ version: '3.9'
 services:
   # Service name
   container_provisioner:
+    depends_on:
+      - redis
     build: .
     environment:
       IS_CONTAINER: true
-      REDIS_HOST: redis
+      REDIS_HOST: redis:6379
     # Image name
-    image: ghcr.io/algo7/tripadvisor-review-scraper/container_provisioner:latest
+    image: go:go
     volumes:
       # The credentials folder is mounted to the container
       - type: bind

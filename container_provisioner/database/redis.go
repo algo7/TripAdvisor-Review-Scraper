@@ -4,6 +4,7 @@ import (
 	"container_provisioner/utils"
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"time"
 
@@ -50,6 +51,18 @@ func CacheLookUp(key string) string {
 
 	// If the key exists, return the value
 	return cachedObjectsList
+}
+
+// RedisConnectionCheck checks if the redis server is up and running
+func RedisConnectionCheck() {
+
+	ctx := context.Background()
+
+	// Ping the redis server to check if it is up
+	resp, err := rdb.Ping(ctx).Result()
+	utils.ErrorHandler(err)
+
+	fmt.Println("Redis connection established", resp)
 }
 
 // getRedisHostAddress checks if custom redis host address is supplied, if not, returns the default address
