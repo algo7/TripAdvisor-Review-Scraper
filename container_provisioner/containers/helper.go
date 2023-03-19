@@ -165,7 +165,7 @@ func getResultCSVSizeInContainer(containerId, filePathInContainer string) {
 	defer cli.Close()
 
 	// Log the file size in the container
-	containerFileInfo, _, err := cli.ContainerStatPath(context.Background(), containerId, filePathInContainer)
+	containerFileInfo, err := cli.ContainerStatPath(context.Background(), containerId, filePathInContainer)
 	if err == nil {
 		log.Printf("File size in container: %d bytes", containerFileInfo.Size)
 	} else {
