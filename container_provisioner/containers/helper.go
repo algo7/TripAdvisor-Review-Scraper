@@ -4,6 +4,7 @@ import (
 	"container_provisioner/utils"
 	"context"
 	"io"
+	"log"
 	"os"
 
 	"github.com/docker/docker/api/types"
@@ -155,4 +156,19 @@ func ListContainers() []Container {
 	}
 
 	return containers
+}
+
+// GetResultCSVSizeInContainer gets the size of the result csv file in the container
+func getResultCSVSizeInContainer(containerId, filePathInContainer string) {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	utils.ErrorHandler(err)
+	defer cli.Close()
+
+	// Log the file size in the container
+	containerFileInfo, _, err := cli.ContainerStatPath(context.Background(), containerId, filePathInContainer)
+	if err == nil {
+		log.Printf("File size in container: %d bytes", containerFileInfo.Size)
+	} else {
+		log.Printf("Error getting file size in container: %v", err)
+	}
 }

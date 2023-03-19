@@ -1,7 +1,7 @@
 // Dependencies
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import fs, { mkdirSync, readdirSync } from 'fs';
+import fs, { mkdirSync } from 'fs';
 const { promises: { writeFile, }, } = fs;
 import { Chalk } from 'chalk';
 const __filename = fileURLToPath(import.meta.url);
@@ -147,7 +147,9 @@ const hotelScraperInit = async () => {
                     console.log(file);
                 });
 
-            return 'Scraping Done';
+            console.log('Scraping Done');
+            process.exit(0);
+
         }
 
         // Otherwise, export both the csv and json
@@ -158,8 +160,8 @@ const hotelScraperInit = async () => {
             browserInstance.closeBrowser(),
         ])
 
-        return 'Scraping Done';
-
+        console.log('Scraping Done');
+        process.exit(0);
 
     } catch (err) {
         throw err;
@@ -277,6 +279,7 @@ init()
 
 // Report Logic
 setInterval(async () => {
+
     // Standalone mode
     if (!IS_PROVISIONER) {
         // Get tab stats
@@ -286,11 +289,8 @@ setInterval(async () => {
         // Log the tab stats
         console.log(report);
         // Exit if no tab is in use and browser is being loaded
-        if (inUse === 0 && typeof (openedPage) !== 'string') process.exit(0);
+        // if (inUse === 0 && typeof (openedPage) !== 'string') process.exit(0);
     }
 
-    // Container provisioner mode
-    fs.readdirSync(dataDir)
-        .forEach(file => { if (file === "All.csv") process.exit(0); });
 
 }, 5000);

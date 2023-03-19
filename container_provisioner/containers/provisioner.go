@@ -39,6 +39,9 @@ func Scrape(uploadIdentifier string, hotelName string, containerId string) {
 	// The file path in the container
 	filePathInContainer := "/puppeteer/reviews/All.csv"
 
+	// Get the file size in the container
+	getResultCSVSizeInContainer(containerId, filePathInContainer)
+
 	// Read the file from the container as a reader interface of a tar stream
 	fileReader, _, err := cli.CopyFromContainer(context.Background(), containerId, filePathInContainer)
 	utils.ErrorHandler(err)
