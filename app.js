@@ -289,7 +289,7 @@ setInterval(async () => {
         // Log the tab stats
         console.log(report);
         // Exit if no tab is in use and browser is being loaded
-        // if (inUse === 0 && typeof (openedPage) !== 'string') process.exit(0);
+        if (inUse === 0 && typeof (openedPage) !== 'string') process.exit(0);
     }
 
 
