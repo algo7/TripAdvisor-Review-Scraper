@@ -65,7 +65,7 @@ A simple scraper for TripAdvisor reviews.
 3. But there is still a catch: you still have to install Docker first :)
 
 ## Notes:
-- The Docker image is 1.77GB. If it's your first time running the scraper, the setup program might take some time depending on your internet connection.
+- The Docker image size is close to 1GB. If it's your first time running the scraper, the setup program might take some time depending on your internet connection.
 - Below are the outputs indicating that the image is being downloaded.
 ```bash
 Pulling scraper (ghcr.io/algo7/tripadvisor-review-scraper/scrap:latest)...
