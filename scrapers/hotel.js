@@ -181,7 +181,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
             // Extract comments text
             const commentContent = await page.evaluate(async () => {
 
-                const commentContentBlocks = document.getElementsByTagName('q');
+                const commentContentBlocks = document.getElementsByClassName('QewHA H4 _a');
 
                 // Array use to store the comments
                 const comments = [];
