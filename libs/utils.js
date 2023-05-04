@@ -30,7 +30,7 @@ const combine = (scrapeMode, dataDir) => {
 
         const extracted = allFiles
             // Filter out JSON files
-            .filter(fileName => fileName.includes('.json'))
+            .filter(fileName => fileName.includes('.json') && fileName !== 'All.json')
             // Load each file and extract the information
             .map(fileName => {
                 const fileContent = JSON.parse(readFileSync(`${dataDir}${fileName}`));
@@ -75,11 +75,11 @@ const combine = (scrapeMode, dataDir) => {
                         rating, dateOfVist, ratingDate,
                     };
                 }
-                const { hotelName, hotelId, title, content, } = review;
+                const { hotelName, hotelId, title, content, month, year } = review;
 
                 // Check if the hotel ID is supplied
-                if (!hotelId) return { hotelName, title, content, };
-                return { hotelName, hotelId, title, content, };
+                if (!hotelId) return { hotelName, title, content, month, year };
+                return { hotelName, hotelId, title, content, month, year };
 
             });
 
