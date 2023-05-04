@@ -193,24 +193,38 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
             });
 
             // Extract date of stay
-            const commentDateOfStay = await page.evaluate(async () => {
+            const commentDateOfReview = await page.evaluate(async () => {
 
-                const commentDateOfStayBlocks = document.getElementsByClassName('teHYY')
+                // const commentDateOfStayBlocks = document.getElementsByClassName('teHYY')
+                const commentDateBlocks = document.getElementsByClassName("cRVSd")
 
-                const dates = [];
+                // const datesOfStay = [];
+                const datesOfReview = [];
 
-                for (let index = 0; index < commentDateOfStayBlocks.length; index++) {
 
-                    // Split the date of stay text block into an array
-                    const splitted = commentDateOfStayBlocks[index].innerText.split(' ')
+                // for (let index = 0; index < commentDateOfStayBlocks.length; index++) {
 
-                    dates.push({
-                        month: splitted[3],
-                        year: splitted[4],
+                //     // Split the date of stay text block into an array
+                //     const splitted = commentDateOfStayBlocks[index].innerText.split(' ')
+
+                //     datesOfStay.push({
+                //         month: splitted[3],
+                //         year: splitted[4],
+                //     });
+                // }
+
+                for (let index = 0; index < commentDateBlocks.length; index++) {
+
+                    // Split the date of comment text block into an array
+                    const splitted = commentDateBlocks[index].children[0].innerText.split('review').pop().split(' ')
+
+                    datesOfReview.push({
+                        month: splitted[1],
+                        year: splitted[2],
                     });
                 }
 
-                return dates;
+                return datesOfReview;
             });
 
             // Extract comments text
@@ -230,12 +244,11 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
 
             // Format (for CSV processing) the reviews so each review of each page is in an object
             const formatted = commentContent.map((comment, index) => {
-
                 return {
                     title: commentTitle[index],
                     content: comment,
-                    month: monthStringToNumber(commentDateOfStay[index].month),
-                    year: commentDateOfStay[index].year,
+                    month: monthStringToNumber(commentDateOfReview[index].month),
+                    year: commentDateOfReview[index].year,
                     rating: commentRatingStringToNumber(commentRating[index]),
                 };
             });

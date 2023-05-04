@@ -76,6 +76,7 @@ latest: Pulling from algo7/tripadvisor-review-scraper/scrap
 ## Known Issues
 1. The hotel scraper works for English reviews only.
 2. The restaurant scraper can only scrap english reivews or french reviews.
+3. The hotel scraper uses date of review instead of date of stay as the date because the date of stay is not always available.
 
 # Container Provisioner
 Container Provisioner is a tool written in [Go](https://go.dev/) that provides a UI for the users to interact with the scraper. It uses [Docker API](https://docs.docker.com/engine/api/) to provision the containers and run the scraper. The UI is written in raw HTML and JavaScript while the backend web framwork is [Fiber](https://docs.gofiber.io/).
