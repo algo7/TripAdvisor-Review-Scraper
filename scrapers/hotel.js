@@ -1,7 +1,7 @@
 // Dependencies
 import { Chalk } from 'chalk';
 
-import { monthStringToNumber } from '../libs/utils.js';
+import { monthStringToNumber, commentRatingStringToNumber } from '../libs/utils.js';
 
 // Environment variables
 let { IS_PROVISIONER } = process.env;
@@ -188,6 +188,8 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
                 for (let index = 0; index < commentRatingBlocks.length; index++) {
                     ratings.push(commentRatingBlocks[index].children[0].classList[0]);
                 }
+
+                return ratings;
             });
 
             // Extract date of stay
@@ -233,7 +235,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
                     content: comment,
                     month: monthStringToNumber(commentDateOfStay[index].month),
                     year: commentDateOfStay[index].year,
-                    rating: commentRating[index],
+                    rating: commentRatingStringToNumber(commentRating[index]),
                 };
             });
 

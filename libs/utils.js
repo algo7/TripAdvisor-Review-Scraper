@@ -246,7 +246,7 @@ const noBs = async (page) => {
     }
 };
 
-export { fileExists, combine, reviewJSONToCsv, csvToJSON, dataProcessor, noBs, monthStringToNumber };
+export { fileExists, combine, reviewJSONToCsv, csvToJSON, dataProcessor, noBs, monthStringToNumber, commentRatingStringToNumber };
 
 
 // const cookiesAvailable = await fileExists('./data/cookies.json');
