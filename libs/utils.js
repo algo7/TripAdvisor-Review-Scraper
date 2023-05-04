@@ -18,6 +18,41 @@ const fileExists = (filePath) => {
 };
 
 /**
+ * Convert month string to number
+ * @param {String} monthString - The month string
+ * @returns {Number} - The month number
+ */
+const monthStringToNumber = (monthString) => {
+    switch (monthString) {
+        case 'January':
+            return 1;
+        case 'February':
+            return 2;
+        case 'March':
+            return 3;
+        case 'April':
+            return 4;
+        case 'May':
+            return 5;
+        case 'June':
+            return 6;
+        case 'July':
+            return 7;
+        case 'August':
+            return 8;
+        case 'September':
+            return 9;
+        case 'October':
+            return 10;
+        case 'November':
+            return 11;
+        default:
+            return 12;
+    }
+};
+
+
+/**
  * Combine all JSON files in the data directory into a JSON array of object
  * @param {String} scrapeMode - Resturant or hotel
  * @param {String} dataDir - The data directory
@@ -42,7 +77,7 @@ const combine = (scrapeMode, dataDir) => {
                 const { hotelName, hotelId, position, allReviews, } = fileContent;
                 return { hotelName, hotelId, position, allReviews, };
             })
-            // Sort the extracted data by the index
+            // Sort the extracted data by the index so all reviews of the same hotel are together
             .sort((a, b) => a.position - b.position)
             // Append the name, id, and index to each review
             .map(item => {
