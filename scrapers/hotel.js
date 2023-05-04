@@ -1,6 +1,8 @@
 // Dependencies
 import { Chalk } from 'chalk';
 
+import { monthStringToNumber, commentRatingStringToNumber } from '../libs/utils.js';
+
 // Environment variables
 let { IS_PROVISIONER } = process.env;
 
@@ -178,6 +180,39 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
                 return titles;
             });
 
+            // Extract comment rating
+            const commentRating = await page.evaluate(async () => {
+                const commentRatingBlocks = document.getElementsByClassName("Hlmiy")
+                const ratings = [];
+
+                for (let index = 0; index < commentRatingBlocks.length; index++) {
+                    ratings.push(commentRatingBlocks[index].children[0].classList[1]);
+                }
+
+                return ratings;
+            });
+
+            // Extract date of stay
+            const commentDateOfStay = await page.evaluate(async () => {
+
+                const commentDateOfStayBlocks = document.getElementsByClassName('teHYY')
+
+                const dates = [];
+
+                for (let index = 0; index < commentDateOfStayBlocks.length; index++) {
+
+                    // Split the date of stay text block into an array
+                    const splitted = commentDateOfStayBlocks[index].innerText.split(' ')
+
+                    dates.push({
+                        month: splitted[3],
+                        year: splitted[4],
+                    });
+                }
+
+                return dates;
+            });
+
             // Extract comments text
             const commentContent = await page.evaluate(async () => {
 
@@ -195,9 +230,13 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
 
             // Format (for CSV processing) the reviews so each review of each page is in an object
             const formatted = commentContent.map((comment, index) => {
+
                 return {
                     title: commentTitle[index],
                     content: comment,
+                    month: monthStringToNumber(commentDateOfStay[index].month),
+                    year: commentDateOfStay[index].year,
+                    rating: commentRatingStringToNumber(commentRating[index]),
                 };
             });
 

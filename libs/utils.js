@@ -18,6 +18,71 @@ const fileExists = (filePath) => {
 };
 
 /**
+ * Convert month string to number
+ * @param {String} monthString - The month string
+ * @returns {Number} - The month number
+ */
+const monthStringToNumber = (monthString) => {
+    switch (monthString) {
+        case 'January':
+            return 1;
+        case 'February':
+            return 2;
+        case 'March':
+            return 3;
+        case 'April':
+            return 4;
+        case 'May':
+            return 5;
+        case 'June':
+            return 6;
+        case 'July':
+            return 7;
+        case 'August':
+            return 8;
+        case 'September':
+            return 9;
+        case 'October':
+            return 10;
+        case 'November':
+            return 11;
+        default:
+            return 12;
+    }
+};
+
+/**
+ * Convert comment rating string (the class name of the rating element) to number (the actual rating)
+ * @param {String} ratingString - The class name of the rating element
+ * @returns {Number} - The actual rating
+ */
+const commentRatingStringToNumber = (ratingString) => {
+
+    switch (ratingString) {
+        case "bubble_10":
+            return 1;
+        case "bubble_15":
+            return 1.5;
+        case "bubble_20":
+            return 2;
+        case "bubble_25":
+            return 2.5;
+        case "bubble_30":
+            return 3;
+        case "bubble_35":
+            return 3.5;
+        case "bubble_40":
+            return 4;
+        case "bubble_45":
+            return 4.5;
+        case "bubble_50":
+            return 5;
+        default:
+            return 5;
+    }
+};
+
+/**
  * Combine all JSON files in the data directory into a JSON array of object
  * @param {String} scrapeMode - Resturant or hotel
  * @param {String} dataDir - The data directory
@@ -30,7 +95,7 @@ const combine = (scrapeMode, dataDir) => {
 
         const extracted = allFiles
             // Filter out JSON files
-            .filter(fileName => fileName.includes('.json'))
+            .filter(fileName => fileName.includes('.json') && fileName !== 'All.json')
             // Load each file and extract the information
             .map(fileName => {
                 const fileContent = JSON.parse(readFileSync(`${dataDir}${fileName}`));
@@ -42,7 +107,7 @@ const combine = (scrapeMode, dataDir) => {
                 const { hotelName, hotelId, position, allReviews, } = fileContent;
                 return { hotelName, hotelId, position, allReviews, };
             })
-            // Sort the extracted data by the index
+            // Sort the extracted data by the index so all reviews of the same hotel are together
             .sort((a, b) => a.position - b.position)
             // Append the name, id, and index to each review
             .map(item => {
@@ -75,11 +140,11 @@ const combine = (scrapeMode, dataDir) => {
                         rating, dateOfVist, ratingDate,
                     };
                 }
-                const { hotelName, hotelId, title, content, } = review;
+                const { hotelName, hotelId, title, content, month, year, rating } = review;
 
                 // Check if the hotel ID is supplied
-                if (!hotelId) return { hotelName, title, content, };
-                return { hotelName, hotelId, title, content, };
+                if (!hotelId) return { hotelName, title, content, month, year, rating };
+                return { hotelName, hotelId, title, content, month, year, rating };
 
             });
 
@@ -181,7 +246,7 @@ const noBs = async (page) => {
     }
 };
 
-export { fileExists, combine, reviewJSONToCsv, csvToJSON, dataProcessor, noBs };
+export { fileExists, combine, reviewJSONToCsv, csvToJSON, dataProcessor, noBs, monthStringToNumber, commentRatingStringToNumber };
 
 
 // const cookiesAvailable = await fileExists('./data/cookies.json');
