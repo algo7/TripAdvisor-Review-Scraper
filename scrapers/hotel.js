@@ -186,7 +186,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
                 const ratings = [];
 
                 for (let index = 0; index < commentRatingBlocks.length; index++) {
-                    ratings.push(commentRatingBlocks[index].children[0].classList[0]);
+                    ratings.push(commentRatingBlocks[index].children[0].classList[1]);
                 }
 
                 return ratings;
@@ -230,6 +230,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
 
             // Format (for CSV processing) the reviews so each review of each page is in an object
             const formatted = commentContent.map((comment, index) => {
+
                 return {
                     title: commentTitle[index],
                     content: comment,

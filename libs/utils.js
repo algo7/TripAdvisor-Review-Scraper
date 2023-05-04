@@ -140,11 +140,11 @@ const combine = (scrapeMode, dataDir) => {
                         rating, dateOfVist, ratingDate,
                     };
                 }
-                const { hotelName, hotelId, title, content, month, year } = review;
+                const { hotelName, hotelId, title, content, month, year, rating } = review;
 
                 // Check if the hotel ID is supplied
-                if (!hotelId) return { hotelName, title, content, month, year };
-                return { hotelName, hotelId, title, content, month, year };
+                if (!hotelId) return { hotelName, title, content, month, year, rating };
+                return { hotelName, hotelId, title, content, month, year, rating };
 
             });
 
