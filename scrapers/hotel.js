@@ -178,6 +178,27 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
                 return titles;
             });
 
+            // Extract date of stay
+            const commentDateOfStay = await page.evaluate(async () => {
+
+                const commentDateOfStayBlocks = document.getElementsByClassName('teHYY')
+
+                const dates = [];
+
+                for (let index = 0; index < commentDateOfStayBlocks.length; index++) {
+
+                    // Split the date of stay text block into an array
+                    const splitted = commentDateOfStayBlocks[index].innerText.split(' ')
+
+                    dates.push({
+                        month: splitted[3],
+                        year: splitted[4],
+                    });
+                }
+
+                return dates;
+            });
+
             // Extract comments text
             const commentContent = await page.evaluate(async () => {
 
@@ -198,6 +219,8 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
                 return {
                     title: commentTitle[index],
                     content: comment,
+                    month: commentDateOfStay[index].month,
+                    year: commentDateOfStay[index].year,
                 };
             });
 
