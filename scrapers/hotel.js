@@ -1,6 +1,8 @@
 // Dependencies
 import { Chalk } from 'chalk';
 
+import { monthStringToNumber } from '../libs/utils.js';
+
 // Environment variables
 let { IS_PROVISIONER } = process.env;
 
@@ -219,7 +221,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
                 return {
                     title: commentTitle[index],
                     content: comment,
-                    month: commentDateOfStay[index].month,
+                    month: monthStringToNumber(commentDateOfStay[index].month),
                     year: commentDateOfStay[index].year,
                 };
             });
