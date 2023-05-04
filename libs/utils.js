@@ -51,6 +51,36 @@ const monthStringToNumber = (monthString) => {
     }
 };
 
+/**
+ * Convert comment rating string (the class name of the rating element) to number (the actual rating)
+ * @param {String} ratingString - The class name of the rating element
+ * @returns {Number} - The actual rating
+ */
+const commentRatingStringToNumber = (ratingString) => {
+
+    switch (ratingString) {
+        case "bubble_10":
+            return 1;
+        case "bubble_15":
+            return 1.5;
+        case "bubble_20":
+            return 2;
+        case "bubble_25":
+            return 2.5;
+        case "bubble_30":
+            return 3;
+        case "bubble_35":
+            return 3.5;
+        case "bubble_40":
+            return 4;
+        case "bubble_45":
+            return 4.5;
+        case "bubble_50":
+            return 5;
+        default:
+            return 5;
+    }
+};
 
 /**
  * Combine all JSON files in the data directory into a JSON array of object
