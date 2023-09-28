@@ -20,8 +20,8 @@ func initializeDockerClient() *client.Client {
 	return cli
 }
 
-// PullImage pulls the given image from a registry
-func PullImage(image string) {
+// pullImage pulls the given image from a registry
+func pullImage(image string) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	utils.ErrorHandler(err)
 	defer cli.Close()
