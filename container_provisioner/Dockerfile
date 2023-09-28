@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Base image
-FROM golang:1.20.2-alpine3.17 as base
+FROM golang:1.21.1-alpine3.18 as base
 
 LABEL "org.opencontainers.image.source" = "https://github.com/algo7/TripAdvisor-Review-Scraper"
 
