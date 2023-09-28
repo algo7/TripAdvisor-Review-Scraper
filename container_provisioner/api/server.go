@@ -5,6 +5,7 @@ import (
 	"github.com/gofiber/template/html/v2"
 )
 
+// ServerInstantiate is a function to instantiate the web server
 func ServerInstantiate() *fiber.App {
 
 	// Initialize standard Go html template engine
