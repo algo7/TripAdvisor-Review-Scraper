@@ -36,13 +36,13 @@ func PullImage(image string) {
 }
 
 // removeContainer removes the container with the given ID
-func removeContainer(containerId string) {
+func removeContainer(containerID string) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	utils.ErrorHandler(err)
 	defer cli.Close()
 
 	// Remove the container
-	err = cli.ContainerRemove(context.Background(), containerId, types.ContainerRemoveOptions{
+	err = cli.ContainerRemove(context.Background(), containerID, types.ContainerRemoveOptions{
 		RemoveVolumes: true,
 		Force:         true,
 	})
@@ -50,7 +50,7 @@ func removeContainer(containerId string) {
 }
 
 // CreateContainer creates a container then returns the container ID
-func CreateContainer(hotelName string, hotelUrl string, uploadIdentifier string) string {
+func CreateContainer(hotelName string, hotelURL string, uploadIdentifier string) string {
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	utils.ErrorHandler(err)
@@ -70,7 +70,7 @@ func CreateContainer(hotelName string, hotelUrl string, uploadIdentifier string)
 				"SCRAPE_MODE=HOTEL",
 				"HOTEL_NAME=" + hotelName,
 				"IS_PROVISIONER=true",
-				"HOTEL_URL=" + hotelUrl,
+				"HOTEL_URL=" + hotelURL,
 			},
 			Tty: true,
 		},
@@ -108,14 +108,14 @@ func CountRunningContainer() int {
 	return len(containers) - 2
 }
 
-// tailLog tails the log of the container with the given ID
-func TailLog(containerId string) io.Reader {
+// TailLog tails the log of the container with the given ID
+func TailLog(containerID string) io.Reader {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	utils.ErrorHandler(err)
 	defer cli.Close()
 
 	// Print the logs of the container
-	out, err := cli.ContainerLogs(context.Background(), containerId, types.ContainerLogsOptions{
+	out, err := cli.ContainerLogs(context.Background(), containerID, types.ContainerLogsOptions{
 		ShowStdout: true,
 		Details:    true,
 		ShowStderr: false,
