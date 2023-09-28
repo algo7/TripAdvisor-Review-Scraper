@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"regexp"
 	"sort"
@@ -25,8 +26,7 @@ type Creds struct {
 func ErrorHandler(err error) {
 	if err != nil {
 		formattedError := fmt.Errorf("Error: %w", err)
-		fmt.Println(formattedError)
-		fmt.Print(err)
+		log.Fatalln(formattedError)
 	}
 }
 

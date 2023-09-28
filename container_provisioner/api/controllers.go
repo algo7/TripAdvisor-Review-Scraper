@@ -31,12 +31,6 @@ type runningTask struct {
 	HotelName   string
 }
 
-func checkR2Url() {
-	if r2Url == "" {
-		ErrorHandler("R2_URL environment variable is not set")
-	}
-}
-
 // getMain renders the main page
 func getMain(c *fiber.Ctx) error {
 

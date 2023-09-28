@@ -21,7 +21,7 @@ var (
 	ctx      = context.TODO()
 )
 
-// R2 object struct
+// R2Obj is an object struct for R2 bucket objects
 type R2Obj struct {
 	ChecksumAlgorithm string `json:"checksumAlgorithm"`
 	Etag              string `json:"Etag"`
