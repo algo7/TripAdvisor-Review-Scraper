@@ -15,10 +15,10 @@ import (
 	"github.com/google/uuid"
 )
 
-type Creds struct {
-	AccessKeyId     string `json:"accessKeyId"`
+type creds struct {
+	AccessKeyID     string `json:"accessKeyId"`
 	AccessKeySecret string `json:"accessKeySecret"`
-	AccountId       string `json:"accountId"`
+	AccountID       string `json:"accountId"`
 	BucketName      string `json:"bucketName"`
 }
 
@@ -86,14 +86,14 @@ func ReadFromFile(fileName string) *os.File {
 }
 
 // ParseCredsFromJSON parses the credentials from a JSON file
-func ParseCredsFromJSON(fileName string) Creds {
+func ParseCredsFromJSON(fileName string) creds {
 	// Read file
 	file := ReadFromFile(fileName)
 	defer file.Close()
 
 	// Parse the JSON file
 	decoder := json.NewDecoder(file)
-	var creds Creds
+	var creds creds
 	err := decoder.Decode(&creds)
 	ErrorHandler(err)
 
