@@ -17,11 +17,11 @@ var (
 	// Read the creds from the JSON file
 	data = ParseCredsFromJSON("./credentials/creds.json")
 	// Create a new R2 client
-	r2Client = CreateR2Client(data.AccessKeyId, data.AccessKeySecret, data.AccountId)
+	r2Client = CreateR2Client(data.AccessKeyID, data.AccessKeySecret, data.AccountID)
 	ctx      = context.TODO()
 )
 
-// R2 object struct
+// R2Obj is an object struct for R2 bucket objects
 type R2Obj struct {
 	ChecksumAlgorithm string `json:"checksumAlgorithm"`
 	Etag              string `json:"Etag"`
@@ -87,21 +87,21 @@ func R2ListObjects() []R2Obj {
 }
 
 // CreateR2Client creates a new R2 client
-func CreateR2Client(accessKeyId string, accessKeySecret string, accountId string) *r2.Client {
+func CreateR2Client(accessKeyID string, accessKeySecret string, accountID string) *r2.Client {
 
 	// Logic from the documentation
 	r2Resolver := aws.EndpointResolverWithOptionsFunc(func(service string, region string, options ...interface{}) (aws.Endpoint, error) {
 
 		// Logic from the documentation
 		return aws.Endpoint{
-			URL: fmt.Sprintf("https://%s.r2.cloudflarestorage.com", accountId),
+			URL: fmt.Sprintf("https://%s.r2.cloudflarestorage.com", accountID),
 		}, nil
 	})
 
 	// Load the default configuration
 	cfg, err := config.LoadDefaultConfig(ctx,
 		config.WithEndpointResolverWithOptions(r2Resolver),
-		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKeyId, accessKeySecret, "")),
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKeyID, accessKeySecret, "")),
 	)
 	ErrorHandler(err)
 

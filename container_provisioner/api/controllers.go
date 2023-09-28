@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
@@ -13,8 +14,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// R2Url is the URL of the R2 bucket
-var R2Url = "https://storage.algo7.tools/"
+// The URL of the R2 bucket
+var r2Url string = os.Getenv("R2_URL")
 
 type enrichedR2Obj struct {
 	FileName   string
@@ -70,7 +71,7 @@ func getMain(c *fiber.Ctx) error {
 	for i, r2Obj := range R2ObjMetaData {
 		enrichedR2Objs[i] = enrichedR2Obj{
 			FileName:   r2Obj.Key,
-			Link:       R2Url + r2Obj.Key,
+			Link:       r2Url + r2Obj.Key,
 			UploadedBy: r2Obj.Metadata,
 			Date:       utils.ParseTime(r2Obj.LastModified),
 		}
@@ -142,7 +143,7 @@ func postProvision(c *fiber.Ctx) error {
 		"ContainerId": containerID,
 		"UploadID":    fmt.Sprintf("Your Upload ID: %s", uploadIdentifier),
 		"ReturnHome":  false,
-		// "URL":      R2Url + fileSuffix + "-" + "0" + "_" + hotelName + ".csv",
+		// "URL":      r2Url + fileSuffix + "-" + "0" + "_" + hotelName + ".csv",
 
 	})
 }

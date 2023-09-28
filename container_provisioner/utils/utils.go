@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"regexp"
 	"sort"
@@ -14,10 +15,10 @@ import (
 	"github.com/google/uuid"
 )
 
-type Creds struct {
-	AccessKeyId     string `json:"accessKeyId"`
+type creds struct {
+	AccessKeyID     string `json:"accessKeyId"`
 	AccessKeySecret string `json:"accessKeySecret"`
-	AccountId       string `json:"accountId"`
+	AccountID       string `json:"accountId"`
 	BucketName      string `json:"bucketName"`
 }
 
@@ -25,8 +26,7 @@ type Creds struct {
 func ErrorHandler(err error) {
 	if err != nil {
 		formattedError := fmt.Errorf("Error: %w", err)
-		fmt.Println(formattedError)
-		fmt.Print(err)
+		log.Fatalln(formattedError)
 	}
 }
 
@@ -85,15 +85,15 @@ func ReadFromFile(fileName string) *os.File {
 	return file
 }
 
-// ParseCreds parses the credentials from a JSON file
-func ParseCredsFromJSON(fileName string) Creds {
+// ParseCredsFromJSON parses the credentials from a JSON file
+func ParseCredsFromJSON(fileName string) creds {
 	// Read file
 	file := ReadFromFile(fileName)
 	defer file.Close()
 
 	// Parse the JSON file
 	decoder := json.NewDecoder(file)
-	var creds Creds
+	var creds creds
 	err := decoder.Decode(&creds)
 	ErrorHandler(err)
 
@@ -111,7 +111,7 @@ func GetHotelNameFromURL(url string) string {
 	return fileName
 }
 
-// ValidateTripAdvisorURL validates the TripAdvisor Hotel URL
+// ValidateTripAdvisorHotelURL validates the TripAdvisor Hotel URL
 func ValidateTripAdvisorHotelURL(url string) bool {
 	regex := `^https:\/\/www\.tripadvisor\.com\/Hotel_Review-g\d{6,10}-d\d{1,10}-Reviews-[\w-]{1,255}\.html$`
 	match, _ := regexp.MatchString(regex, url)
