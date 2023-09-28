@@ -195,7 +195,7 @@ func getRunningTasks(c *fiber.Ctx) error {
 	Containers := containers.ListContainers()
 
 	// Create a slice of RunningTask structs to hold the data for the table
-	runningTasks := make([]runningTask, len(Containers))
+	runningTasks := make([]runningTask, len(Containers)-2)
 
 	// Populate the slice of RunningTask structs with data from the Containers array
 	for i, container := range Containers {
