@@ -20,8 +20,8 @@ func initializeDockerClient() *client.Client {
 	return cli
 }
 
-// pullImage pulls the given image from a registry
-func pullImage(image string) {
+// PullImage pulls the given image from a registry
+func PullImage(image string) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	utils.ErrorHandler(err)
 	defer cli.Close()
@@ -36,13 +36,13 @@ func pullImage(image string) {
 }
 
 // removeContainer removes the container with the given ID
-func removeContainer(containerId string) {
+func removeContainer(containerID string) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	utils.ErrorHandler(err)
 	defer cli.Close()
 
 	// Remove the container
-	err = cli.ContainerRemove(context.Background(), containerId, types.ContainerRemoveOptions{
+	err = cli.ContainerRemove(context.Background(), containerID, types.ContainerRemoveOptions{
 		RemoveVolumes: true,
 		Force:         true,
 	})
@@ -50,7 +50,7 @@ func removeContainer(containerId string) {
 }
 
 // CreateContainer creates a container then returns the container ID
-func CreateContainer(hotelName string, hotelUrl string, uploadIdentifier string) string {
+func CreateContainer(hotelName string, hotelURL string, uploadIdentifier string) string {
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	utils.ErrorHandler(err)
@@ -70,7 +70,7 @@ func CreateContainer(hotelName string, hotelUrl string, uploadIdentifier string)
 				"SCRAPE_MODE=HOTEL",
 				"HOTEL_NAME=" + hotelName,
 				"IS_PROVISIONER=true",
-				"HOTEL_URL=" + hotelUrl,
+				"HOTEL_URL=" + hotelURL,
 			},
 			Tty: true,
 		},
@@ -108,14 +108,14 @@ func CountRunningContainer() int {
 	return len(containers) - 2
 }
 
-// tailLog tails the log of the container with the given ID
-func TailLog(containerId string) io.Reader {
+// TailLog tails the log of the container with the given ID
+func TailLog(containerID string) io.Reader {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	utils.ErrorHandler(err)
 	defer cli.Close()
 
 	// Print the logs of the container
-	out, err := cli.ContainerLogs(context.Background(), containerId, types.ContainerLogsOptions{
+	out, err := cli.ContainerLogs(context.Background(), containerID, types.ContainerLogsOptions{
 		ShowStdout: true,
 		Details:    true,
 		ShowStderr: false,
@@ -130,6 +130,7 @@ func TailLog(containerId string) io.Reader {
 	return out
 }
 
+// Container information
 type Container struct {
 	ID        string
 	TaskOwner string
@@ -160,13 +161,13 @@ func ListContainers() []Container {
 }
 
 // GetResultCSVSizeInContainer gets the size of the result csv file in the container
-func getResultCSVSizeInContainer(containerId, filePathInContainer string) {
+func getResultCSVSizeInContainer(containerID, filePathInContainer string) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	utils.ErrorHandler(err)
 	defer cli.Close()
 
 	// Log the file size in the container
-	containerFileInfo, err := cli.ContainerStatPath(context.Background(), containerId, filePathInContainer)
+	containerFileInfo, err := cli.ContainerStatPath(context.Background(), containerID, filePathInContainer)
 	if err == nil {
 		log.Printf("File size in container: %d bytes", containerFileInfo.Size)
 	} else {
