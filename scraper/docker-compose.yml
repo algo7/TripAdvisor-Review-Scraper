@@ -2,14 +2,12 @@ version: '3.9'
 services:
   # Service name
   scraper:
-    # Build directory
-    build: ./scraper
     environment:
       SCRAPE_MODE: RESTO
       CONCURRENCY: 4
       LANGUAGE: en
     # Image name
-    image: ghcr.io/algo7/tripadvisor-review-scraper/scrape:latest
+    image: ghcr.io/algo7/tripadvisor-review-scraper/scraper:latest
     volumes:
       - type: bind
         source: ./reviews
