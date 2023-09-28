@@ -1,23 +1,17 @@
-version: '3.9'
 services:
-  # Service name
   scraper:
-    # Build directory
-    build: ./Scraper
     environment:
+      # It's either RESTO or HOTEL
       SCRAPE_MODE: RESTO
-      CONCURRENCY: 4
+      CONCURRENCY: 10
       LANGUAGE: en
-    # Image name
+    # Dont touch anything below if you don't know what you are doing
     image: ghcr.io/algo7/tripadvisor-review-scraper/scrape:latest
     volumes:
-      - type: bind
-        source: ./reviews
+      - source: ./reviews
         target: /puppeteer/reviews
-        bind:
-          create_host_path: true
-      - type: bind
-        source: ./source
+        type: bind
+      - source: ./source
         target: /puppeteer/source
-        bind:
-          create_host_path: true
+        type: bind
+version: '3.9'
