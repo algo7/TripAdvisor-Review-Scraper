@@ -16,17 +16,16 @@ import (
 // R2Url is the URL of the R2 bucket
 var R2Url = "https://storage.algo7.tools/"
 
-// EnrichedR2Objs is a struct to hold the data for the table
-type EnrichedR2Objs struct {
+type enrichedR2Obj struct {
 	FileName   string
 	Link       string
 	UploadedBy string
 	Date       string
 }
 
-type RunningTask struct {
-	ContainerId string
-	Url         string
+type runningTask struct {
+	ContainerID string
+	URL         string
 	TaskOwner   string
 	HotelName   string
 }
@@ -44,7 +43,7 @@ func getMain(c *fiber.Ctx) error {
 	if cachedObjectsList != "" {
 
 		// Decode the JSON encoded byte slice into a slice of EnrichedR2Objs structs
-		var enrichedR2Objs = []EnrichedR2Objs{}
+		var enrichedR2Objs = []enrichedR2Obj{}
 		err := json.Unmarshal([]byte(cachedObjectsList), &enrichedR2Objs)
 		utils.ErrorHandler(err)
 
@@ -65,11 +64,11 @@ func getMain(c *fiber.Ctx) error {
 	R2ObjMetaData := utils.R2EnrichMetaData(r2Objs)
 
 	// Create a slice of Row structs to hold the data for the table
-	enrichedR2Objs := make([]EnrichedR2Objs, len(R2ObjMetaData))
+	enrichedR2Objs := make([]enrichedR2Obj, len(R2ObjMetaData))
 
 	// Populate the slice of Row struct with data from the fileNames array
 	for i, r2Obj := range R2ObjMetaData {
-		enrichedR2Objs[i] = EnrichedR2Objs{
+		enrichedR2Objs[i] = enrichedR2Obj{
 			FileName:   r2Obj.Key,
 			Link:       R2Url + r2Obj.Key,
 			UploadedBy: r2Obj.Metadata,
@@ -129,10 +128,10 @@ func postProvision(c *fiber.Ctx) error {
 	hotelName := utils.GetHotelNameFromURL(url)
 
 	// Create the container
-	containerId := containers.CreateContainer(hotelName, url, uploadIdentifier)
+	containerID := containers.CreateContainer(hotelName, url, uploadIdentifier)
 
 	// Start the scraping container via goroutine
-	go containers.Scrape(uploadIdentifier, hotelName, containerId)
+	go containers.Scrape(uploadIdentifier, hotelName, containerID)
 
 	return c.Render("submission", fiber.Map{
 		"Title": "Algo7 TripAdvisor Scraper",
@@ -140,7 +139,7 @@ func postProvision(c *fiber.Ctx) error {
 		"Message1":    "Your request has been submitted. ",
 		"Message2":    "You can check the progress of your request below",
 		"Message3":    "Once it's done, you can return to the main page to download the data",
-		"ContainerId": containerId,
+		"ContainerId": containerID,
 		"UploadID":    fmt.Sprintf("Your Upload ID: %s", uploadIdentifier),
 		"ReturnHome":  false,
 		// "URL":      R2Url + fileSuffix + "-" + "0" + "_" + hotelName + ".csv",
@@ -155,8 +154,8 @@ func getLogsViewer(c *fiber.Ctx) error {
 
 // getLogs returns the logs for a given container
 func getLogs(c *fiber.Ctx) error {
-	containerId := c.Params("id")
-	if containerId == "" {
+	containerID := c.Params("id")
+	if containerID == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Container ID is required"})
 	}
 
@@ -177,12 +176,12 @@ func getLogs(c *fiber.Ctx) error {
 	}
 
 	// If the running containers do not include the containerId
-	if !strings.Contains(strings.Join(runningContainersIds, ","), containerId) {
+	if !strings.Contains(strings.Join(runningContainersIds, ","), containerID) {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Container ID is invalid"})
 	}
 
 	// Get the logs for the container
-	logsReader := containers.TailLog(containerId)
+	logsReader := containers.TailLog(containerID)
 
 	// Send the stream to the client
 	return c.SendStream(logsReader)
@@ -195,15 +194,15 @@ func getRunningTasks(c *fiber.Ctx) error {
 	Containers := containers.ListContainers()
 
 	// Create a slice of RunningTask structs to hold the data for the table
-	runningTasks := make([]RunningTask, len(Containers))
+	runningTasks := make([]runningTask, len(Containers))
 
 	// Populate the slice of RunningTask structs with data from the Containers array
 	for i, container := range Containers {
 		// Exclude the container that runs app itself
 		if container.TaskOwner != "" {
-			runningTasks[i] = RunningTask{
-				ContainerId: container.ID[:12],
-				Url:         fmt.Sprintf("/logs-viewer?container_id=%s", container.ID),
+			runningTasks[i] = runningTask{
+				ContainerID: container.ID[:12],
+				URL:         fmt.Sprintf("/logs-viewer?container_id=%s", container.ID),
 				TaskOwner:   container.TaskOwner,
 				HotelName:   container.HotelName,
 			}
