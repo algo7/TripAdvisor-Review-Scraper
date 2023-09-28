@@ -130,6 +130,7 @@ func TailLog(containerID string) io.Reader {
 	return out
 }
 
+// Container information
 type Container struct {
 	ID        string
 	TaskOwner string
@@ -160,13 +161,13 @@ func ListContainers() []Container {
 }
 
 // GetResultCSVSizeInContainer gets the size of the result csv file in the container
-func getResultCSVSizeInContainer(containerId, filePathInContainer string) {
+func getResultCSVSizeInContainer(containerID, filePathInContainer string) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	utils.ErrorHandler(err)
 	defer cli.Close()
 
 	// Log the file size in the container
-	containerFileInfo, err := cli.ContainerStatPath(context.Background(), containerId, filePathInContainer)
+	containerFileInfo, err := cli.ContainerStatPath(context.Background(), containerID, filePathInContainer)
 	if err == nil {
 		log.Printf("File size in container: %d bytes", containerFileInfo.Size)
 	} else {
