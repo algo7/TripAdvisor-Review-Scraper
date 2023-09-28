@@ -11,6 +11,9 @@ A simple scraper for TripAdvisor reviews.
   - [Known Issues](#known-issues)
 - [Container Provisioner](#container-provisioner)
   - [Pull the latest scraper Docker image](#pull-the-latest-scraper-docker-image)
+  - [Credentials Configuration](#credentials-configuration)
+    - [R2 Bucket Credentials](#r2-bucket-credentials)
+    - [R2 Bucket URL](#r2-bucket-url)
   - [Run the container provisioner](#run-the-container-provisioner)
   - [Visit the UI](#visit-the-ui)
   - [Live Demo](#live-demo)
@@ -59,9 +62,8 @@ The scraped reviews will be uploaded to [Cloudflare R2 Buckets](https://www.clou
 ```bash
 docker pull ghcr.io/algo7/tripadvisor-review-scraper/scraper:latest
 ```
-## Run the container provisioner
-The `docker-compose.yml` for the provisioner is located in the `container_provisioner` folder.
-
+## Credentials Configuration
+### R2 Bucket Credentials
 You will need to create a folder called `credentials` in the root directory of the project. The `credentials` folder will contain the credentials for the R2 bucket. The credentials file should be named `creds.json` and should be in the following format:
 ```json
 {
@@ -71,6 +73,13 @@ You will need to create a folder called `credentials` in the root directory of t
     "accessKeySecret": "<R2_Bucket_AccessKey_Secret>"
 }
 ```
+### R2 Bucket URL
+You will also have to set the `R2_URL` environment variable in the `docker-compose.yml` file to the URL of the R2 bucket. The URL should end with a `/`.
+
+## Run the container provisioner
+The `docker-compose.yml` for the provisioner is located in the `container_provisioner` folder.
+
+
 
 ## Visit the UI
 The UI is accessible at `http://localhost:3000`.
