@@ -1,26 +1,29 @@
 package api
 
 import (
-	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/containers"
-	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/database"
-	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/utils"
 	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
 
+	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/containers"
+	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/database"
+	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/utils"
+
 	"github.com/gofiber/fiber/v2"
 )
 
+// R2Url is the URL of the R2 bucket
 var R2Url = "https://storage.algo7.tools/"
 
+// EnrichedR2Objs is a struct to hold the data for the table
 type EnrichedR2Objs struct {
 	FileName   string
 	Link       string
 	UploadedBy string
 	Date       string
 }
-/
+
 type RunningTask struct {
 	ContainerId string
 	Url         string
