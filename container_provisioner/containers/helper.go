@@ -1,11 +1,12 @@
 package containers
 
 import (
-	"container_provisioner/utils"
 	"context"
 	"io"
 	"log"
 	"os"
+
+	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/utils"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"

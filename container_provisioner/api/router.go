@@ -1,7 +1,7 @@
 package api
 
 import (
-	"container_provisioner/utils"
+	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/utils"
 )
 
 // Router is the main router for the API
