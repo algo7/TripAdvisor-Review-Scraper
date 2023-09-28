@@ -3,7 +3,7 @@ services:
   # Service name
   scraper:
     # Build directory
-    build: .
+    build: ./Scraper
     environment:
       SCRAPE_MODE: RESTO
       CONCURRENCY: 4
