@@ -15,7 +15,8 @@ import (
 	"github.com/google/uuid"
 )
 
-type creds struct {
+// Creds is the Credentials of the R2 bucket
+type Creds struct {
 	AccessKeyID     string `json:"accessKeyId"`
 	AccessKeySecret string `json:"accessKeySecret"`
 	AccountID       string `json:"accountId"`
@@ -86,14 +87,14 @@ func ReadFromFile(fileName string) *os.File {
 }
 
 // ParseCredsFromJSON parses the credentials from a JSON file
-func ParseCredsFromJSON(fileName string) creds {
+func ParseCredsFromJSON(fileName string) Creds {
 	// Read file
 	file := ReadFromFile(fileName)
 	defer file.Close()
 
 	// Parse the JSON file
 	decoder := json.NewDecoder(file)
-	var creds creds
+	var creds Creds
 	err := decoder.Decode(&creds)
 	ErrorHandler(err)
 
