@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -45,6 +46,8 @@ func R2UploadObject(fileName string, uploadIdentifier string, fileData io.Reader
 		},
 	})
 	ErrorHandler(err)
+
+	log.Printf("File: %s uploaded", fileName)
 
 	// Remove the file from the local filesystem
 	err = os.Remove(fileName)
