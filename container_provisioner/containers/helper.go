@@ -59,7 +59,7 @@ func CreateContainer(hotelName string, hotelUrl string, uploadIdentifier string)
 	// Create the container. Container.ID contains the ID of the container
 	Container, err := cli.ContainerCreate(context.Background(),
 		&container.Config{
-			Image: "ghcr.io/algo7/tripadvisor-review-scraper/scrape:latest",
+			Image: "ghcr.io/algo7/tripadvisor-review-scraper/scraper:latest",
 			Labels: map[string]string{
 				"TaskOwner": uploadIdentifier,
 				"Hotel":     hotelName,

@@ -307,7 +307,7 @@ func checkDocker() (string, error) {
 // Update the docker image if already exist
 func updateDockerImage() (string, error) {
 
-	cmd := exec.Command("docker", "pull", "ghcr.io/algo7/tripadvisor-review-scraper/scrape:latest")
+	cmd := exec.Command("docker", "pull", "ghcr.io/algo7/tripadvisor-review-scraper/scraper:latest")
 
 	err := cmd.Run()
 
