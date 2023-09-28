@@ -1,8 +1,8 @@
 package main
 
 import (
-	"container_provisioner/api"
-	"container_provisioner/database"
+	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/api"
+	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/database"
 )
 
 func main() {

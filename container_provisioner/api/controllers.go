@@ -1,9 +1,9 @@
 package api
 
 import (
-	"container_provisioner/containers"
-	"container_provisioner/database"
-	"container_provisioner/utils"
+	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/containers"
+	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/database"
+	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/utils"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -20,7 +20,7 @@ type EnrichedR2Objs struct {
 	UploadedBy string
 	Date       string
 }
-
+/
 type RunningTask struct {
 	ContainerId string
 	Url         string

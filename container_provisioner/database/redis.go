@@ -1,12 +1,13 @@
 package database
 
 import (
-	"container_provisioner/utils"
 	"context"
 	"encoding/json"
 	"fmt"
 	"os"
 	"time"
+
+	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/utils"
 
 	"github.com/redis/go-redis/v9"
 )
