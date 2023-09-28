@@ -2,6 +2,7 @@ version: '3.9'
 services:
   # Service name
   scraper:
+    build: .
     environment:
       SCRAPE_MODE: RESTO
       CONCURRENCY: 4
