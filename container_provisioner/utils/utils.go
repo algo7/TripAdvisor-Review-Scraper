@@ -85,7 +85,7 @@ func ReadFromFile(fileName string) *os.File {
 	return file
 }
 
-// ParseCreds parses the credentials from a JSON file
+// ParseCredsFromJSON parses the credentials from a JSON file
 func ParseCredsFromJSON(fileName string) Creds {
 	// Read file
 	file := ReadFromFile(fileName)
@@ -111,7 +111,7 @@ func GetHotelNameFromURL(url string) string {
 	return fileName
 }
 
-// ValidateTripAdvisorURL validates the TripAdvisor Hotel URL
+// ValidateTripAdvisorHotelURL validates the TripAdvisor Hotel URL
 func ValidateTripAdvisorHotelURL(url string) bool {
 	regex := `^https:\/\/www\.tripadvisor\.com\/Hotel_Review-g\d{6,10}-d\d{1,10}-Reviews-[\w-]{1,255}\.html$`
 	match, _ := regexp.MatchString(regex, url)
