@@ -143,7 +143,7 @@ func ParseTime(timeToParse string) string {
 	return formattedTime
 }
 
-// sortStructByTime sorts R2Obj struct by time
+// sortStructByTime sorts R2Obj struct by time (newest first)
 func sortStructByTime(R2Obj []R2Obj) []R2Obj {
 
 	// Define the comparator function
@@ -158,7 +158,7 @@ func sortStructByTime(R2Obj []R2Obj) []R2Obj {
 		if err != nil {
 			return false // error handling
 		}
-		return t1.Before(t2)
+		return t2.Before(t1)
 	}
 
 	// Sort the logs using the comparator function
