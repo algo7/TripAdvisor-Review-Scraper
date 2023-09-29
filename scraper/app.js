@@ -110,7 +110,7 @@ const hotelScraperInit = async () => {
             processQueue.push(hotelScraper(hotelUrl, hotelName, hotelId, index, browserInstance))
         }
 
-        // Resolve processes the left over in the process queue
+        // Resolve processes left over in the process queue
         const finalData = await dataProcessor(processQueue)
         reviewInfo.push(finalData);
 
@@ -212,7 +212,7 @@ const restoScraperInit = async () => {
                 restoId, index, LANGUAGE, browserInstance))
         }
 
-        // Resolve processes the left over in the process queue
+        // Resolve processes left over in the process queue
         const finalData = await dataProcessor(processQueue)
         reviewInfo.push(finalData);
 

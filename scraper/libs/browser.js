@@ -81,7 +81,7 @@ class Browser {
     }
 
     /**
-     * Private method to launch the browser
+     * Method to launch the browser
      * @returns {Promise<puppeteer.Browser>}
      */
     async launch() {
