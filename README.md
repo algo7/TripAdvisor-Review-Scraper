@@ -25,7 +25,7 @@ A simple scraper for TripAdvisor reviews.
 
 ## Run Using Docker Compose
 1. Download the repository.
-2. Create a folder called `reviews` and a folder called `source` in the root directory of the project.
+2. Create a folder called `reviews` and a folder called `source` in the `scraper` directory of the project.
 3. The `reviews` folder will contain the scraped reviews.
 4. Place the source file in the `source` folder.
    - The source file is a CSV file containing a list of hotels/restaurants to scrape.
@@ -64,7 +64,7 @@ docker pull ghcr.io/algo7/tripadvisor-review-scraper/scraper:latest
 ```
 ## Credentials Configuration
 ### R2 Bucket Credentials
-You will need to create a folder called `credentials` in the root directory of the project. The `credentials` folder will contain the credentials for the R2 bucket. The credentials file should be named `creds.json` and should be in the following format:
+You will need to create a folder called `credentials` in the `container_provisioner` directory of the project. The `credentials` folder will contain the credentials for the R2 bucket. The credentials file should be named `creds.json` and should be in the following format:
 ```json
 {
     "bucketName": "<R2_Bucket_Name>",
@@ -78,8 +78,6 @@ You will also have to set the `R2_URL` environment variable in the `docker-compo
 
 ## Run the container provisioner
 The `docker-compose.yml` for the provisioner is located in the `container_provisioner` folder.
-
-
 
 ## Visit the UI
 The UI is accessible at `http://localhost:3000`.
