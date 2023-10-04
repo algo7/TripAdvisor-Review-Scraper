@@ -145,7 +145,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
             // Wait for the content to load
             await page.waitForSelector('body');
 
-            // Determin current URL
+            // Determine current URL
             const currentURL = page.url();
 
             // Progress Report
