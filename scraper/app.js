@@ -252,7 +252,7 @@ const restoScraperInit = async () => {
 };
 
 /**
- * Scrape the resto pages
+ * Scrape the airline pages
  * @returns {Promise<String | Error>} - The done message or error message
  */
 const airlineScraperInit = async () => {
