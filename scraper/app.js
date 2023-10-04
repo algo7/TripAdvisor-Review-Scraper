@@ -302,10 +302,10 @@ const airlineScraperInit = async () => {
 
             // Extract resto info
             const item = rawData[index];
-            const { webUrl: restoUrl, name: restoName, id: restoId, } = item;
+            const { webUrl: airlineUrl, name: airlineName, id: airlineId, } = item;
 
-            processQueue.push(restoScraper(restoUrl, restoName,
-                restoId, index, LANGUAGE, browserInstance))
+            processQueue.push(restoScraper(airlineUrl, airlineName,
+                airlineId, index, LANGUAGE, browserInstance))
         }
 
         // Resolve processes left over in the process queue
