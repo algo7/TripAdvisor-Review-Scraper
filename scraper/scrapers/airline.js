@@ -175,7 +175,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
 
             // Extract comment rating
             const commentRating = await page.evaluate(async () => {
-                const commentRatingBlocks = document.getElementsByClassName("Hlmiy")
+                const commentRatingBlocks = document.querySelectorAll('[data-test-target="review-rating"]');
                 const ratings = [];
 
                 for (let index = 0; index < commentRatingBlocks.length; index++) {
