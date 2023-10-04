@@ -132,13 +132,14 @@ const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
 const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hotelId, browser) => {
     try {
 
-        // Open a new page
-        const page = await browser.getNewPage()
 
         // Array to hold the review info
         const allReviews = [];
 
         for (let index = 0; index < reviewPageUrls.length; index++) {
+
+            // Open a new page
+            const page = await browser.getNewPage()
 
             // Navigate to the page below
             await page.goto(reviewPageUrls[index], { waitUntil: 'networkidle2', });
@@ -257,10 +258,9 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
             // Push the formmated review to the  array
             allReviews.push(formatted);
 
+            // Hand back the page so it's available again
+            browser.handBack(page);
         }
-
-        // Hand back the page so it's available again
-        browser.handBack(page);
 
         // Convert 2D array to 1D
         const reviewFlattened = allReviews.flat();
@@ -276,7 +276,6 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
             fileName: `${position}_${reviewPageUrls[0].split('-')[4]}`,
         };
 
-        return finalData;
 
     } catch (err) {
         throw err;

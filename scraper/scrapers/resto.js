@@ -201,14 +201,14 @@ const extractAllReviewPageUrls = async (restoUrl, position, language, browser) =
 const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, restoId, language, browser) => {
     try {
 
-        // Open a new page
-        const page = await browser.getNewPage()
-
         // Array to hold all the reviews 
         const allReviews = [];
 
         // Loop through all the review pages and extract the reviews
         for (let index = 0; index < reviewPageUrls.length; index++) {
+
+            // Open a new page
+            const page = await browser.getNewPage();
 
             // Navigate to each review page
             await page.goto(reviewPageUrls[index], { waitUntil: 'networkidle2', });
@@ -283,6 +283,8 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, res
             // Push the reviews to the array
             allReviews.push(...reviews);
 
+            // Hand back the page so it's available again
+            browser.handBack(page);
         }
 
         // Data structure to be written to file
@@ -295,9 +297,6 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, res
             allReviews,
             fileName: `${position}_${reviewPageUrls[0].split('-')[4]}`,
         };
-
-        // Hand back the page so it's available again
-        browser.handBack(page);
 
         return finalData;
 
