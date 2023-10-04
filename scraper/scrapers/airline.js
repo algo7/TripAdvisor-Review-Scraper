@@ -1,4 +1,5 @@
 import { Chalk } from 'chalk';
+import { monthStringToNumber, commentRatingStringToNumber } from '../libs/utils.js';
 
 // Environment variables
 let { IS_PROVISIONER } = process.env;
@@ -200,10 +201,14 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
                     // Split the date of comment text block into an array
                     const splitted = commentDateBlocks[index].children[0].innerText.split('review').pop().split(' ')
 
-                    datesOfReview.push({
-                        month: splitted[1],
-                        year: splitted[2],
-                    });
+                    if (splitted[1] == "Yesterday") {
+                        datesOfReview.push({
+                            month: splitted[1],
+                            year: splitted[2],
+                        });
+                    }
+
+
                 }
 
                 return datesOfReview;
