@@ -125,6 +125,8 @@ const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
 const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hotelId, browser) => {
     try {
 
+        const currentTime = new Date()
+
         // Open a new page
         const page = await browser.getNewPage()
 
@@ -199,15 +201,32 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
                 for (let index = 0; index < commentDateBlocks.length; index++) {
 
                     // Split the date of comment text block into an array
-                    const splitted = commentDateBlocks[index].children[0].innerText.split('review').pop().split(' ')
+                    const reviewDate = commentDateBlocks[index].children[0].innerText.split('review').pop().split(' ')
 
-                    if (splitted[1] == "Yesterday") {
-                        datesOfReview.push({
-                            month: splitted[1],
-                            year: splitted[2],
-                        });
+                    let isYesterday = reviewDate[1] === "Yesterday";
+                    let isCurrentMonth = reviewDate[2].length != 4;
+
+                    let month = undefined;
+                    let year = undefined;
+
+                    if (isYesterday) {
+                        // If the review was posted "Yesterday"
+                        month = currentTime.getMonth();
+                        year = currentTime.getFullYear();
+                    } else if (isCurrentMonth) {
+                        // If the review date is in the current month (["","Oct,"1"])
+                        month = reviewDate[1];
+                        year = currentTime.getFullYear();
+                    } else {
+                        // If the review date is > 1 month old (["","Oct,"2020"])
+                        month = reviewDate[1];
+                        year = reviewDate[2];
                     }
 
+                    datesOfReview.push({
+                        month,
+                        year
+                    });
 
                 }
 
