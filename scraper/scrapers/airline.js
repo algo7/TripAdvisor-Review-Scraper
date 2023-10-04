@@ -86,7 +86,7 @@ const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
             // Replace the url page count till the last page
             while (counter < noReviewPages - 1) {
                 counter++;
-                url = url.replace(/-or[0-9]*/g, `-or${counter * 10}`);
+                url = url.replace(/-or[0-9]*/g, `-or${counter * 5}`);
                 reviewPageUrls.push(url);
             }
         }
