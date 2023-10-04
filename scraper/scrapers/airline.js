@@ -141,7 +141,22 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
             // Wait for the content to load
             await page.waitForSelector('body');
 
-            // Determin current URL
+
+            const reviewExpandable = await page.evaluate(() => {
+                if (document.querySelector('[data-test-target="expand-review"]')) return true
+                return false
+            })
+
+            if (reviewExpandable) {
+
+                // Expand the reviews
+                await page.click("document.querySelector('[data-test-target=]\"expand-review\"]').children[0]");
+
+                // Wait for the reviews to load
+                await page.waitForFunction('document.querySelector("body").innerText.includes("Read less")');
+            }
+
+            // Determine current URL
             const currentURL = page.url();
 
             // Progress Report
