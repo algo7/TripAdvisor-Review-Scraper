@@ -3,7 +3,7 @@ import puppeteer from 'puppeteer-extra'
 import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
 import blockResourcesPlugin from 'puppeteer-extra-plugin-block-resources';
 import randUserAgent from "rand-user-agent";
-
+import { EventEmitter } from 'events';
 
 // Environments variables
 let { CONCURRENCY } = process.env;
@@ -13,12 +13,16 @@ if (!CONCURRENCY) CONCURRENCY = 3;
 /**
  * Create a browser instance
  */
-class Browser {
+class Browser extends EventEmitter {
 
     constructor() {
+
+        // Call the parent constructor
+        super();
+
         // Puppeteer configs
         this.config = {
-            headless: true,
+            headless: false,
             devtools: false,
             defaultViewport: {
                 width: 1280,
@@ -135,15 +139,9 @@ class Browser {
             return page
         }
 
+
         // Otherwise, wait until a page becomes available.
-        await new Promise(resolve => {
-            const checkIdlePages = setInterval(() => {
-                if (this.pageIdle.length > 0) {
-                    clearInterval(checkIdlePages);
-                    resolve();
-                }
-            }, 100); // check every 100ms
-        });
+        await new Promise(resolve => this.once('pageIdle', resolve));
         return this.getNewPage();
     }
 
