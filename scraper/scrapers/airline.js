@@ -150,7 +150,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
             if (reviewExpandable) {
 
                 // Expand the reviews
-                await page.click("document.querySelector('[data-test-target=]\"expand-review\"]').children[0]");
+                await page.click("[data-test-target='expand-review'] > :first-child");
 
                 // Wait for the reviews to load
                 await page.waitForFunction('document.querySelector("body").innerText.includes("Read less")');
