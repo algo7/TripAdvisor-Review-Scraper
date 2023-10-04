@@ -55,7 +55,7 @@ const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
 
 
             // Default review page count
-            let noReviewPages = totalReviewCount / 10;
+            let noReviewPages = totalReviewCount / 5;
 
             // Calculate the last review page
             if (totalReviewCount % 10 !== 0) {
