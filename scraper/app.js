@@ -10,6 +10,8 @@ const __dirname = dirname(__filename);
 // Custom Modules 
 import hotelScraper from './scrapers/hotel.js';
 import restoScraper from './scrapers/resto.js';
+import airlineScraper from './scrapers/airline.js';
+
 import {
     csvToJSON, fileExists, combine,
     reviewJSONToCsv, dataProcessor
@@ -304,7 +306,7 @@ const airlineScraperInit = async () => {
             const item = rawData[index];
             const { webUrl: airlineUrl, name: airlineName, id: airlineId, } = item;
 
-            processQueue.push(restoScraper(airlineUrl, airlineName,
+            processQueue.push(airlineScraper(airlineUrl, airlineName,
                 airlineId, index, LANGUAGE, browserInstance))
         }
 
