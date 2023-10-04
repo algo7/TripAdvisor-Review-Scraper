@@ -151,8 +151,14 @@ class Browser extends EventEmitter {
      * @returns {Undefined}
      */
     handBack(page) {
-        this.pageInUse.shift()
-        this.pageIdle.push(page)
+        // Find the page in the in use page array
+        const pageIndex = this.pageInUse.indexOf(page);
+
+        // If the page is found
+        if (pageIndex > -1) {
+            this.pageInUse.splice(pageIndex, 1);
+            this.pageIdle.push(page);
+        }
     }
 
     /**
