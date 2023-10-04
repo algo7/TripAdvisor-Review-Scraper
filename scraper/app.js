@@ -266,8 +266,8 @@ const airlineScraperInit = async () => {
         // Get the raw data from env variables or csv file
         let rawData = [
             {
-                name: HOTEL_NAME,
-                webUrl: HOTEL_URL,
+                name: AIRLINE_NAME,
+                webUrl: AIRLINE_URL,
             }
         ]
 
