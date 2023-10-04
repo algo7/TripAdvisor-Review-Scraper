@@ -18,7 +18,7 @@ const customChalk = new Chalk({ level: colorLevel });
  * @param {String} restoUrl - The url of the restaurant page
  * @param {Number} position - The index of the restaurant page in the list
  * @param {String} language - The language of the reviews that you wantto scrape
- * @param {Object} browser - A browser instance
+ * @param {puppeteer.Browser} browser - A browser instance
  * @returns {Promise<Object | Error>} - The object containing the review count, page count, and the review page urls
  */
 const extractAllReviewPageUrls = async (restoUrl, position, language, browser) => {
@@ -195,7 +195,7 @@ const extractAllReviewPageUrls = async (restoUrl, position, language, browser) =
  * @param {String} restoName - The name of the restaurant
  * @param {String} restoId - The id of the restaurant
  * @param {String} language - The language of the reviews that you wantto scrape
- * @param {Object} browser - A browser instance
+ * @param {puppeteer.Browser} browser - A browser instance
  * @returns {Promise<Object | Error>} - The final data
  */
 const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, restoId, language, browser) => {
@@ -313,7 +313,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, res
  * @param {String} restoId - The id of the restaurant
  * @param {Number} position - The index of the restaurant page in the list
  * @param {String} language - The language of the reviews to scrape
- * @param {Object} browser - A browser instance
+ * @param {puppeteer.Browser} browser - A browser instance
  * @returns {Promise<Object | Error>} - The final data
  */
 const start = async (restoUrl, restoName, restoId, position, language, browser) => {

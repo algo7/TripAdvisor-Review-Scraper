@@ -16,7 +16,7 @@ const customChalk = new Chalk({ level: colorLevel });
  * Extract review page url
  * @param {String} airlineUrl - The url of the airline page 
  * @param {Number} position - The index of the airline page in the list
- * @param {Object} browser - A browser instance
+ * @param {puppeteer.Browser} browser - A browser instance
  * @returns {Promise<Object | Error>} - The object containing the review page urls and the total review count
  */
 const extractAllReviewPageUrls = async (airlineUrl, position, browser) => {
@@ -119,7 +119,7 @@ const extractAllReviewPageUrls = async (airlineUrl, position, browser) => {
  * @param {Number} [position] - The index of the airline page in the list
  * @param {String} airlineName - The name of the airline
  * @param {String} [airlineId] - The id of the airline
- * @param {Object} browser - A browser instance
+ * @param {puppeteer.Browser} browser - A browser instance
  * @returns {Promise<Object| Error>} - THe final data
  */
 const scrape = async (totalReviewCount, reviewPageUrls, position, airlineName, airlineId, browser) => {
@@ -310,7 +310,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, airlineName, a
  * @param {String} airlineName - The name of the airline
  * @param {String} [airlineId] - The id of the airline
  * @param {Number} [position] - The index of the airline page in the list
- * @param {Object} browser - A browser instance
+ * @param {puppeteer.Browser} browser - A browser instance
  * @returns {Promise<Object | Error>} - The final data
  */
 const start = async (airlineUrl, airlineName, airlineId, position, browser) => {

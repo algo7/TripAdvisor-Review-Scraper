@@ -22,7 +22,7 @@ const customChalk = new Chalk({ level: colorLevel });
  * Extract review page url
  * @param {String} hotelUrl - The url of the hotel page 
  * @param {Number} position - The index of the hotel page in the list
- * @param {Object} browser - A browser instance
+ * @param {puppeteer.Browser} browser - A browser instance
  * @returns {Promise<Object | Error>} - The object containing the review page urls and the total review count
  */
 const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
@@ -126,7 +126,7 @@ const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
  * @param {Number} [position] - The index of the hotel page in the list
  * @param {String} hotelName - The name of the hotel
  * @param {String} [hotelId] - The id of the hotel
- * @param {Object} browser - A browser instance
+ * @param {puppeteer.Browser} browser - A browser instance
  * @returns {Promise<Object| Error>} - THe final data
  */
 const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hotelId, browser) => {
@@ -289,7 +289,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
  * @param {String} hotelName - The name of the hotel
  * @param {String} [hotelId] - The id of the hotel
  * @param {Number} [position] - The index of the hotel page in the list
- * @param {Object} browser - A browser instance
+ * @param {puppeteer.Browser} browser - A browser instance
  * @returns {Promise<Object | Error>} - The final data
  */
 const start = async (hotelUrl, hotelName, hotelId, position, browser) => {
