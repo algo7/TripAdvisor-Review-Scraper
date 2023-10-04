@@ -118,11 +118,11 @@ const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
  * @param {Array<String>} reviewPageUrls - The review page urls
  * @param {Number} [position] - The index of the hotel page in the list
  * @param {String} airlineName - The name of the hotel
- * @param {String} [hotelId] - The id of the hotel
+ * @param {String} [airlineId] - The id of the hotel
  * @param {Object} browser - A browser instance
  * @returns {Promise<Object| Error>} - THe final data
  */
-const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hotelId, browser) => {
+const scrape = async (totalReviewCount, reviewPageUrls, position, airlineName, airlineId, browser) => {
     try {
 
         const currentTime = new Date()
@@ -287,8 +287,8 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
 
         // Data structure to be written to file
         const finalData = {
-            hotelName,
-            hotelId,
+            airlineName,
+            airlineId,
             count: totalReviewCount,
             actualCount: reviewFlattened.length,
             position,
