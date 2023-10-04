@@ -283,7 +283,7 @@ const airlineScraperInit = async () => {
             }
 
             // Convert the csv to json
-            rawData = await csvToJSON(dataSourceHotel)
+            rawData = await csvToJSON(dataSourceAirline)
         };
 
         console.log(customChalk.bold.yellow(`Scraping ${customChalk.magenta(rawData.length)} Airlines`));
