@@ -134,7 +134,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, airlineName, a
         for (let index = 0; index < reviewPageUrls.length; index++) {
             // Open a new page
             const page = await browser.getNewPage()
-            console.log(page)
+            console.log("page", page)
             // Navigate to the page below
             await page.goto(reviewPageUrls[index], { waitUntil: 'networkidle2', });
 
@@ -279,10 +279,11 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, airlineName, a
             // Push the formmated review to the  array
             allReviews.push(formatted);
 
+
+            // Hand back the page so it's available again
+            browser.handBack(page);
         }
 
-        // Hand back the page so it's available again
-        browser.handBack(page);
 
         // Convert 2D array to 1D
         const reviewFlattened = allReviews.flat();
