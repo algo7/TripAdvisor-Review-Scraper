@@ -276,6 +276,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
             fileName: `${position}_${reviewPageUrls[0].split('-')[4]}`,
         };
 
+        return finalData;
 
     } catch (err) {
         throw err;
