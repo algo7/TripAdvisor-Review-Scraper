@@ -141,7 +141,6 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, airlineName, a
             // Wait for the content to load
             await page.waitForSelector('body');
 
-
             const reviewExpandable = await page.evaluate(() => {
                 if (document.querySelector('[data-test-target="expand-review"]')) return true
                 return false
@@ -219,7 +218,8 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, airlineName, a
                     const reviewDate = commentDateBlocks[index].children[0].innerText.split('review').pop().split(' ')
 
                     let isYesterday = reviewDate[1] === "Yesterday";
-                    let isCurrentMonth = reviewDate[2].length != 4;
+                    // In case the review was posted yesterday, the array will only have the length of 2
+                    let isCurrentMonth = reviewDate[2]?.length != 4;
 
                     let month = undefined;
                     let year = undefined;
