@@ -55,6 +55,7 @@ if (!fileExists(sourceDir)) mkdirSync(sourceDir);
 // Data source
 const dataSourceResto = join(__dirname, './source/restos.csv');
 const dataSourceHotel = join(__dirname, './source/hotels.csv');
+const dataSourceAirline = join(__dirname, './source/airlines.csv');
 
 /**
  * Scrape the hotel pages
@@ -250,6 +251,87 @@ const restoScraperInit = async () => {
     }
 };
 
+/**
+ * Scrape the resto pages
+ * @returns {Promise<String | Error>} - The done message or error message
+ */
+const airlineScraperInit = async () => {
+    try {
+
+        // Check if the source file exists
+        const sourceFileAvailable = fileExists(dataSourceResto);
+        if (!sourceFileAvailable) {
+            throw Error('Source file does not exist');
+        }
+
+        const [rawData] = await Promise.all([
+            // Convert the csv to json
+            csvToJSON(dataSourceResto),
+            // Initiate a browser instance
+            browserInstance.launch()
+        ])
+
+        console.log(customChalk.bold.yellow(`Scraping ${customChalk.magenta(rawData.length)} Restaurants`));
+
+        // Array to hold the processed data
+        const reviewInfo = []
+
+        // Array to hold the promises to be processed
+        let processQueue = []
+
+        for (let index = 0; index < rawData.length; index++) {
+
+            if (processQueue.length > CONCURRENCY) {
+                const finalData = await dataProcessor(processQueue)
+                reviewInfo.push(finalData);
+                processQueue = []
+            }
+
+            // Extract resto info
+            const item = rawData[index];
+            const { webUrl: restoUrl, name: restoName, id: restoId, } = item;
+
+            processQueue.push(restoScraper(restoUrl, restoName,
+                restoId, index, LANGUAGE, browserInstance))
+        }
+
+        // Resolve processes left over in the process queue
+        const finalData = await dataProcessor(processQueue)
+        reviewInfo.push(finalData);
+
+        // Write the review of each individual resto to files
+        await Promise.all(
+            reviewInfo
+                .flat()
+                .map(async ({ finalData, fileName }) => {
+                    const dataToWrite = JSON.stringify(finalData, null, 2);
+                    await writeFile(`${dataDir}${fileName}.json`, dataToWrite);
+                })
+        );
+
+        // Combine all the reviews into an array of objects
+        const combinedData = combine(SCRAPE_MODE, dataDir);
+
+        // Write the combined JSON data to file
+        const jsonData = JSON.stringify(combinedData, null, 2);
+
+        // Convert the combined JSON data to csv
+        const csvData = reviewJSONToCsv(combinedData);
+
+        // Write the combined data to files and close the browser instance
+        await Promise.all([
+            writeFile(`${dataDir}All.json`, jsonData),
+            writeFile(`${dataDir}All.csv`, csvData),
+            // Close the browser instance
+            browserInstance.closeBrowser(),
+        ])
+
+        return 'Scraping Done';
+
+    } catch (err) {
+        throw err;
+    }
+};
 /**
  * The main init function
  * @returns {Promise<String | Error>} - The done message or error message
