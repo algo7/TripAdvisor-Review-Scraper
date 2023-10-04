@@ -13,8 +13,8 @@ const customChalk = new Chalk({ level: colorLevel });
 
 /**
  * Extract review page url
- * @param {String} hotelUrl - The url of the hotel page 
- * @param {Number} position - The index of the hotel page in the list
+ * @param {String} airlineUrl - The url of the airline page 
+ * @param {Number} position - The index of the airline page in the list
  * @param {Object} browser - A browser instance
  * @returns {Promise<Object | Error>} - The object containing the review page urls and the total review count
  */
@@ -25,7 +25,7 @@ const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
         const page = await browser.getNewPage()
 
         // Navigate to the hotel page
-        await page.goto(hotelUrl);
+        await page.goto(airlineUrl);
 
         // Wait for the content to load
         await page.waitForSelector('body');
