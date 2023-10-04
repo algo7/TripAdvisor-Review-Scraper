@@ -31,6 +31,9 @@ const extractAllReviewPageUrls = async (airlineUrl, position, browser) => {
         // Wait for the content to load
         await page.waitForSelector('body');
 
+        // Wait for the page to load
+        await page.waitForTimeout(1000 * 5);
+
         // Determin current URL
         const currentURL = page.url();
 
