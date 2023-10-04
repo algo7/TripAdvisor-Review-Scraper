@@ -34,7 +34,7 @@ const extractAllReviewPageUrls = async (airlineUrl, position, browser) => {
         // Determin current URL
         const currentURL = page.url();
 
-        console.log(`${customChalk.bold.white.dim('Gathering Info: ')}${currentURL.split('-')[4]} ${position}`);
+        console.log(`${customChalk.bold.white.dim('Gathering Info: ')}${currentURL.split('-')[4] || "Main Page"} ${position}`);
 
         /**
          * In browser code:
