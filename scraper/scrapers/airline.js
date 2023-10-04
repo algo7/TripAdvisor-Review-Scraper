@@ -19,13 +19,13 @@ const customChalk = new Chalk({ level: colorLevel });
  * @param {Object} browser - A browser instance
  * @returns {Promise<Object | Error>} - The object containing the review page urls and the total review count
  */
-const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
+const extractAllReviewPageUrls = async (airlineUrl, position, browser) => {
     try {
 
         // Open a new page 
         const page = await browser.getNewPage()
 
-        // Navigate to the hotel page
+        // Navigate to the airline page
         await page.goto(airlineUrl);
 
         // Wait for the content to load
@@ -101,7 +101,7 @@ const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
             pageCount: reviewPageUrls.length,
             urls: reviewPageUrls,
         };
-
+        console.log(data)
         // Hand back the page so it's available again
         browser.handBack(page);
 
@@ -116,9 +116,9 @@ const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
  * Scrape the page
  * @param {Number} totalReviewCount - The total review count
  * @param {Array<String>} reviewPageUrls - The review page urls
- * @param {Number} [position] - The index of the hotel page in the list
- * @param {String} airlineName - The name of the hotel
- * @param {String} [airlineId] - The id of the hotel
+ * @param {Number} [position] - The index of the airline page in the list
+ * @param {String} airlineName - The name of the airline
+ * @param {String} [airlineId] - The id of the airline
  * @param {Object} browser - A browser instance
  * @returns {Promise<Object| Error>} - THe final data
  */
@@ -302,3 +302,28 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, airlineName, a
         throw err;
     }
 };
+
+
+/**
+ * Start the scraping process
+ * @param {String} airlineUrl - The url of the airline page 
+ * @param {String} airlineName - The name of the airline
+ * @param {String} [airlineId] - The id of the airline
+ * @param {Number} [position] - The index of the airline page in the list
+ * @param {Object} browser - A browser instance
+ * @returns {Promise<Object | Error>} - The final data
+ */
+const start = async (airlineUrl, airlineName, airlineId, position, browser) => {
+    try {
+        const { urls, count, } = await extractAllReviewPageUrls(airlineUrl, position, browser);
+
+        const results = await scrape(count, urls, position, airlineName, airlineId, browser);
+
+        return results;
+
+    } catch (err) {
+        throw err;
+    }
+};
+
+export default start;

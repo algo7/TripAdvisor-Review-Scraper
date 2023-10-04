@@ -107,6 +107,7 @@ const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
             pageCount: reviewPageUrls.length,
             urls: reviewPageUrls,
         };
+        console.log(data)
 
         // Hand back the page so it's available again
         browser.handBack(page);
