@@ -259,14 +259,14 @@ const airlineScraperInit = async () => {
     try {
 
         // Check if the source file exists
-        const sourceFileAvailable = fileExists(dataSourceResto);
+        const sourceFileAvailable = fileExists(dataSourceAirline);
         if (!sourceFileAvailable) {
             throw Error('Source file does not exist');
         }
 
         const [rawData] = await Promise.all([
             // Convert the csv to json
-            csvToJSON(dataSourceResto),
+            csvToJSON(dataSourceAirline),
             // Initiate a browser instance
             browserInstance.launch()
         ])
