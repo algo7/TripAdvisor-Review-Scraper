@@ -195,17 +195,6 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
                 const datesOfReview = [];
 
 
-                // for (let index = 0; index < commentDateOfStayBlocks.length; index++) {
-
-                //     // Split the date of stay text block into an array
-                //     const splitted = commentDateOfStayBlocks[index].innerText.split(' ')
-
-                //     datesOfStay.push({
-                //         month: splitted[3],
-                //         year: splitted[4],
-                //     });
-                // }
-
                 for (let index = 0; index < commentDateBlocks.length; index++) {
 
                     // Split the date of comment text block into an array
