@@ -128,14 +128,13 @@ const extractAllReviewPageUrls = async (airlineUrl, position, browser) => {
 const scrape = async (totalReviewCount, reviewPageUrls, position, airlineName, airlineId, browser) => {
     try {
 
-        // Open a new page
-        const page = await browser.getNewPage()
-
         // Array to hold the review info
         const allReviews = [];
 
         for (let index = 0; index < reviewPageUrls.length; index++) {
-
+            // Open a new page
+            const page = await browser.getNewPage()
+            console.log(page)
             // Navigate to the page below
             await page.goto(reviewPageUrls[index], { waitUntil: 'networkidle2', });
 

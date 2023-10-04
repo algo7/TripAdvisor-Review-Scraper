@@ -18,7 +18,7 @@ class Browser {
     constructor() {
         // Puppeteer configs
         this.config = {
-            headless: true,
+            headless: false,
             devtools: false,
             defaultViewport: {
                 width: 1280,
@@ -135,6 +135,16 @@ class Browser {
             return page
         }
 
+        // Otherwise, wait until a page becomes available.
+        await new Promise(resolve => {
+            const checkIdlePages = setInterval(() => {
+                if (this.pageIdle.length > 0) {
+                    clearInterval(checkIdlePages);
+                    resolve();
+                }
+            }, 100); // check every 100ms
+        });
+        return this.getNewPage();
     }
 
     /**
