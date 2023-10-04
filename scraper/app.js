@@ -342,6 +342,7 @@ const init = async () => {
         switch (SCRAPE_MODE) {
             case 'HOTEL': return await hotelScraperInit();
             case 'RESTO': return await restoScraperInit();
+            case 'AIRLINE': return await airlineScraperInit();
             default: throw Error('Invalid Scrap Mode');
         }
 
