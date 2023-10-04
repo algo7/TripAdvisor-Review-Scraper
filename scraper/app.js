@@ -307,7 +307,7 @@ const airlineScraperInit = async () => {
             const { webUrl: airlineUrl, name: airlineName, id: airlineId, } = item;
 
             processQueue.push(airlineScraper(airlineUrl, airlineName,
-                airlineId, index, LANGUAGE, browserInstance))
+                airlineId, index, browserInstance))
         }
 
         // Resolve processes left over in the process queue
