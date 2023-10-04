@@ -58,8 +58,8 @@ const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
             let noReviewPages = totalReviewCount / 5;
 
             // Calculate the last review page
-            if (totalReviewCount % 10 !== 0) {
-                noReviewPages = ((totalReviewCount - totalReviewCount % 10) / 10) + 1;
+            if (totalReviewCount % 5 !== 0) {
+                noReviewPages = ((totalReviewCount - totalReviewCount % 5) / 5) + 1;
             }
 
             // Get the url of the 2nd page of review. The 1st page is the input link
