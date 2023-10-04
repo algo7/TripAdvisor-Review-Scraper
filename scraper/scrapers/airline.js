@@ -92,7 +92,7 @@ const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
         }
 
         // Add the first page url
-        reviewPageUrls.unshift(hotelUrl);
+        reviewPageUrls.unshift(airlineUrl);
 
         // Information for logging
         const data = {
