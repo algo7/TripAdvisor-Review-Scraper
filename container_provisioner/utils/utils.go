@@ -108,15 +108,22 @@ func ParseCredsFromJSON(fileName string) Creds {
 	return creds
 }
 
-// GetHotelNameFromURL get the hotel name from the URL
-func GetHotelNameFromURL(url string) string {
-	// Split the url by "/"
+// GetScrapeTargetNameFromURL get the scrape target name from the given URL
+func GetScrapeTargetNameFromURL(url string, scrapOption string) string {
+	// Split the url by "-"
 	splitURL := strings.Split(url, "-")
 
-	// Get the last element of the array
-	fileName := splitURL[4]
-
-	return fileName
+	switch scrapOption {
+	case "HOTEL", "RESTO":
+		return splitURL[4]
+	case "AIRLINE":
+		if len(splitURL) > 4 {
+			return fmt.Sprintf("%s-%s", splitURL[4], splitURL[5])
+		}
+		return splitURL[3]
+	default:
+		return ""
+	}
 }
 
 // ValidateTripAdvisorURL validates the TripAdvisor URLs
