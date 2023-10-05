@@ -11,18 +11,18 @@ import (
 )
 
 // Scrape creates a container, runs it, tails the log and wait for it to exit, and export the file name
-func Scrape(uploadIdentifier string, hotelName string, containerId string) {
+func Scrape(uploadIdentifier string, targetName string, containerID string) {
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	utils.ErrorHandler(err)
 	defer cli.Close()
 
 	// Start the container
-	err = cli.ContainerStart(context.Background(), containerId, types.ContainerStartOptions{})
+	err = cli.ContainerStart(context.Background(), containerID, types.ContainerStartOptions{})
 	utils.ErrorHandler(err)
 
 	// Wait for the container to exit
-	statusCh, errCh := cli.ContainerWait(context.Background(), containerId, container.WaitConditionNotRunning)
+	statusCh, errCh := cli.ContainerWait(context.Background(), containerID, container.WaitConditionNotRunning)
 
 	// ContainerWait returns 2 channels. One for the status and one for the wait error (not execution error)
 	select {
@@ -32,7 +32,7 @@ func Scrape(uploadIdentifier string, hotelName string, containerId string) {
 	case status := <-statusCh:
 		// If the container exited with non-zero status code, remove the container and return an error
 		if status.StatusCode != 0 {
-			removeContainer(containerId)
+			removeContainer(containerID)
 			return
 		}
 	}
@@ -41,17 +41,17 @@ func Scrape(uploadIdentifier string, hotelName string, containerId string) {
 	filePathInContainer := "/puppeteer/reviews/All.csv"
 
 	// Get the file size in the container
-	getResultCSVSizeInContainer(containerId, filePathInContainer)
+	getResultCSVSizeInContainer(containerID, filePathInContainer)
 
 	// Read the file from the container as a reader interface of a tar stream
-	fileReader, _, err := cli.CopyFromContainer(context.Background(), containerId, filePathInContainer)
+	fileReader, _, err := cli.CopyFromContainer(context.Background(), containerID, filePathInContainer)
 	utils.ErrorHandler(err)
 
 	// Generate a random file prefix
 	fileSuffix := utils.GenerateUUID()
 
 	// Write the file to the host
-	exportedFileName := utils.WriteToFileFromTarStream(hotelName, fileSuffix, fileReader)
+	exportedFileName := utils.WriteToFileFromTarStream(targetName, fileSuffix, fileReader)
 
 	// Read the exported csv file
 	file := utils.ReadFromFile(exportedFileName)
@@ -60,5 +60,5 @@ func Scrape(uploadIdentifier string, hotelName string, containerId string) {
 	utils.R2UploadObject(exportedFileName, uploadIdentifier, file)
 
 	// Remove the container
-	removeContainer(containerId)
+	removeContainer(containerID)
 }
