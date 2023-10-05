@@ -103,7 +103,7 @@
           <thead>
             <tr>
               <th>Running Tasks</th>
-              <th>Hotel Name</th>
+              <th>Target Name</th>
               <th>Task Owner</th>
               <th>Link</th>
             </tr>
@@ -112,7 +112,7 @@
             {{range .RunningTasks}}
             <tr>
               <td>{{.ContainerID}}</td>
-              <td>{{.HotelName}}</td>
+              <td>{{.TargetName}}</td>
               <td>{{.TaskOwner}}</td>
               <td><a href="{{.URL}}">View Logs</a></td>
             </tr>
