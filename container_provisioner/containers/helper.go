@@ -161,10 +161,10 @@ func TailLog(containerID string) io.Reader {
 
 // Container information
 type Container struct {
-	ID         string
-	TaskOwner  string
-	TargetName string
-	URL        string
+	ContainerID string
+	TaskOwner   string
+	TargetName  string
+	URL         string
 }
 
 // ListContainers lists all the containers and return the container IDs
@@ -180,12 +180,16 @@ func ListContainers() []Container {
 	containers := []Container{}
 
 	for _, containerInfo := range containersInfo {
+
+		// Filter out the container that runs the app itself and other containers that are not created by this app
 		if containerInfo.Labels["TaskOwner"] != "" {
+
+			// Append the container info to the containers slice
 			containers = append(containers, Container{
-				ID:         containerInfo.ID,
-				URL:        fmt.Sprintf("/logs-viewer?container_id=%s", containerInfo.ID),
-				TaskOwner:  containerInfo.Labels["TaskOwner"],
-				TargetName: containerInfo.Labels["Target"],
+				ContainerID: containerInfo.ID,
+				URL:         fmt.Sprintf("/logs-viewer?container_id=%s", containerInfo.ID),
+				TaskOwner:   containerInfo.Labels["TaskOwner"],
+				TargetName:  containerInfo.Labels["Target"],
 			})
 		}
 	}

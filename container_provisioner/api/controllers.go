@@ -25,13 +25,6 @@ type enrichedR2Obj struct {
 	Date       string
 }
 
-type runningTask struct {
-	ContainerID string
-	URL         string
-	TaskOwner   string
-	TargetName  string
-}
-
 // getMain renders the main page
 func getMain(c *fiber.Ctx) error {
 
@@ -198,7 +191,7 @@ func getLogs(c *fiber.Ctx) error {
 
 	// Extract the running container ids
 	for _, container := range existingContainers {
-		runningContainersIds = append(runningContainersIds, container.ID)
+		runningContainersIds = append(runningContainersIds, container.ContainerID)
 	}
 
 	// If the running containers do not include the containerId
@@ -220,15 +213,15 @@ func getRunningTasks(c *fiber.Ctx) error {
 	Containers := containers.ListContainers()
 
 	// Create a slice of RunningTask structs to hold the data for the table
-	runningTasks := make([]runningTask, len(Containers)-2)
+	runningTasks := make([]containers.Container, len(Containers))
 
 	// Populate the slice of RunningTask structs with data from the Containers array
 	for i, container := range Containers {
 		// Exclude the container that runs app itself
 		if container.TaskOwner != "" {
-			runningTasks[i] = runningTask{
-				ContainerID: container.ID[:12],
-				URL:         fmt.Sprintf("/logs-viewer?container_id=%s", container.ID),
+			runningTasks[i] = containers.Container{
+				ContainerID: container.ContainerID[:12],
+				URL:         fmt.Sprintf("/logs-viewer?container_id=%s", container.ContainerID),
 				TaskOwner:   container.TaskOwner,
 				TargetName:  container.TargetName,
 			}
