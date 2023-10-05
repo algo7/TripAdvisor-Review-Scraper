@@ -15,6 +15,13 @@ import (
 	"github.com/google/uuid"
 )
 
+// Compile the regular expression and store it in a package-level variable
+var (
+	tripAdvisorHotelURLRegexp   = regexp.MustCompile(`^https:\/\/www\.tripadvisor\.com\/Hotel_Review-g\d{6,10}-d\d{1,10}-Reviews-[\w-]{1,255}\.html$`)
+	tripAdvisorRestaurantRegexp = regexp.MustCompile(`^https:\/\/www\.tripadvisor\.com\/Restaurant_Review-g\d{6,10}-d\d{1,10}-Reviews-[\w-]{1,255}\.html$`)
+	tripAdvisorAirlineRegexp    = regexp.MustCompile(`^https:\/\/www\.tripadvisor\.com\/Airline_Review-d\d{6,10}-Reviews-[\w-]{1,255}\$`)
+)
+
 // Creds is the Credentials of the R2 bucket
 type Creds struct {
 	AccessKeyID     string `json:"accessKeyId"`
