@@ -164,7 +164,7 @@ func ListContainers() []Container {
 			// Append the container info to the containers slice
 			containers = append(containers, Container{
 				ContainerID: containerInfo.ID[:12],
-				URL:         fmt.Sprintf("/logs-viewer?container_id=%s", containerInfo.ID),
+				URL:         fmt.Sprintf("/logs-viewer?container_id=%s", containerInfo.ID[:12]),
 				TaskOwner:   containerInfo.Labels["TaskOwner"],
 				TargetName:  containerInfo.Labels["Target"],
 			})
