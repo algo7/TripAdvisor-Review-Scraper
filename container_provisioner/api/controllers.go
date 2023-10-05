@@ -93,8 +93,11 @@ func postProvision(c *fiber.Ctx) error {
 	// Get the URL from the form
 	url := c.FormValue("url")
 
-	// Get the email from the form
+	// Get the upload id from the form
 	uploadIdentifier := c.FormValue("upload_identifier")
+
+	// Get the scrape mode from the form
+	scrapeMode := c.FormValue("scrape_option")
 
 	// Validate the uploadIdentifier field
 	if uploadIdentifier == "" || len(uploadIdentifier) > 20 {
