@@ -251,6 +251,24 @@ const restoScraperInit = async () => {
         // Convert the combined JSON data to csv
         const csvData = reviewJSONToCsv(combinedData);
 
+        // If the scraper is being called by the container provisioner, then export the csv only
+        if (IS_PROVISIONER) {
+            await Promise.all([
+                writeFile(`${dataDir}All.csv`, csvData),
+                // Close the browser instance
+                browserInstance.closeBrowser(),
+            ])
+
+            fs.readdirSync(dataDir)
+                .forEach(file => {
+                    console.log(file);
+                });
+
+            console.log('Scraping Done');
+            process.exit(0);
+
+        }
+
         // Write the combined data to files and close the browser instance
         await Promise.all([
             writeFile(`${dataDir}All.json`, jsonData),
@@ -259,7 +277,8 @@ const restoScraperInit = async () => {
             browserInstance.closeBrowser(),
         ])
 
-        return 'Scraping Done';
+        console.log('Scraping Done');
+        process.exit(0);
 
     } catch (err) {
         throw err;
@@ -345,6 +364,24 @@ const airlineScraperInit = async () => {
         // Convert the combined JSON data to csv
         const csvData = reviewJSONToCsv(combinedData);
 
+        // If the scraper is being called by the container provisioner, then export the csv only
+        if (IS_PROVISIONER) {
+            await Promise.all([
+                writeFile(`${dataDir}All.csv`, csvData),
+                // Close the browser instance
+                browserInstance.closeBrowser(),
+            ])
+
+            fs.readdirSync(dataDir)
+                .forEach(file => {
+                    console.log(file);
+                });
+
+            console.log('Scraping Done');
+            process.exit(0);
+
+        }
+
         // Write the combined data to files and close the browser instance
         await Promise.all([
             writeFile(`${dataDir}All.json`, jsonData),
@@ -353,7 +390,8 @@ const airlineScraperInit = async () => {
             browserInstance.closeBrowser(),
         ])
 
-        return 'Scraping Done';
+        console.log('Scraping Done');
+        process.exit(0);
 
     } catch (err) {
         throw err;
