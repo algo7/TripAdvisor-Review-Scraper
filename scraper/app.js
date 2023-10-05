@@ -45,8 +45,6 @@ if (IS_PROVISIONER) {
 }
 const customChalk = new Chalk({ level: colorLevel });
 
-
-
 console.log(customChalk.bold.blue(`The Scraper is Running in ${customChalk.bold.magenta(SCRAPE_MODE)} Mode`));
 console.log(customChalk.bold.blue(`Concurrency Setting ${customChalk.bold.magenta(CONCURRENCY || 2)}`));
 console.log(customChalk.bold.blue(`Review Language ${customChalk.bold.magenta(LANGUAGE)}`));
