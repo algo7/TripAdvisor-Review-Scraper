@@ -159,9 +159,9 @@ func TailLog(containerID string) io.Reader {
 
 // Container information
 type Container struct {
-	ID        string
-	TaskOwner string
-	HotelName string
+	ID         string
+	TaskOwner  string
+	TargetName string
 }
 
 // ListContainers lists all the containers and return the container IDs
@@ -178,9 +178,9 @@ func ListContainers() []Container {
 
 	for i, containerInfo := range containersInfo {
 		containers[i] = Container{
-			ID:        containerInfo.ID,
-			TaskOwner: containerInfo.Labels["TaskOwner"],
-			HotelName: containerInfo.Labels["Hotel"],
+			ID:         containerInfo.ID,
+			TaskOwner:  containerInfo.Labels["TaskOwner"],
+			TargetName: containerInfo.Labels["Target"],
 		}
 	}
 

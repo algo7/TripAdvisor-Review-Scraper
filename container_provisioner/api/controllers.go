@@ -28,7 +28,7 @@ type runningTask struct {
 	ContainerID string
 	URL         string
 	TaskOwner   string
-	HotelName   string
+	TargetName  string
 }
 
 // getMain renders the main page
@@ -229,7 +229,7 @@ func getRunningTasks(c *fiber.Ctx) error {
 				ContainerID: container.ID[:12],
 				URL:         fmt.Sprintf("/logs-viewer?container_id=%s", container.ID),
 				TaskOwner:   container.TaskOwner,
-				HotelName:   container.HotelName,
+				TargetName:  container.HotelName,
 			}
 		}
 	}
