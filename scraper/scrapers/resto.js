@@ -176,7 +176,10 @@ const extractAllReviewPageUrls = async (restoUrl, position, language, browser) =
             pageCount: reviewPageUrls.length,
             urls: reviewPageUrls,
         };
-        console.log(data)
+
+        console.log(`${customChalk.bold.white.dim('Review Count: ')}${totalReviewCount}`);
+        console.log(`${customChalk.bold.white.dim('No. of Pages: ')}${reviewPageUrls.length}`);
+
         // Hand back the page so it's available again
         browser.handBack(page);
 
@@ -303,9 +306,6 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, res
             allReviews,
             fileName: `${position}_${reviewPageUrls[0].split('-')[4]}`,
         };
-
-        console.log(`${customChalk.bold.white.dim('Review Count: ')}${totalReviewCount}`);
-        console.log(`${customChalk.bold.white.dim('No. of Pages: ')}${reviewPageUrls.length}`);
 
         return finalData;
 
