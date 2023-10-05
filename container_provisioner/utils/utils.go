@@ -118,7 +118,7 @@ func GetScrapeTargetNameFromURL(url string, scrapOption string) string {
 		return splitURL[4]
 	case "AIRLINE":
 		if len(splitURL) > 4 {
-			return fmt.Sprintf("%s-%s", splitURL[4], splitURL[5])
+			return fmt.Sprintf("%s-%s", splitURL[3], splitURL[4])
 		}
 		return splitURL[3]
 	default:
