@@ -2,6 +2,7 @@ package containers
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -11,6 +12,10 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
+)
+
+const (
+	containerImage = "bro:latest"
 )
 
 // initializeDockerClient initialize a new docker api client
@@ -49,8 +54,45 @@ func removeContainer(containerID string) {
 	utils.ErrorHandler(err)
 }
 
+// ContainerConfigGenerator generates the container config depending on the scrape target
+func ContainerConfigGenerator(scrapeTarget string, scrapeTargetName string, scrapeURL string, uploadIdentifier string) *container.Config {
+	var scrapeContainerURL string
+	var targetName string
+
+	switch scrapeTarget {
+	case "HOTEL":
+		scrapeContainerURL = fmt.Sprintf("HOTEL_URL=%s", scrapeURL)
+		targetName = fmt.Sprintf("HOTEL_NAME=%s", scrapeTargetName)
+	case "RESTO":
+		scrapeContainerURL = fmt.Sprintf("RESTO_URL=%s", scrapeURL)
+		targetName = fmt.Sprintf("RESTO_NAME=%s", scrapeTargetName)
+	case "AIRLINE":
+		scrapeContainerURL = fmt.Sprintf("AIRLINE_URL=%s", scrapeURL)
+		targetName = fmt.Sprintf("AIRLINE_NAME=%s", scrapeTargetName)
+	}
+
+	scrapeMode := fmt.Sprintf("SCRAPE_MODE=%s", scrapeTarget)
+
+	return &container.Config{
+		Image: containerImage,
+		Labels: map[string]string{
+			"TaskOwner": uploadIdentifier,
+			"Target":    scrapeTargetName,
+		},
+		// Env vars required by the js scraper containers
+		Env: []string{
+			"CONCURRENCY=2",
+			"IS_PROVISIONER=true",
+			scrapeMode,
+			scrapeContainerURL,
+			targetName,
+		},
+		Tty: true,
+	}
+}
+
 // CreateContainer creates a container then returns the container ID
-func CreateContainer(hotelName string, hotelURL string, uploadIdentifier string) string {
+func CreateContainer(containerConfig *container.Config) string {
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	utils.ErrorHandler(err)
@@ -58,22 +100,7 @@ func CreateContainer(hotelName string, hotelURL string, uploadIdentifier string)
 
 	// Create the container. Container.ID contains the ID of the container
 	Container, err := cli.ContainerCreate(context.Background(),
-		&container.Config{
-			Image: "ghcr.io/algo7/tripadvisor-review-scraper/scraper:latest",
-			Labels: map[string]string{
-				"TaskOwner": uploadIdentifier,
-				"Hotel":     hotelName,
-			},
-			// Env vars required by the js scraper containers
-			Env: []string{
-				"CONCURRENCY=1",
-				"SCRAPE_MODE=HOTEL",
-				"HOTEL_NAME=" + hotelName,
-				"IS_PROVISIONER=true",
-				"HOTEL_URL=" + hotelURL,
-			},
-			Tty: true,
-		},
+		containerConfig,
 		&container.HostConfig{
 			AutoRemove: false, // Cant set to true otherwise the container got deleted before copying the file
 		},
@@ -81,31 +108,10 @@ func CreateContainer(hotelName string, hotelURL string, uploadIdentifier string)
 		nil, // Platform
 		"",  // Container name
 	)
+
 	utils.ErrorHandler(err)
 
 	return Container.ID
-}
-
-// CountRunningContainer lists the number of running containers
-func CountRunningContainer() int {
-
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	utils.ErrorHandler(err)
-	defer cli.Close()
-
-	// Determine if the current process is running inside a container
-	isContainer := os.Getenv("IS_CONTAINER")
-
-	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{
-		All: false, // Only running containers
-	})
-	utils.ErrorHandler(err)
-
-	if isContainer == "" {
-		return len(containers)
-	}
-	// 21 otherwise the current process and redis will also be counted as a running container
-	return len(containers) - 2
 }
 
 // TailLog tails the log of the container with the given ID
@@ -132,9 +138,10 @@ func TailLog(containerID string) io.Reader {
 
 // Container information
 type Container struct {
-	ID        string
-	TaskOwner string
-	HotelName string
+	ContainerID string
+	TaskOwner   string
+	TargetName  string
+	URL         string
 }
 
 // ListContainers lists all the containers and return the container IDs
@@ -143,17 +150,24 @@ func ListContainers() []Container {
 	utils.ErrorHandler(err)
 	defer cli.Close()
 
-	containersInfo, err := cli.ContainerList(context.Background(), types.ContainerListOptions{})
+	containersInfo, err := cli.ContainerList(context.Background(), types.ContainerListOptions{All: false})
 	utils.ErrorHandler(err)
 
 	// Map container list result into custom container struct
-	containers := make([]Container, len(containersInfo))
+	containers := []Container{}
 
-	for i, containerInfo := range containersInfo {
-		containers[i] = Container{
-			ID:        containerInfo.ID,
-			TaskOwner: containerInfo.Labels["TaskOwner"],
-			HotelName: containerInfo.Labels["Hotel"],
+	for _, containerInfo := range containersInfo {
+
+		// Filter out the container that runs the app itself and other containers that are not created by this app
+		if containerInfo.Labels["TaskOwner"] != "" {
+
+			// Append the container info to the containers slice
+			containers = append(containers, Container{
+				ContainerID: containerInfo.ID,
+				URL:         fmt.Sprintf("/logs-viewer?container_id=%s", containerInfo.ID),
+				TaskOwner:   containerInfo.Labels["TaskOwner"],
+				TargetName:  containerInfo.Labels["Target"],
+			})
 		}
 	}
 

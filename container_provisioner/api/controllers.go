@@ -24,18 +24,11 @@ type enrichedR2Obj struct {
 	Date       string
 }
 
-type runningTask struct {
-	ContainerID string
-	URL         string
-	TaskOwner   string
-	HotelName   string
-}
-
 // getMain renders the main page
 func getMain(c *fiber.Ctx) error {
 
 	// Get the number of running containers
-	runningContainers := containers.CountRunningContainer()
+	runningContainers := len(containers.ListContainers())
 
 	// Check if the R2 objects list is cached
 	cachedObjectsList := database.CacheLookUp("r2StorageObjectsList")
@@ -93,8 +86,38 @@ func postProvision(c *fiber.Ctx) error {
 	// Get the URL from the form
 	url := c.FormValue("url")
 
-	// Get the email from the form
+	// Get the upload id from the form
 	uploadIdentifier := c.FormValue("upload_identifier")
+
+	// Get the scrape mode from the form
+	scrapeMode := c.FormValue("scrape_option")
+
+	// Define valid scrape modes
+	validChoices := map[string]bool{
+		"HOTEL":   true,
+		"RESTO":   true,
+		"AIRLINE": true,
+	}
+
+	_, exists := validChoices[scrapeMode]
+
+	// Validate the scrape mode
+	if !exists {
+		return c.Render("submission", fiber.Map{
+			"Title":      "Algo7 TripAdvisor Scraper",
+			"Message1":   "Invalid Scrape Target",
+			"ReturnHome": true,
+		})
+	}
+
+	// Check if the URL is valid
+	if !utils.ValidateTripAdvisorURL(url, scrapeMode) {
+		return c.Render("submission", fiber.Map{
+			"Title":      "Algo7 TripAdvisor Scraper",
+			"Message1":   fmt.Sprintf("Invalid %s URL", scrapeMode),
+			"ReturnHome": true,
+		})
+	}
 
 	// Validate the uploadIdentifier field
 	if uploadIdentifier == "" || len(uploadIdentifier) > 20 {
@@ -105,17 +128,8 @@ func postProvision(c *fiber.Ctx) error {
 		})
 	}
 
-	// Check if the URL matches the regex
-	if !utils.ValidateTripAdvisorHotelURL(url) {
-		return c.Render("submission", fiber.Map{
-			"Title":      "Algo7 TripAdvisor Scraper",
-			"Message1":   "Invalid URL",
-			"ReturnHome": true,
-		})
-	}
-
 	// Get the number of running containers
-	runningContainers := containers.CountRunningContainer()
+	runningContainers := len(containers.ListContainers())
 
 	if runningContainers >= 10 {
 		return c.Render("submission", fiber.Map{
@@ -125,14 +139,17 @@ func postProvision(c *fiber.Ctx) error {
 		})
 	}
 
-	// Get the hotel name from the URL
-	hotelName := utils.GetHotelNameFromURL(url)
+	// Get the scrape target name from the URL
+	scrapeTargetName := utils.GetScrapeTargetNameFromURL(url, scrapeMode)
+
+	// Generate the container config
+	scrapeConfig := containers.ContainerConfigGenerator(scrapeMode, scrapeTargetName, url, uploadIdentifier)
 
 	// Create the container
-	containerID := containers.CreateContainer(hotelName, url, uploadIdentifier)
+	containerID := containers.CreateContainer(scrapeConfig)
 
 	// Start the scraping container via goroutine
-	go containers.Scrape(uploadIdentifier, hotelName, containerID)
+	go containers.Scrape(uploadIdentifier, scrapeTargetName, containerID)
 
 	return c.Render("submission", fiber.Map{
 		"Title": "Algo7 TripAdvisor Scraper",
@@ -173,7 +190,7 @@ func getLogs(c *fiber.Ctx) error {
 
 	// Extract the running container ids
 	for _, container := range existingContainers {
-		runningContainersIds = append(runningContainersIds, container.ID)
+		runningContainersIds = append(runningContainersIds, container.ContainerID)
 	}
 
 	// If the running containers do not include the containerId
@@ -192,34 +209,18 @@ func getLogs(c *fiber.Ctx) error {
 func getRunningTasks(c *fiber.Ctx) error {
 
 	// Get ids of all running containers
-	Containers := containers.ListContainers()
-
-	// Create a slice of RunningTask structs to hold the data for the table
-	runningTasks := make([]runningTask, len(Containers)-2)
-
-	// Populate the slice of RunningTask structs with data from the Containers array
-	for i, container := range Containers {
-		// Exclude the container that runs app itself
-		if container.TaskOwner != "" {
-			runningTasks[i] = runningTask{
-				ContainerID: container.ID[:12],
-				URL:         fmt.Sprintf("/logs-viewer?container_id=%s", container.ID),
-				TaskOwner:   container.TaskOwner,
-				HotelName:   container.HotelName,
-			}
-		}
-	}
+	runningContainers := containers.ListContainers()
 
 	// The page status message
 	currentTaskStatus := "There are no running tasks"
 
-	if len(Containers)-2 > 0 {
-		currentTaskStatus = fmt.Sprintf("%s task(s) running", strconv.Itoa(len(Containers)-2))
+	if len(runningContainers) == 0 {
+		currentTaskStatus = fmt.Sprintf("%s task(s) running", strconv.Itoa(len(runningContainers)))
 	}
 
 	return c.Render("tasks", fiber.Map{
 		"Title":             "Algo7 TripAdvisor Scraper",
-		"RunningTasks":      runningTasks,
+		"RunningTasks":      runningContainers,
 		"CurrentTaskStatus": currentTaskStatus,
 	})
 }

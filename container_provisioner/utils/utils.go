@@ -15,6 +15,13 @@ import (
 	"github.com/google/uuid"
 )
 
+// Compile the regular expression and store it in a package-level variable
+var (
+	tripAdvisorHotelURLRegexp   = regexp.MustCompile(`^https:\/\/www\.tripadvisor\.com\/Hotel_Review-g\d{6,10}-d\d{1,10}-Reviews-[\w-]{1,255}\.html$`)
+	tripAdvisorRestaurantRegexp = regexp.MustCompile(`^https:\/\/www\.tripadvisor\.com\/Restaurant_Review-g\d{6,10}-d\d{1,10}-Reviews-[\w-]{1,255}\.html$`)
+	tripAdvisorAirlineRegexp    = regexp.MustCompile(`^https:\/\/www\.tripadvisor\.com\/Airline_Review-d\d{6,10}-Reviews-[\w-]{1,255}\$`)
+)
+
 // Creds is the Credentials of the R2 bucket
 type Creds struct {
 	AccessKeyID     string `json:"accessKeyId"`
@@ -101,22 +108,39 @@ func ParseCredsFromJSON(fileName string) Creds {
 	return creds
 }
 
-// GetHotelNameFromURL get the hotel name from the URL
-func GetHotelNameFromURL(url string) string {
-	// Split the url by "/"
+// GetScrapeTargetNameFromURL get the scrape target name from the given URL
+func GetScrapeTargetNameFromURL(url string, scrapOption string) string {
+	// Split the url by "-"
 	splitURL := strings.Split(url, "-")
 
-	// Get the last element of the array
-	fileName := splitURL[4]
-
-	return fileName
+	switch scrapOption {
+	case "HOTEL", "RESTO":
+		return splitURL[4]
+	case "AIRLINE":
+		if len(splitURL) > 4 {
+			return fmt.Sprintf("%s-%s", splitURL[4], splitURL[5])
+		}
+		return splitURL[3]
+	default:
+		return ""
+	}
 }
 
-// ValidateTripAdvisorHotelURL validates the TripAdvisor Hotel URL
-func ValidateTripAdvisorHotelURL(url string) bool {
-	regex := `^https:\/\/www\.tripadvisor\.com\/Hotel_Review-g\d{6,10}-d\d{1,10}-Reviews-[\w-]{1,255}\.html$`
-	match, _ := regexp.MatchString(regex, url)
-	return match
+// ValidateTripAdvisorURL validates the TripAdvisor URLs
+func ValidateTripAdvisorURL(url string, scrapOption string) bool {
+	switch scrapOption {
+	case "HOTEL":
+		match, _ := regexp.MatchString(tripAdvisorHotelURLRegexp.String(), url)
+		return match
+	case "RESTO":
+		match, _ := regexp.MatchString(tripAdvisorRestaurantRegexp.String(), url)
+		return match
+	case "AIRLINE":
+		match, _ := regexp.MatchString(tripAdvisorAirlineRegexp.String(), url)
+		return match
+	default:
+		return false
+	}
 }
 
 // ValidateEmailAddress validates the EHL email address

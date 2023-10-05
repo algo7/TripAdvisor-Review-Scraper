@@ -10,6 +10,8 @@ const __dirname = dirname(__filename);
 // Custom Modules 
 import hotelScraper from './scrapers/hotel.js';
 import restoScraper from './scrapers/resto.js';
+import airlineScraper from './scrapers/airline.js';
+
 import {
     csvToJSON, fileExists, combine,
     reviewJSONToCsv, dataProcessor
@@ -23,6 +25,8 @@ const sourceDir = join(__dirname, './source/');
 // Environment variables
 let { SCRAPE_MODE, CONCURRENCY, LANGUAGE,
     HOTEL_NAME, HOTEL_URL,
+    AIRLINE_NAME, AIRLINE_URL,
+    RESTO_NAME, RESTO_URL,
     IS_PROVISIONER // If the scraper is being called by the container provisioner
 } = process.env;
 
@@ -41,8 +45,6 @@ if (IS_PROVISIONER) {
 }
 const customChalk = new Chalk({ level: colorLevel });
 
-
-
 console.log(customChalk.bold.blue(`The Scraper is Running in ${customChalk.bold.magenta(SCRAPE_MODE)} Mode`));
 console.log(customChalk.bold.blue(`Concurrency Setting ${customChalk.bold.magenta(CONCURRENCY || 2)}`));
 console.log(customChalk.bold.blue(`Review Language ${customChalk.bold.magenta(LANGUAGE)}`));
@@ -55,6 +57,7 @@ if (!fileExists(sourceDir)) mkdirSync(sourceDir);
 // Data source
 const dataSourceResto = join(__dirname, './source/restos.csv');
 const dataSourceHotel = join(__dirname, './source/hotels.csv');
+const dataSourceAirline = join(__dirname, './source/airlines.csv');
 
 /**
  * Scrape the hotel pages
@@ -175,18 +178,31 @@ const hotelScraperInit = async () => {
 const restoScraperInit = async () => {
     try {
 
-        // Check if the source file exists
-        const sourceFileAvailable = fileExists(dataSourceResto);
-        if (!sourceFileAvailable) {
-            throw Error('Source file does not exist');
-        }
+        // Get a browser instance
+        await browserInstance.launch()
 
-        const [rawData] = await Promise.all([
+        // Get the raw data from env variables or csv file
+        let rawData = [
+            {
+                name: RESTO_NAME,
+                webUrl: RESTO_URL,
+            }
+        ]
+
+        // If the env variables are not set, get the data from the csv file
+        if (!rawData[0].name) {
+
+            // Check if the source file exists
+            const sourceFileAvailable = fileExists(dataSourceResto);
+            if (!sourceFileAvailable) {
+                throw Error('Source file does not exist');
+            }
+
             // Convert the csv to json
-            csvToJSON(dataSourceResto),
-            // Initiate a browser instance
-            browserInstance.launch()
-        ])
+            rawData = await csvToJSON(dataSourceResto)
+        };
+
+
 
         console.log(customChalk.bold.yellow(`Scraping ${customChalk.magenta(rawData.length)} Restaurants`));
 
@@ -235,6 +251,24 @@ const restoScraperInit = async () => {
         // Convert the combined JSON data to csv
         const csvData = reviewJSONToCsv(combinedData);
 
+        // If the scraper is being called by the container provisioner, then export the csv only
+        if (IS_PROVISIONER) {
+            await Promise.all([
+                writeFile(`${dataDir}All.csv`, csvData),
+                // Close the browser instance
+                browserInstance.closeBrowser(),
+            ])
+
+            fs.readdirSync(dataDir)
+                .forEach(file => {
+                    console.log(file);
+                });
+
+            console.log('Scraping Done');
+            process.exit(0);
+
+        }
+
         // Write the combined data to files and close the browser instance
         await Promise.all([
             writeFile(`${dataDir}All.json`, jsonData),
@@ -243,13 +277,126 @@ const restoScraperInit = async () => {
             browserInstance.closeBrowser(),
         ])
 
-        return 'Scraping Done';
+        console.log('Scraping Done');
+        process.exit(0);
 
     } catch (err) {
         throw err;
     }
 };
 
+/**
+ * Scrape the airline pages
+ * @returns {Promise<String | Error>} - The done message or error message
+ */
+const airlineScraperInit = async () => {
+    try {
+
+
+        // Get a browser instance
+        await browserInstance.launch()
+
+        // Get the raw data from env variables or csv file
+        let rawData = [
+            {
+                name: AIRLINE_NAME,
+                webUrl: AIRLINE_URL,
+            }
+        ]
+
+        // If the env variables are not set, get the data from the csv file
+        if (!rawData[0].name) {
+
+            // Check if the source file exists
+            const sourceFileAvailable = fileExists(dataSourceAirline);
+            if (!sourceFileAvailable) {
+                throw Error('Source file does not exist');
+            }
+
+            // Convert the csv to json
+            rawData = await csvToJSON(dataSourceAirline)
+        };
+
+        console.log(customChalk.bold.yellow(`Scraping ${customChalk.magenta(rawData.length)} Airlines`));
+
+        // Array to hold the processed data
+        const reviewInfo = []
+
+        // Array to hold the promises to be processed
+        let processQueue = []
+
+        for (let index = 0; index < rawData.length; index++) {
+
+            if (processQueue.length > CONCURRENCY) {
+                const finalData = await dataProcessor(processQueue)
+                reviewInfo.push(finalData);
+                processQueue = []
+            }
+
+            // Extract resto info
+            const item = rawData[index];
+            const { webUrl: airlineUrl, name: airlineName, id: airlineId, } = item;
+
+            processQueue.push(airlineScraper(airlineUrl, airlineName,
+                airlineId, index, browserInstance))
+        }
+
+        // Resolve processes left over in the process queue
+        const finalData = await dataProcessor(processQueue)
+        reviewInfo.push(finalData);
+
+        // Write the review of each individual resto to files
+        await Promise.all(
+            reviewInfo
+                .flat()
+                .map(async ({ finalData, fileName }) => {
+                    const dataToWrite = JSON.stringify(finalData, null, 2);
+                    await writeFile(`${dataDir}${fileName}.json`, dataToWrite);
+                })
+        );
+
+        // Combine all the reviews into an array of objects
+        const combinedData = combine(SCRAPE_MODE, dataDir);
+
+        // Write the combined JSON data to file
+        const jsonData = JSON.stringify(combinedData, null, 2);
+
+        // Convert the combined JSON data to csv
+        const csvData = reviewJSONToCsv(combinedData);
+
+        // If the scraper is being called by the container provisioner, then export the csv only
+        if (IS_PROVISIONER) {
+            await Promise.all([
+                writeFile(`${dataDir}All.csv`, csvData),
+                // Close the browser instance
+                browserInstance.closeBrowser(),
+            ])
+
+            fs.readdirSync(dataDir)
+                .forEach(file => {
+                    console.log(file);
+                });
+
+            console.log('Scraping Done');
+            process.exit(0);
+
+        }
+
+        // Write the combined data to files and close the browser instance
+        await Promise.all([
+            writeFile(`${dataDir}All.json`, jsonData),
+            writeFile(`${dataDir}All.csv`, csvData),
+            // Close the browser instance
+            browserInstance.closeBrowser(),
+        ])
+
+        console.log('Scraping Done');
+        process.exit(0);
+
+    } catch (err) {
+        throw err;
+    }
+};
 /**
  * The main init function
  * @returns {Promise<String | Error>} - The done message or error message
@@ -260,6 +407,7 @@ const init = async () => {
         switch (SCRAPE_MODE) {
             case 'HOTEL': return await hotelScraperInit();
             case 'RESTO': return await restoScraperInit();
+            case 'AIRLINE': return await airlineScraperInit();
             default: throw Error('Invalid Scrap Mode');
         }
 

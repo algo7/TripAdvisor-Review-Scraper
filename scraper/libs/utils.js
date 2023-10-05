@@ -66,8 +66,15 @@ const monthStringToNumber = (monthString) => {
             return 10;
         case 'Nov':
             return 11;
-        default:
+        case 'Dec':
             return 12;
+        default:
+            /**
+             * If the month string is not in the list above, it's probably a number.
+             * Such when the review date is "Yesterday". And if that's the case the 
+             * scraper use the new Date().getMonth method to get the month number
+             */
+            return monthString;
     }
 };
 

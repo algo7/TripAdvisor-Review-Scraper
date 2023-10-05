@@ -18,7 +18,7 @@ const customChalk = new Chalk({ level: colorLevel });
  * @param {String} restoUrl - The url of the restaurant page
  * @param {Number} position - The index of the restaurant page in the list
  * @param {String} language - The language of the reviews that you wantto scrape
- * @param {Object} browser - A browser instance
+ * @param {puppeteer.Browser} browser - A browser instance
  * @returns {Promise<Object | Error>} - The object containing the review count, page count, and the review page urls
  */
 const extractAllReviewPageUrls = async (restoUrl, position, language, browser) => {
@@ -176,7 +176,10 @@ const extractAllReviewPageUrls = async (restoUrl, position, language, browser) =
             pageCount: reviewPageUrls.length,
             urls: reviewPageUrls,
         };
-        console.log(data)
+
+        console.log(`${customChalk.bold.white.dim('Review Count: ')}${totalReviewCount}`);
+        console.log(`${customChalk.bold.white.dim('No. of Pages: ')}${reviewPageUrls.length}`);
+
         // Hand back the page so it's available again
         browser.handBack(page);
 
@@ -195,20 +198,20 @@ const extractAllReviewPageUrls = async (restoUrl, position, language, browser) =
  * @param {String} restoName - The name of the restaurant
  * @param {String} restoId - The id of the restaurant
  * @param {String} language - The language of the reviews that you wantto scrape
- * @param {Object} browser - A browser instance
+ * @param {puppeteer.Browser} browser - A browser instance
  * @returns {Promise<Object | Error>} - The final data
  */
 const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, restoId, language, browser) => {
     try {
-
-        // Open a new page
-        const page = await browser.getNewPage()
 
         // Array to hold all the reviews 
         const allReviews = [];
 
         // Loop through all the review pages and extract the reviews
         for (let index = 0; index < reviewPageUrls.length; index++) {
+
+            // Open a new page
+            const page = await browser.getNewPage();
 
             // Navigate to each review page
             await page.goto(reviewPageUrls[index], { waitUntil: 'networkidle2', });
@@ -244,11 +247,17 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, res
             const currentURL = page.url();
 
             // Progress Report
-            console.log({
-                'Scraping': currentURL,
-                'Pages Left': reviewPageUrls.length - 1 - index,
-                'Progress': `${Math.round(((index + 1) / reviewPageUrls.length * 100), 1)}%`,
-            });
+            if (!IS_PROVISIONER) {
+                console.log({
+                    'Scraping': currentURL,
+                    'Pages Left': reviewPageUrls.length - 1 - index,
+                    'Progress': `${Math.round(((index + 1) / reviewPageUrls.length * 100), 1)}%`,
+                });
+            } else {
+                console.log("Scraping: ", currentURL)
+                console.log("Pages Left: ", `${reviewPageUrls.length - 1 - index}`)
+                console.log("Progress: ", `${Math.round(((index + 1) / reviewPageUrls.length * 100), 1)}%`)
+            }
 
             const reviews = await page.evaluate(() => {
 
@@ -283,6 +292,8 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, res
             // Push the reviews to the array
             allReviews.push(...reviews);
 
+            // Hand back the page so it's available again
+            browser.handBack(page);
         }
 
         // Data structure to be written to file
@@ -295,9 +306,6 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, res
             allReviews,
             fileName: `${position}_${reviewPageUrls[0].split('-')[4]}`,
         };
-
-        // Hand back the page so it's available again
-        browser.handBack(page);
 
         return finalData;
 
@@ -313,7 +321,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, res
  * @param {String} restoId - The id of the restaurant
  * @param {Number} position - The index of the restaurant page in the list
  * @param {String} language - The language of the reviews to scrape
- * @param {Object} browser - A browser instance
+ * @param {puppeteer.Browser} browser - A browser instance
  * @returns {Promise<Object | Error>} - The final data
  */
 const start = async (restoUrl, restoName, restoId, position, language, browser) => {

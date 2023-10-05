@@ -3,7 +3,7 @@ import puppeteer from 'puppeteer-extra'
 import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
 import blockResourcesPlugin from 'puppeteer-extra-plugin-block-resources';
 import randUserAgent from "rand-user-agent";
-
+import { EventEmitter } from 'events';
 
 // Environments variables
 let { CONCURRENCY } = process.env;
@@ -13,9 +13,13 @@ if (!CONCURRENCY) CONCURRENCY = 3;
 /**
  * Create a browser instance
  */
-class Browser {
+class Browser extends EventEmitter {
 
     constructor() {
+
+        // Call the parent constructor
+        super();
+
         // Puppeteer configs
         this.config = {
             headless: true,
@@ -135,6 +139,10 @@ class Browser {
             return page
         }
 
+
+        // Otherwise, wait until a page becomes available.
+        await new Promise(resolve => this.once('pageIdle', resolve));
+        return this.getNewPage();
     }
 
     /**
@@ -143,8 +151,14 @@ class Browser {
      * @returns {Undefined}
      */
     handBack(page) {
-        this.pageInUse.shift()
-        this.pageIdle.push(page)
+        // Find the page in the in use page array
+        const pageIndex = this.pageInUse.indexOf(page);
+
+        // If the page is found
+        if (pageIndex > -1) {
+            this.pageInUse.splice(pageIndex, 1);
+            this.pageIdle.push(page);
+        }
     }
 
     /**

@@ -131,6 +131,28 @@
         max-height: 80%;
         overflow-y: auto;
       }
+
+      /* ... Other CSS ... */
+
+      .centered-select {
+        display: block; /* Ensure it takes the full width available to it */
+        margin-left: auto; /* Automatically margin left */
+        margin-right: auto; /* Automatically margin right */
+        margin-bottom: 20px;
+        border: 2px solid #ccc;
+        border-radius: 4px;
+        padding: 10px;
+        font-size: 16px;
+        width: 100%; /* Or you might set a max-width if you want it to be less than full width */
+        max-width: 200px;
+        box-sizing: border-box;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
     </style>
     <script>
       if (window.performance.navigation.type === 2) {
@@ -148,10 +170,15 @@
           <a href="/tasks">{{.RunningContainers}}</a> task(s) in the queue. Max
           10.</h2
         >
+        <h4 style="text-align: center"
+          >If the property / airline has too many pages, the scraper could get
+          IP banned. A solution using proxies are underway.</h4
+        >
 
         <form action="/submit" method="post">
-          <label for="url"><h3>Enter URL (hotel links only):</h3></label>
-          <h4>*must be tripadvisor.com, not .fr or or others.</h4>
+          <label for="url"><h3>Enter URL:</h3></label>
+
+          <h4>*must be tripadvisor.com, not .fr or or others.*</h4>
           <input
             type="text"
             id="url"
@@ -176,6 +203,17 @@
           />
           <br />
           <br />
+
+          <!-- Adding dropdown menu -->
+          <label for="choice"><h3>Select Target:</h3></label>
+          <select id="choice" name="scrape_option" class="centered-select">
+            <option value="HOTEL">HOTEL</option>
+            <option value="RESTO">RESTAURANT</option>
+            <option value="AIRLINE">AIRLINE</option>
+          </select>
+          <br />
+          <br />
+
           <input type="submit" value="Submit" />
         </form>
         <br />

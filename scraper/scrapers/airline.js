@@ -1,46 +1,43 @@
-// Dependencies
 import { Chalk } from 'chalk';
-
 import { monthStringToNumber, commentRatingStringToNumber } from '../libs/utils.js';
 
 // Environment variables
 let { IS_PROVISIONER } = process.env;
 
-// Set the color level of the chalk instance
-// 1 = basic color support (16 colors)
 let colorLevel = 1;
 
-// If the scraper is being called by the container provisioner, set the color level to 0
 if (IS_PROVISIONER) {
     colorLevel = 0;
 }
 const customChalk = new Chalk({ level: colorLevel });
 
 
-
 /**
  * Extract review page url
- * @param {String} hotelUrl - The url of the hotel page 
- * @param {Number} position - The index of the hotel page in the list
+ * @param {String} airlineUrl - The url of the airline page 
+ * @param {Number} position - The index of the airline page in the list
  * @param {puppeteer.Browser} browser - A browser instance
  * @returns {Promise<Object | Error>} - The object containing the review page urls and the total review count
  */
-const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
+const extractAllReviewPageUrls = async (airlineUrl, position, browser) => {
     try {
 
         // Open a new page 
         const page = await browser.getNewPage()
 
-        // Navigate to the hotel page
-        await page.goto(hotelUrl);
+        // Navigate to the airline page
+        await page.goto(airlineUrl);
 
         // Wait for the content to load
         await page.waitForSelector('body');
 
+        // Wait for the page to load
+        await page.waitForTimeout(1000 * 5);
+
         // Determin current URL
         const currentURL = page.url();
 
-        console.log(`${customChalk.bold.white.dim('Gathering Info: ')}${currentURL.split('-')[4]} ${position}`);
+        console.log(`${customChalk.bold.white.dim('Gathering Info: ')}${currentURL.split('-')[4] || "Main Page"} ${position}`);
 
         /**
          * In browser code:
@@ -62,11 +59,11 @@ const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
 
 
             // Default review page count
-            let noReviewPages = totalReviewCount / 10;
+            let noReviewPages = totalReviewCount / 5;
 
             // Calculate the last review page
-            if (totalReviewCount % 10 !== 0) {
-                noReviewPages = ((totalReviewCount - totalReviewCount % 10) / 10) + 1;
+            if (totalReviewCount % 5 !== 0) {
+                noReviewPages = ((totalReviewCount - totalReviewCount % 5) / 5) + 1;
             }
 
             // Get the url of the 2nd page of review. The 1st page is the input link
@@ -93,13 +90,13 @@ const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
             // Replace the url page count till the last page
             while (counter < noReviewPages - 1) {
                 counter++;
-                url = url.replace(/-or[0-9]*/g, `-or${counter * 10}`);
+                url = url.replace(/-or[0-9]*/g, `-or${counter * 5}`);
                 reviewPageUrls.push(url);
             }
         }
 
         // Add the first page url
-        reviewPageUrls.unshift(hotelUrl);
+        reviewPageUrls.unshift(airlineUrl);
 
         // Information for logging
         const data = {
@@ -125,21 +122,19 @@ const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
  * Scrape the page
  * @param {Number} totalReviewCount - The total review count
  * @param {Array<String>} reviewPageUrls - The review page urls
- * @param {Number} [position] - The index of the hotel page in the list
- * @param {String} hotelName - The name of the hotel
- * @param {String} [hotelId] - The id of the hotel
+ * @param {Number} [position] - The index of the airline page in the list
+ * @param {String} airlineName - The name of the airline
+ * @param {String} [airlineId] - The id of the airline
  * @param {puppeteer.Browser} browser - A browser instance
  * @returns {Promise<Object| Error>} - THe final data
  */
-const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hotelId, browser) => {
+const scrape = async (totalReviewCount, reviewPageUrls, position, airlineName, airlineId, browser) => {
     try {
-
 
         // Array to hold the review info
         const allReviews = [];
 
         for (let index = 0; index < reviewPageUrls.length; index++) {
-
             // Open a new page
             const page = await browser.getNewPage()
 
@@ -148,6 +143,20 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
 
             // Wait for the content to load
             await page.waitForSelector('body');
+
+            const reviewExpandable = await page.evaluate(() => {
+                if (document.querySelector('[data-test-target="expand-review"]')) return true
+                return false
+            })
+
+            if (reviewExpandable) {
+
+                // Expand the reviews
+                await page.click("[data-test-target='expand-review'] > :first-child");
+
+                // Wait for the reviews to load
+                await page.waitForFunction('document.querySelector("body").innerText.includes("Read less")');
+            }
 
             // Determine current URL
             const currentURL = page.url();
@@ -171,7 +180,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
             const commentTitle = await page.evaluate(async () => {
 
                 // Extract a tags
-                const commentTitleBlocks = document.getElementsByClassName('Qwuub')
+                const commentTitleBlocks = document.querySelectorAll('[data-test-target="review-title"]');
 
                 // Array to store the comment titles
                 const titles = [];
@@ -186,7 +195,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
 
             // Extract comment rating
             const commentRating = await page.evaluate(async () => {
-                const commentRatingBlocks = document.getElementsByClassName("Hlmiy")
+                const commentRatingBlocks = document.querySelectorAll('[data-test-target="review-rating"]');
                 const ratings = [];
 
                 for (let index = 0; index < commentRatingBlocks.length; index++) {
@@ -206,26 +215,39 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
                 const datesOfReview = [];
 
 
-                // for (let index = 0; index < commentDateOfStayBlocks.length; index++) {
-
-                //     // Split the date of stay text block into an array
-                //     const splitted = commentDateOfStayBlocks[index].innerText.split(' ')
-
-                //     datesOfStay.push({
-                //         month: splitted[3],
-                //         year: splitted[4],
-                //     });
-                // }
-
                 for (let index = 0; index < commentDateBlocks.length; index++) {
 
                     // Split the date of comment text block into an array
-                    const splitted = commentDateBlocks[index].children[0].innerText.split('review').pop().split(' ')
+                    const reviewDate = commentDateBlocks[index].children[0].innerText.split('review').pop().split(' ')
+
+                    let isYesterday = reviewDate[1] === "Yesterday";
+                    // In case the review was posted yesterday, the array will only have the length of 2
+                    let isCurrentMonth = reviewDate[2]?.length != 4;
+
+                    let month = undefined;
+                    let year = undefined;
+
+                    if (isYesterday) {
+                        // If the review was posted "Yesterday"
+                        const currentTime = new Date()
+                        month = currentTime.getMonth();
+                        year = currentTime.getFullYear();
+                    } else if (isCurrentMonth) {
+                        // If the review date is in the current month (["","Oct,"1"])
+                        const currentTime = new Date()
+                        month = reviewDate[1];
+                        year = currentTime.getFullYear();
+                    } else {
+                        // If the review date is > 1 month old (["","Oct,"2020"])
+                        month = reviewDate[1];
+                        year = reviewDate[2];
+                    }
 
                     datesOfReview.push({
-                        month: splitted[1],
-                        year: splitted[2],
+                        month,
+                        year
                     });
+
                 }
 
                 return datesOfReview;
@@ -260,17 +282,19 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
             // Push the formmated review to the  array
             allReviews.push(formatted);
 
+
             // Hand back the page so it's available again
             browser.handBack(page);
         }
+
 
         // Convert 2D array to 1D
         const reviewFlattened = allReviews.flat();
 
         // Data structure to be written to file
         const finalData = {
-            hotelName,
-            hotelId,
+            airlineName,
+            airlineId,
             count: totalReviewCount,
             actualCount: reviewFlattened.length,
             position,
@@ -285,20 +309,21 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
     }
 };
 
+
 /**
  * Start the scraping process
- * @param {String} hotelUrl - The url of the hotel page 
- * @param {String} hotelName - The name of the hotel
- * @param {String} [hotelId] - The id of the hotel
- * @param {Number} [position] - The index of the hotel page in the list
+ * @param {String} airlineUrl - The url of the airline page 
+ * @param {String} airlineName - The name of the airline
+ * @param {String} [airlineId] - The id of the airline
+ * @param {Number} [position] - The index of the airline page in the list
  * @param {puppeteer.Browser} browser - A browser instance
  * @returns {Promise<Object | Error>} - The final data
  */
-const start = async (hotelUrl, hotelName, hotelId, position, browser) => {
+const start = async (airlineUrl, airlineName, airlineId, position, browser) => {
     try {
-        const { urls, count, } = await extractAllReviewPageUrls(hotelUrl, position, browser);
+        const { urls, count, } = await extractAllReviewPageUrls(airlineUrl, position, browser);
 
-        const results = await scrape(count, urls, position, hotelName, hotelId, browser);
+        const results = await scrape(count, urls, position, airlineName, airlineId, browser);
 
         return results;
 
