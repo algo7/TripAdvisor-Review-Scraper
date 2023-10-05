@@ -131,8 +131,13 @@ const combine = (scrapeMode, dataDir) => {
                     const { restoName, restoId, position, allReviews, } = fileContent;
                     return { restoName, restoId, position, allReviews, };
                 }
-                const { hotelName, hotelId, position, allReviews, } = fileContent;
-                return { hotelName, hotelId, position, allReviews, };
+                if (scrapeMode === 'HOTEL') {
+                    const { hotelName, hotelId, position, allReviews, } = fileContent;
+                    return { hotelName, hotelId, position, allReviews, };
+                }
+                const { airlineName, airlineId, position, allReviews, } = fileContent;
+                return { airlineName, airlineId, position, allReviews, };
+
             })
             // Sort the extracted data by the index so all reviews of the same hotel are together
             .sort((a, b) => a.position - b.position)
@@ -148,30 +153,50 @@ const combine = (scrapeMode, dataDir) => {
                     });
                 }
 
-                const { hotelName, hotelId, position, allReviews, } = item;
+                if (scrapeMode === 'HOTEL') {
+                    const { hotelName, hotelId, position, allReviews, } = item;
+                    return allReviews.map(review => {
+                        review.hotelName = hotelName;
+                        review.hotelId = hotelId;
+                        review.position = position;
+                        return review;
+                    });
+                }
+
+                const { airlineName, airlineId, position, allReviews, } = item;
                 return allReviews.map(review => {
-                    review.hotelName = hotelName;
-                    review.hotelId = hotelId;
+                    review.airlineName = airlineName;
+                    review.airlineId = airlineId;
                     review.position = position;
                     return review;
                 });
+
             })
             .flat()
             // Rearrange the data for converting to CSV
             .map(review => {
                 if (scrapeMode === 'RESTO') {
-                    const { restoName, restoId, rating, dateOfVist,
-                        ratingDate, title, content, } = review;
-                    return {
-                        restoName, restoId, title, content,
-                        rating, dateOfVist, ratingDate,
-                    };
-                }
-                const { hotelName, hotelId, title, content, month, year, rating } = review;
 
-                // Check if the hotel ID is supplied
-                if (!hotelId) return { hotelName, title, content, month, year, rating };
-                return { hotelName, hotelId, title, content, month, year, rating };
+                    const { restoName, restoId, rating, dateOfVist, ratingDate, title, content, } = review;
+
+                    if (!restoId) return { restoName, rating, dateOfVist, ratingDate, title, content };
+
+                    return { restoName, restoId, title, content, rating, dateOfVist, ratingDate, };
+                }
+
+                if (scrapeMode === 'HOTEL') {
+                    const { hotelName, hotelId, title, content, month, year, rating } = review;
+
+                    // Check if the hotel ID is supplied
+                    if (!hotelId) return { hotelName, title, content, month, year, rating };
+
+                    return { hotelName, hotelId, title, content, month, year, rating };
+                }
+
+                const { airlineName, airlineId, title, content, month, year, rating } = review;
+                if (!airlineId) return { airlineName, title, content, month, year, rating };
+                return { airlineName, airlineId, title, content, month, year, rating };
+
 
             });
 
