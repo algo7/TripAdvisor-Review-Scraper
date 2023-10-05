@@ -87,11 +87,12 @@ func ContainerConfigGenerator(scrapeTarget string, scrapeTargetName string, scra
 			scrapeContainerURL,
 			targetName,
 		},
+		Tty: true,
 	}
 }
 
 // CreateContainer creates a container then returns the container ID
-func CreateContainer(scrapeTargetName string, hotelURL string, uploadIdentifier string) string {
+func CreateContainer(containerConfig *container.Config) string {
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	utils.ErrorHandler(err)
@@ -99,22 +100,7 @@ func CreateContainer(scrapeTargetName string, hotelURL string, uploadIdentifier 
 
 	// Create the container. Container.ID contains the ID of the container
 	Container, err := cli.ContainerCreate(context.Background(),
-		&container.Config{
-			Image: "ghcr.io/algo7/tripadvisor-review-scraper/scraper:latest",
-			Labels: map[string]string{
-				"TaskOwner": uploadIdentifier,
-				"Hotel":     scrapeTargetName,
-			},
-			// Env vars required by the js scraper containers
-			Env: []string{
-				"CONCURRENCY=1",
-				"SCRAPE_MODE=HOTEL",
-				"HOTEL_NAME=" + scrapeTargetName,
-				"IS_PROVISIONER=true",
-				"HOTEL_URL=" + hotelURL,
-			},
-			Tty: true,
-		},
+		containerConfig,
 		&container.HostConfig{
 			AutoRemove: false, // Cant set to true otherwise the container got deleted before copying the file
 		},
