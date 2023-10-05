@@ -210,34 +210,18 @@ func getLogs(c *fiber.Ctx) error {
 func getRunningTasks(c *fiber.Ctx) error {
 
 	// Get ids of all running containers
-	Containers := containers.ListContainers()
-
-	// Create a slice of RunningTask structs to hold the data for the table
-	runningTasks := make([]containers.Container, len(Containers))
-
-	// Populate the slice of RunningTask structs with data from the Containers array
-	for i, container := range Containers {
-		// Exclude the container that runs app itself
-		if container.TaskOwner != "" {
-			runningTasks[i] = containers.Container{
-				ContainerID: container.ContainerID[:12],
-				URL:         fmt.Sprintf("/logs-viewer?container_id=%s", container.ContainerID),
-				TaskOwner:   container.TaskOwner,
-				TargetName:  container.TargetName,
-			}
-		}
-	}
+	runningContainers := containers.ListContainers()
 
 	// The page status message
 	currentTaskStatus := "There are no running tasks"
 
-	if len(Containers)-2 > 0 {
-		currentTaskStatus = fmt.Sprintf("%s task(s) running", strconv.Itoa(len(Containers)-2))
+	if len(runningContainers) == 0 {
+		currentTaskStatus = fmt.Sprintf("%s task(s) running", strconv.Itoa(len(runningContainers)))
 	}
 
 	return c.Render("tasks", fiber.Map{
 		"Title":             "Algo7 TripAdvisor Scraper",
-		"RunningTasks":      runningTasks,
+		"RunningTasks":      runningContainers,
 		"CurrentTaskStatus": currentTaskStatus,
 	})
 }
