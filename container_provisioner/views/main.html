@@ -131,6 +131,28 @@
         max-height: 80%;
         overflow-y: auto;
       }
+
+      /* ... Other CSS ... */
+
+      .centered-select {
+        display: block; /* Ensure it takes the full width available to it */
+        margin-left: auto; /* Automatically margin left */
+        margin-right: auto; /* Automatically margin right */
+        margin-bottom: 20px;
+        border: 2px solid #ccc;
+        border-radius: 4px;
+        padding: 10px;
+        font-size: 16px;
+        width: 100%; /* Or you might set a max-width if you want it to be less than full width */
+        max-width: 200px;
+        box-sizing: border-box;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
     </style>
     <script>
       if (window.performance.navigation.type === 2) {
@@ -176,6 +198,17 @@
           />
           <br />
           <br />
+
+          <!-- Adding dropdown menu -->
+          <label for="choice"><h3>Select Target:</h3></label>
+          <select id="scrape_options" name="choice" class="centered-select">
+            <option value="scrape_option_hotel">HOTEL</option>
+            <option value="scrape_option_resto">RESTAURANT</option>
+            <option value="scrape_option_airline">AIRLINE</option>
+          </select>
+          <br />
+          <br />
+
           <input type="submit" value="Submit" />
         </form>
         <br />
