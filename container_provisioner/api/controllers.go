@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -98,7 +99,7 @@ func postProvision(c *fiber.Ctx) error {
 
 	// Get the scrape mode from the form
 	scrapeMode := c.FormValue("scrape_option")
-
+	log.Println(scrapeMode)
 	// Define valid scrape modes
 	validChoices := map[string]bool{
 		"HOTEL":   true,

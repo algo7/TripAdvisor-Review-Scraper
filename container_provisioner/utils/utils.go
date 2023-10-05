@@ -132,7 +132,7 @@ func ValidateTripAdvisorURL(url string, scrapOption string) bool {
 	case "HOTEL":
 		match, _ := regexp.MatchString(tripAdvisorHotelURLRegexp.String(), url)
 		return match
-	case "RESTAURANT":
+	case "RESTO":
 		match, _ := regexp.MatchString(tripAdvisorRestaurantRegexp.String(), url)
 		return match
 	case "AIRLINE":
