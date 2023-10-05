@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	containerImage = "ghcr.io/algo7/tripadvisor-review-scraper/scraper:latest"
+	containerImage = "bro:latest"
 )
 
 // initializeDockerClient initialize a new docker api client
@@ -98,6 +98,7 @@ func CreateContainer(containerConfig *container.Config) string {
 	utils.ErrorHandler(err)
 	defer cli.Close()
 
+	log.Printf("Creating container %v", containerConfig)
 	// Create the container. Container.ID contains the ID of the container
 	Container, err := cli.ContainerCreate(context.Background(),
 		containerConfig,
@@ -108,6 +109,7 @@ func CreateContainer(containerConfig *container.Config) string {
 		nil, // Platform
 		"",  // Container name
 	)
+	log.Printf("Container: %v", Container)
 	utils.ErrorHandler(err)
 
 	return Container.ID
@@ -162,6 +164,7 @@ type Container struct {
 	ID         string
 	TaskOwner  string
 	TargetName string
+	URL        string
 }
 
 // ListContainers lists all the containers and return the container IDs
@@ -174,13 +177,16 @@ func ListContainers() []Container {
 	utils.ErrorHandler(err)
 
 	// Map container list result into custom container struct
-	containers := make([]Container, len(containersInfo))
+	containers := []Container{}
 
-	for i, containerInfo := range containersInfo {
-		containers[i] = Container{
-			ID:         containerInfo.ID,
-			TaskOwner:  containerInfo.Labels["TaskOwner"],
-			TargetName: containerInfo.Labels["Target"],
+	for _, containerInfo := range containersInfo {
+		if containerInfo.Labels["TaskOwner"] != "" {
+			containers = append(containers, Container{
+				ID:         containerInfo.ID,
+				URL:        fmt.Sprintf("/logs-viewer?container_id=%s", containerInfo.ID),
+				TaskOwner:  containerInfo.Labels["TaskOwner"],
+				TargetName: containerInfo.Labels["Target"],
+			})
 		}
 	}
 

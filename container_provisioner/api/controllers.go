@@ -155,7 +155,7 @@ func postProvision(c *fiber.Ctx) error {
 
 	// Create the container
 	containerID := containers.CreateContainer(scrapeConfig)
-
+	log.Printf("containerID: %s", containerID)
 	// Start the scraping container via goroutine
 	go containers.Scrape(uploadIdentifier, scrapeTargetName, containerID)
 
