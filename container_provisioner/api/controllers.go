@@ -28,7 +28,7 @@ type enrichedR2Obj struct {
 func getMain(c *fiber.Ctx) error {
 
 	// Get the number of running containers
-	runningContainers := containers.CountRunningContainer()
+	runningContainers := len(containers.ListContainers())
 
 	// Check if the R2 objects list is cached
 	cachedObjectsList := database.CacheLookUp("r2StorageObjectsList")
@@ -129,7 +129,7 @@ func postProvision(c *fiber.Ctx) error {
 	}
 
 	// Get the number of running containers
-	runningContainers := containers.CountRunningContainer()
+	runningContainers := len(containers.ListContainers())
 
 	if runningContainers >= 10 {
 		return c.Render("submission", fiber.Map{

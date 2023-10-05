@@ -114,28 +114,6 @@ func CreateContainer(containerConfig *container.Config) string {
 	return Container.ID
 }
 
-// CountRunningContainer lists the number of running containers
-func CountRunningContainer() int {
-
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	utils.ErrorHandler(err)
-	defer cli.Close()
-
-	// Determine if the current process is running inside a container
-	isContainer := os.Getenv("IS_CONTAINER")
-
-	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{
-		All: false, // Only running containers
-	})
-	utils.ErrorHandler(err)
-
-	if isContainer == "" {
-		return len(containers)
-	}
-	// 21 otherwise the current process and redis will also be counted as a running container
-	return len(containers) - 2
-}
-
 // TailLog tails the log of the container with the given ID
 func TailLog(containerID string) io.Reader {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -172,7 +150,7 @@ func ListContainers() []Container {
 	utils.ErrorHandler(err)
 	defer cli.Close()
 
-	containersInfo, err := cli.ContainerList(context.Background(), types.ContainerListOptions{})
+	containersInfo, err := cli.ContainerList(context.Background(), types.ContainerListOptions{All: false})
 	utils.ErrorHandler(err)
 
 	// Map container list result into custom container struct
