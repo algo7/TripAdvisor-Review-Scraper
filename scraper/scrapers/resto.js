@@ -304,6 +304,9 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, restoName, res
             fileName: `${position}_${reviewPageUrls[0].split('-')[4]}`,
         };
 
+        console.log(`${customChalk.bold.white.dim('Review Count: ')}${totalReviewCount}`);
+        console.log(`${customChalk.bold.white.dim('No. of Pages: ')}${reviewPageUrls.length}`);
+
         return finalData;
 
     } catch (err) {

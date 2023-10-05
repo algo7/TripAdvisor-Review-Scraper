@@ -107,7 +107,9 @@ const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
             pageCount: reviewPageUrls.length,
             urls: reviewPageUrls,
         };
-        console.log(data)
+
+        console.log(`${customChalk.bold.white.dim('Review Count: ')}${totalReviewCount}`);
+        console.log(`${customChalk.bold.white.dim('No. of Pages: ')}${reviewPageUrls.length}`);
 
         // Hand back the page so it's available again
         browser.handBack(page);
