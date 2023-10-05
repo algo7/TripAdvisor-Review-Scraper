@@ -229,7 +229,7 @@ func getRunningTasks(c *fiber.Ctx) error {
 				ContainerID: container.ID[:12],
 				URL:         fmt.Sprintf("/logs-viewer?container_id=%s", container.ID),
 				TaskOwner:   container.TaskOwner,
-				TargetName:  container.HotelName,
+				TargetName:  container.TargetName,
 			}
 		}
 	}
