@@ -114,7 +114,7 @@ func postProvision(c *fiber.Ctx) error {
 	if !utils.ValidateTripAdvisorURL(url, scrapeMode) {
 		return c.Render("submission", fiber.Map{
 			"Title":      "Algo7 TripAdvisor Scraper",
-			"Message1":   "Invalid URL",
+			"Message1":   fmt.Sprintf("Invalid %s URL", scrapeMode),
 			"ReturnHome": true,
 		})
 	}
