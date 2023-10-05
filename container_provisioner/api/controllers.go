@@ -99,20 +99,38 @@ func postProvision(c *fiber.Ctx) error {
 	// Get the scrape mode from the form
 	scrapeMode := c.FormValue("scrape_option")
 
+	// Define valid scrape modes
+	validChoices := map[string]bool{
+		"HOTEL":   true,
+		"RESTO":   true,
+		"AIRLINE": true,
+	}
+
+	_, exists := validChoices[scrapeMode]
+
+	// Validate the scrape mode
+	if !exists {
+		return c.Render("submission", fiber.Map{
+			"Title":      "Algo7 TripAdvisor Scraper",
+			"Message1":   "Invalid Scrape Target",
+			"ReturnHome": true,
+		})
+	}
+
+	// Check if the URL is valid
+	if !utils.ValidateTripAdvisorURL(url, scrapeMode) {
+		return c.Render("submission", fiber.Map{
+			"Title":      "Algo7 TripAdvisor Scraper",
+			"Message1":   "Invalid URL",
+			"ReturnHome": true,
+		})
+	}
+
 	// Validate the uploadIdentifier field
 	if uploadIdentifier == "" || len(uploadIdentifier) > 20 {
 		return c.Render("submission", fiber.Map{
 			"Title":      "Algo7 TripAdvisor Scraper",
 			"Message1":   "Please provide a valid identifier",
-			"ReturnHome": true,
-		})
-	}
-
-	// Check if the URL matches the regex
-	if !utils.ValidateTripAdvisorHotelURL(url) {
-		return c.Render("submission", fiber.Map{
-			"Title":      "Algo7 TripAdvisor Scraper",
-			"Message1":   "Invalid URL",
 			"ReturnHome": true,
 		})
 	}
