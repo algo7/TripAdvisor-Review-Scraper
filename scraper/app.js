@@ -26,6 +26,7 @@ const sourceDir = join(__dirname, './source/');
 let { SCRAPE_MODE, CONCURRENCY, LANGUAGE,
     HOTEL_NAME, HOTEL_URL,
     AIRLINE_NAME, AIRLINE_URL,
+    RESTO_NAME, RESTO_URL,
     IS_PROVISIONER // If the scraper is being called by the container provisioner
 } = process.env;
 
@@ -179,18 +180,31 @@ const hotelScraperInit = async () => {
 const restoScraperInit = async () => {
     try {
 
-        // Check if the source file exists
-        const sourceFileAvailable = fileExists(dataSourceResto);
-        if (!sourceFileAvailable) {
-            throw Error('Source file does not exist');
-        }
+        // Get a browser instance
+        await browserInstance.launch()
 
-        const [rawData] = await Promise.all([
+        // Get the raw data from env variables or csv file
+        let rawData = [
+            {
+                name: RESTO_NAME,
+                webUrl: RESTO_URL,
+            }
+        ]
+
+        // If the env variables are not set, get the data from the csv file
+        if (!rawData[0].name) {
+
+            // Check if the source file exists
+            const sourceFileAvailable = fileExists(dataSourceResto);
+            if (!sourceFileAvailable) {
+                throw Error('Source file does not exist');
+            }
+
             // Convert the csv to json
-            csvToJSON(dataSourceResto),
-            // Initiate a browser instance
-            browserInstance.launch()
-        ])
+            rawData = await csvToJSON(dataSourceResto)
+        };
+
+
 
         console.log(customChalk.bold.yellow(`Scraping ${customChalk.magenta(rawData.length)} Restaurants`));
 
