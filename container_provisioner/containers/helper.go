@@ -98,7 +98,6 @@ func CreateContainer(containerConfig *container.Config) string {
 	utils.ErrorHandler(err)
 	defer cli.Close()
 
-	log.Printf("Creating container %v", containerConfig)
 	// Create the container. Container.ID contains the ID of the container
 	Container, err := cli.ContainerCreate(context.Background(),
 		containerConfig,
@@ -109,7 +108,7 @@ func CreateContainer(containerConfig *container.Config) string {
 		nil, // Platform
 		"",  // Container name
 	)
-	log.Printf("Container: %v", Container)
+
 	utils.ErrorHandler(err)
 
 	return Container.ID
