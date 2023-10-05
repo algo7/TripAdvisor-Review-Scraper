@@ -146,14 +146,14 @@ func postProvision(c *fiber.Ctx) error {
 		})
 	}
 
-	// Get the hotel name from the URL
-	hotelName := utils.GetHotelNameFromURL(url)
+	// Get the scrape target name from the URL
+	scrapeTargetName := utils.GetScrapeTargetNameFromURL(url, scrapeMode)
 
 	// Create the container
-	containerID := containers.CreateContainer(hotelName, url, uploadIdentifier)
+	containerID := containers.CreateContainer(scrapeTargetName, url, uploadIdentifier)
 
 	// Start the scraping container via goroutine
-	go containers.Scrape(uploadIdentifier, hotelName, containerID)
+	go containers.Scrape(uploadIdentifier, scrapeTargetName, containerID)
 
 	return c.Render("submission", fiber.Map{
 		"Title": "Algo7 TripAdvisor Scraper",

@@ -2,6 +2,7 @@ package containers
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -11,6 +12,10 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
+)
+
+const (
+	containerImage = "ghcr.io/algo7/tripadvisor-review-scraper/scraper:latest"
 )
 
 // initializeDockerClient initialize a new docker api client
@@ -49,8 +54,44 @@ func removeContainer(containerID string) {
 	utils.ErrorHandler(err)
 }
 
+// ContainerConfigGenerator generates the container config depending on the scrape target
+func ContainerConfigGenerator(scrapeTarget string, scrapeTargetName string, scrapeURL string, uploadIdentifier string) *container.Config {
+	var scrapeContainerURL string
+	var targetName string
+
+	switch scrapeTarget {
+	case "HOTEL":
+		scrapeContainerURL = fmt.Sprintf("HOTEL_URL=%s", scrapeURL)
+		targetName = fmt.Sprintf("HOTEL_NAME=%s", scrapeTargetName)
+	case "RESTO":
+		scrapeContainerURL = fmt.Sprintf("RESTO_URL=%s", scrapeURL)
+		targetName = fmt.Sprintf("RESTO_NAME=%s", scrapeTargetName)
+	case "AIRLINE":
+		scrapeContainerURL = fmt.Sprintf("AIRLINE_URL=%s", scrapeURL)
+		targetName = fmt.Sprintf("AIRLINE_NAME=%s", scrapeTargetName)
+	}
+
+	scrapeMode := fmt.Sprintf("SCRAPE_MODE=%s", scrapeTarget)
+
+	return &container.Config{
+		Image: containerImage,
+		Labels: map[string]string{
+			"TaskOwner": uploadIdentifier,
+			"Target":    scrapeTargetName,
+		},
+		// Env vars required by the js scraper containers
+		Env: []string{
+			"CONCURRENCY=2",
+			"IS_PROVISIONER=true",
+			scrapeMode,
+			scrapeContainerURL,
+			targetName,
+		},
+	}
+}
+
 // CreateContainer creates a container then returns the container ID
-func CreateContainer(hotelName string, hotelURL string, uploadIdentifier string) string {
+func CreateContainer(scrapeTargetName string, hotelURL string, uploadIdentifier string) string {
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	utils.ErrorHandler(err)
@@ -62,13 +103,13 @@ func CreateContainer(hotelName string, hotelURL string, uploadIdentifier string)
 			Image: "ghcr.io/algo7/tripadvisor-review-scraper/scraper:latest",
 			Labels: map[string]string{
 				"TaskOwner": uploadIdentifier,
-				"Hotel":     hotelName,
+				"Hotel":     scrapeTargetName,
 			},
 			// Env vars required by the js scraper containers
 			Env: []string{
 				"CONCURRENCY=1",
 				"SCRAPE_MODE=HOTEL",
-				"HOTEL_NAME=" + hotelName,
+				"HOTEL_NAME=" + scrapeTargetName,
 				"IS_PROVISIONER=true",
 				"HOTEL_URL=" + hotelURL,
 			},
