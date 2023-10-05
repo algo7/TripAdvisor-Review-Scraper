@@ -119,11 +119,21 @@ func GetHotelNameFromURL(url string) string {
 	return fileName
 }
 
-// ValidateTripAdvisorHotelURL validates the TripAdvisor Hotel URL
-func ValidateTripAdvisorHotelURL(url string) bool {
-	regex := `^https:\/\/www\.tripadvisor\.com\/Hotel_Review-g\d{6,10}-d\d{1,10}-Reviews-[\w-]{1,255}\.html$`
-	match, _ := regexp.MatchString(regex, url)
-	return match
+// ValidateTripAdvisorURL validates the TripAdvisor URLs
+func ValidateTripAdvisorURL(url string, scrapOption string) bool {
+	switch scrapOption {
+	case "HOTEL":
+		match, _ := regexp.MatchString(tripAdvisorHotelURLRegexp.String(), url)
+		return match
+	case "RESTAURANT":
+		match, _ := regexp.MatchString(tripAdvisorRestaurantRegexp.String(), url)
+		return match
+	case "AIRLINE":
+		match, _ := regexp.MatchString(tripAdvisorAirlineRegexp.String(), url)
+		return match
+	default:
+		return false
+	}
 }
 
 // ValidateEmailAddress validates the EHL email address
