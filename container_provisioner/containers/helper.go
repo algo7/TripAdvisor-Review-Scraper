@@ -111,7 +111,7 @@ func CreateContainer(containerConfig *container.Config) string {
 
 	utils.ErrorHandler(err)
 
-	return Container.ID
+	return Container.ID[:12]
 }
 
 // TailLog tails the log of the container with the given ID
