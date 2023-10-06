@@ -108,8 +108,8 @@ class Browser extends EventEmitter {
         if (!this.browser) {
             this.browser = await this.launch()
             const newPage = await this.browser.newPage()
-            await newPage.setDefaultTimeout(0);
-            await newPage.setDefaultNavigationTimeout(0)
+            await newPage.setDefaultTimeout(8 * 1000);
+            await newPage.setDefaultNavigationTimeout(8 * 1000)
             // Generate a random user agent
             await newPage.setUserAgent(randUserAgent("desktop"))
             this.pageInUse.push(newPage)
@@ -125,8 +125,8 @@ class Browser extends EventEmitter {
 
         if (openedPage < CONCURRENCY) {
             const newPage = await this.browser.newPage()
-            await newPage.setDefaultTimeout(0);
-            await newPage.setDefaultNavigationTimeout(0)
+            await newPage.setDefaultTimeout(8 * 1000);
+            await newPage.setDefaultNavigationTimeout(8 * 1000)
             await newPage.setUserAgent(randUserAgent("desktop"))
             this.pageInUse.push(newPage)
             return newPage
