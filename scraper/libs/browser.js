@@ -70,7 +70,9 @@ class Browser extends EventEmitter {
                 '-bwsi',
                 '--disable-canvas-aa',
                 '--disable-2d-canvas-clip-aa',
+                '--disable-accelerated-2d-canvas',
                 '--disable-infobars',
+                '--ignore-certificate-errors',
             ],
 
         };
