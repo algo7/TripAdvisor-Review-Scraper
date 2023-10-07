@@ -21,7 +21,7 @@ services:
         bind:
           create_host_path: true
       - type: bind
-        source: ./proxychains
+        source: ./proxychains/proxychains.conf
         target: /etc/proxychains.conf
         bind:
           create_host_path: true
