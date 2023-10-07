@@ -1,0 +1,17 @@
+version: '3.9'
+services:
+  vpn:
+    image: su:latest
+    container_name: vpn
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - '/dev/net/tun:/dev/net/tun'
+    volumes:
+      - type: bind
+        source: pass.txt
+        target: /var/run/secrets/pass.txt
+
+      - type: bind
+        source: config.ovpn
+        target: /var/run/secrets/config.ovpn

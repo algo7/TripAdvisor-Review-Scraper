@@ -1,9 +1,6 @@
 version: '3.9'
 services:
   vpn:
-    environment:
-      VPN_CREDENTIALS: /var/run/secrets/pass.txt
-      VPN_CONFIG: /var/run/secrets/vpn.config
     image: ghcr.io/algo7/tripadvisor-review-scraper/vpn_worker:latest
     container_name: vpn
     cap_add:
@@ -16,8 +13,8 @@ services:
         uid: '0'
         gid: '0'
         mode: 0444
-      - source: vpn_config.v1
-        target: vpn.config
+      - source: vpn_config_ch2_.v1
+        target: config.ovpn
         uid: '0'
         gid: '0'
         mode: 0444
@@ -35,6 +32,6 @@ secrets:
     # Use pre-defined secrets created on the manager node
     external: true
   # Name of the secrets (same as the source)
-  vpn_config.v1:
+  vpn_config_ch2.v1:
     # Use pre-defined secrets created on the manager node
     external: true
