@@ -116,3 +116,5 @@ review.csv
 **tmp
 **.DS_Store
 **creds.json
+**.ovpn
+**pass.txt

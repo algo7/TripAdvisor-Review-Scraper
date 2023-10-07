@@ -1,0 +1,9 @@
+version: '3.9'
+services:
+  vpn:
+    image: ghcr.io/algo7/tripadvisor-review-scraper/vpn_worker:latest
+    container_name: vpn
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - '/dev/net/tun:/dev/net/tun'
