@@ -1,0 +1,27 @@
+version: '3.9'
+services:
+  # Service name
+  scraper:
+    build: .
+    environment:
+      SCRAPE_MODE: RESTO
+      CONCURRENCY: 4
+      LANGUAGE: en
+    # Image name
+    image: ghcr.io/algo7/tripadvisor-review-scraper/scraper:latest
+    volumes:
+      - type: bind
+        source: ./reviews
+        target: /puppeteer/reviews
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ./source
+        target: /puppeteer/source
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ./proxychains
+        target: /etc/proxychains.conf
+        bind:
+          create_host_path: true
