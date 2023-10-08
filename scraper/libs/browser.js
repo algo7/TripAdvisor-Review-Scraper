@@ -3,8 +3,6 @@ import puppeteer from 'puppeteer-extra'
 import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
 import blockResourcesPlugin from 'puppeteer-extra-plugin-block-resources';
 import randUserAgent from "rand-user-agent";
-import useProxy from 'puppeteer-page-proxy';
-
 import { EventEmitter } from 'events';
 
 // Environments variables
@@ -24,8 +22,8 @@ class Browser extends EventEmitter {
 
         // Puppeteer configs
         this.config = {
-            headless: false,
-            devtools: true,
+            headless: true,
+            devtools: false,
             defaultViewport: {
                 width: 1280,
                 height: 1024,
@@ -76,6 +74,7 @@ class Browser extends EventEmitter {
                 '--disable-accelerated-2d-canvas',
                 '--disable-infobars',
                 '--ignore-certificate-errors',
+                '--proxy-server=socks5://127.0.0.1:8881'
             ],
 
         };
@@ -115,7 +114,6 @@ class Browser extends EventEmitter {
             await newPage.setDefaultNavigationTimeout(8 * 10000)
             // Generate a random user agent
             await newPage.setUserAgent(randUserAgent("desktop"))
-            await useProxy(newPage, 'http://127.0.0.1:8888')
             this.pageInUse.push(newPage)
 
             return newPage
@@ -132,7 +130,6 @@ class Browser extends EventEmitter {
             await newPage.setDefaultTimeout(8 * 10000);
             await newPage.setDefaultNavigationTimeout(8 * 10000)
             await newPage.setUserAgent(randUserAgent("desktop"))
-            await useProxy(newPage, 'http://127.0.0.1:8888')
             this.pageInUse.push(newPage)
             return newPage
         }
