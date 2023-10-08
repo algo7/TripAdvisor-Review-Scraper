@@ -3,8 +3,8 @@ on:
   push:
     # branches:
     #   - main
-    paths:
-      - 'proxy_pool/**'
+    # paths:
+    #   - 'proxy_pool/**'
 
 # Global variables
 env:
