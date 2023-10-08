@@ -18,6 +18,10 @@ services:
         uid: '0'
         gid: '0'
         mode: 0444
+    ports:
+      - target: 8888
+        published: 8888
+        protocol: tcp
     networks:
       - vpns
 

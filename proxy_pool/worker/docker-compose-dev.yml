@@ -7,6 +7,10 @@ services:
       - NET_ADMIN
     devices:
       - '/dev/net/tun:/dev/net/tun'
+    ports:
+      - target: 8888
+        published: 8888
+        protocol: tcp
     volumes:
       - type: bind
         source: pass.txt
