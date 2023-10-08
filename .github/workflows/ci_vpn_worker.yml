@@ -1,4 +1,4 @@
-name: Build & Push
+name: Build & Push [VPN Worker]
 on:
   push:
     # branches:
