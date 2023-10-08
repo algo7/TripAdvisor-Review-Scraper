@@ -22,6 +22,12 @@ services:
       - target: 8888
         published: 8888
         protocol: tcp
+      - target: 8881
+        published: 8881
+        protocol: tcp
+      - target: 8881
+        published: 8881
+        protocol: udp
     networks:
       - vpns
 
