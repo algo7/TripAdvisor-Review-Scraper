@@ -2,7 +2,27 @@ version: '3.9'
 services:
   scraper_vpn_ch2:
     image: ghcr.io/algo7/tripadvisor-review-scraper/vpn_worker:latest
-    container_name: vpn
+    deploy:
+      # Number of replicas to create
+      replicas: 1
+      # The restart policy
+      restart_policy:
+        condition: on-failure
+        # Max. number of restart
+        max_attempts: 3
+      # How the service should be updated => for rolling updates
+      update_config:
+        # How many containers to update at a time (0 = all at the same time)
+        parallelism: 0
+        # Delay between updating each container
+        delay: 0s
+      # Placement options
+      placement:
+        # User defined constraints
+        constraints:
+          # Only run on worker nodes
+          - 'node.role!=manager'
+          - 'node.labels.service==scraper_vpns'
     cap_add:
       - NET_ADMIN
     devices:
@@ -13,7 +33,7 @@ services:
         uid: '0'
         gid: '0'
         mode: 0444
-      - source: vpn_config_ch2_.v1
+      - source: vpn_config_ch2.v1
         target: config.ovpn
         uid: '0'
         gid: '0'
@@ -33,7 +53,27 @@ services:
 
   scraper_vpn_be2:
     image: ghcr.io/algo7/tripadvisor-review-scraper/vpn_worker:latest
-    container_name: vpn
+    deploy:
+      # Number of replicas to create
+      replicas: 1
+      # The restart policy
+      restart_policy:
+        condition: on-failure
+        # Max. number of restart
+        max_attempts: 3
+      # How the service should be updated => for rolling updates
+      update_config:
+        # How many containers to update at a time (0 = all at the same time)
+        parallelism: 0
+        # Delay between updating each container
+        delay: 0s
+      # Placement options
+      placement:
+        # User defined constraints
+        constraints:
+          # Only run on worker nodes
+          - 'node.role!=manager'
+          - 'node.labels.service==scraper_vpns'
     cap_add:
       - NET_ADMIN
     devices:
@@ -44,7 +84,7 @@ services:
         uid: '0'
         gid: '0'
         mode: 0444
-      - source: vpn_config_be2_.v1
+      - source: vpn_config_be2.v1
         target: config.ovpn
         uid: '0'
         gid: '0'
@@ -64,7 +104,27 @@ services:
 
   scraper_vpn_se1:
     image: ghcr.io/algo7/tripadvisor-review-scraper/vpn_worker:latest
-    container_name: vpn
+    deploy:
+      # Number of replicas to create
+      replicas: 1
+      # The restart policy
+      restart_policy:
+        condition: on-failure
+        # Max. number of restart
+        max_attempts: 3
+      # How the service should be updated => for rolling updates
+      update_config:
+        # How many containers to update at a time (0 = all at the same time)
+        parallelism: 0
+        # Delay between updating each container
+        delay: 0s
+      # Placement options
+      placement:
+        # User defined constraints
+        constraints:
+          # Only run on worker nodes
+          - 'node.role!=manager'
+          - 'node.labels.service==scraper_vpns'
     cap_add:
       - NET_ADMIN
     devices:
@@ -75,7 +135,7 @@ services:
         uid: '0'
         gid: '0'
         mode: 0444
-      - source: vpn_config_se1_.v1
+      - source: vpn_config_se1.v1
         target: config.ovpn
         uid: '0'
         gid: '0'
@@ -95,7 +155,27 @@ services:
 
   scraper_vpn_uk13:
     image: ghcr.io/algo7/tripadvisor-review-scraper/vpn_worker:latest
-    container_name: vpn
+    deploy:
+      # Number of replicas to create
+      replicas: 1
+      # The restart policy
+      restart_policy:
+        condition: on-failure
+        # Max. number of restart
+        max_attempts: 3
+      # How the service should be updated => for rolling updates
+      update_config:
+        # How many containers to update at a time (0 = all at the same time)
+        parallelism: 0
+        # Delay between updating each container
+        delay: 0s
+      # Placement options
+      placement:
+        # User defined constraints
+        constraints:
+          # Only run on worker nodes
+          - 'node.role!=manager'
+          - 'node.labels.service==scraper_vpns'
     cap_add:
       - NET_ADMIN
     devices:
@@ -106,7 +186,7 @@ services:
         uid: '0'
         gid: '0'
         mode: 0444
-      - source: vpn_config_uk13_.v1
+      - source: vpn_config_uk13.v1
         target: config.ovpn
         uid: '0'
         gid: '0'
