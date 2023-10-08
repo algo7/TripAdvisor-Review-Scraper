@@ -179,7 +179,7 @@ class Browser extends EventEmitter {
     */
     async reportTabStats() {
 
-        const openedPage = await this.#countPage()
+        const openedPage = await this.#countPage() - 1
         // If the countPage function is able to get the page opened
         if (openedPage) return {
             heartbeat: {
