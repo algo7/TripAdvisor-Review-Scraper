@@ -1,6 +1,6 @@
 version: '3.9'
 services:
-  vpn:
+  scraper_vpn_ch2:
     image: ghcr.io/algo7/tripadvisor-review-scraper/vpn_worker:latest
     container_name: vpn
     cap_add:
@@ -31,6 +31,99 @@ services:
     networks:
       - vpns
 
+  scraper_vpn_be2:
+    image: ghcr.io/algo7/tripadvisor-review-scraper/vpn_worker:latest
+    container_name: vpn
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - '/dev/net/tun:/dev/net/tun'
+    secrets:
+      - source: vpn_credentials.v1
+        target: pass.txt
+        uid: '0'
+        gid: '0'
+        mode: 0444
+      - source: vpn_config_be2_.v1
+        target: config.ovpn
+        uid: '0'
+        gid: '0'
+        mode: 0444
+    ports:
+      - target: 8888
+        published: 8888
+        protocol: tcp
+      - target: 8881
+        published: 8881
+        protocol: tcp
+      - target: 8881
+        published: 8881
+        protocol: udp
+    networks:
+      - vpns
+
+  scraper_vpn_se1:
+    image: ghcr.io/algo7/tripadvisor-review-scraper/vpn_worker:latest
+    container_name: vpn
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - '/dev/net/tun:/dev/net/tun'
+    secrets:
+      - source: vpn_credentials.v1
+        target: pass.txt
+        uid: '0'
+        gid: '0'
+        mode: 0444
+      - source: vpn_config_se1_.v1
+        target: config.ovpn
+        uid: '0'
+        gid: '0'
+        mode: 0444
+    ports:
+      - target: 8888
+        published: 8888
+        protocol: tcp
+      - target: 8881
+        published: 8881
+        protocol: tcp
+      - target: 8881
+        published: 8881
+        protocol: udp
+    networks:
+      - vpns
+
+  scraper_vpn_uk13:
+    image: ghcr.io/algo7/tripadvisor-review-scraper/vpn_worker:latest
+    container_name: vpn
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - '/dev/net/tun:/dev/net/tun'
+    secrets:
+      - source: vpn_credentials.v1
+        target: pass.txt
+        uid: '0'
+        gid: '0'
+        mode: 0444
+      - source: vpn_config_uk13_.v1
+        target: config.ovpn
+        uid: '0'
+        gid: '0'
+        mode: 0444
+    ports:
+      - target: 8888
+        published: 8888
+        protocol: tcp
+      - target: 8881
+        published: 8881
+        protocol: tcp
+      - target: 8881
+        published: 8881
+        protocol: udp
+    networks:
+      - vpns
+
 networks:
   vpns:
     external: true
@@ -44,4 +137,10 @@ secrets:
   # Name of the secrets (same as the source)
   vpn_config_ch2.v1:
     # Use pre-defined secrets created on the manager node
+    external: true
+  vpn_config_be2.v1:
+    external: true
+  vpn_config_se1.v1:
+    external: true
+  vpn_config_uk13.v1:
     external: true
