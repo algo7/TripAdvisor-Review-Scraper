@@ -7,6 +7,9 @@ services:
       SCRAPE_MODE: RESTO
       CONCURRENCY: 4
       LANGUAGE: en
+      # Can be http, https, socks4, socks5
+      # If not set, no proxy will be used
+      PROXY_ADDRESS: http://proxy:3128
     # Image name
     image: scrape:latest
     volumes:
