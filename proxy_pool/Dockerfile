@@ -14,6 +14,9 @@ RUN apk add openvpn \
 COPY supervisord.conf sockd.conf /etc/
 COPY squid.conf /etc/squid/squid.conf
 
+# VPN config and pass will be bind mounted into this dir
+WORKDIR /VPN
+
 # Squid Proxy on 8888, and Dante on 8881
 EXPOSE 8888 8881
 
