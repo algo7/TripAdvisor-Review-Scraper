@@ -139,13 +139,14 @@ func TailLog(containerID string) io.Reader {
 // Container information
 type Container struct {
 	ContainerID string
-	TaskOwner   string
-	TargetName  string
-	URL         string
+	TaskOwner   *string
+	TargetName  *string
+	URL         *string
 }
 
 // ListContainersByType lists all containers of the given type
 func ListContainersByType(containerType string) []Container {
+
 	// Initialize a new docker client
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	utils.ErrorHandler(err)
@@ -158,31 +159,31 @@ func ListContainersByType(containerType string) []Container {
 	containers := []Container{}
 
 	for _, containerInfo := range containersInfo {
+
 		switch containerType {
+
 		case "scraper":
 			// logic for listing scraper containers
 			if containerInfo.Labels["TaskOwner"] != "" && containerInfo.Labels["TaskOwner"] != "PROXY" {
+				taskOwner := containerInfo.Labels["TaskOwner"]
+				targetName := containerInfo.Labels["Target"]
+				url := fmt.Sprintf("/logs-viewer?container_id=%s", containerInfo.ID[:12])
 				containers = append(containers, Container{
 					ContainerID: containerInfo.ID[:12],
-					URL:         fmt.Sprintf("/logs-viewer?container_id=%s", containerInfo.ID[:12]),
-					TaskOwner:   containerInfo.Labels["TaskOwner"],
-					TargetName:  containerInfo.Labels["Target"],
+					URL:         &url,
+					TaskOwner:   &taskOwner,
+					TargetName:  &targetName,
 				})
 			}
+
 		case "proxy":
 			if containerInfo.Labels["TaskOwner"] != "" && containerInfo.Labels["TaskOwner"] != "PROXY" {
 				containers = append(containers, Container{
 					ContainerID: containerInfo.ID[:12],
-					URL:         fmt.Sprintf("/logs-viewer?container_id=%s", containerInfo.ID[:12]),
-					TaskOwner:   containerInfo.Labels["TaskOwner"],
-					TargetName:  containerInfo.Labels["Target"],
 				})
 			}
 		default:
-			// Default to listing all containers
-			containers = append(containers, Container{
-				ContainerID: containerInfo.ID[:12],
-			})
+			utils.ErrorHandler(fmt.Errorf("Invalid container type"))
 		}
 	}
 
