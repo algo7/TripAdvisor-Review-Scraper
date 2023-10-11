@@ -3,7 +3,7 @@ package database
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -63,7 +63,7 @@ func RedisConnectionCheck() {
 	resp, err := rdb.Ping(ctx).Result()
 	utils.ErrorHandler(err)
 
-	fmt.Println("Redis connection established", resp)
+	log.Println("Redis connection established", resp)
 }
 
 // getRedisHostAddress checks if custom redis host address is supplied, if not, returns the default address
