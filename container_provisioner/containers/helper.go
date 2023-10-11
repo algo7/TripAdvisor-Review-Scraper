@@ -159,7 +159,7 @@ func ListScraperContainers() []Container {
 	for _, containerInfo := range containersInfo {
 
 		// Filter out the container that runs the app itself and other containers that are not created by this app
-		if containerInfo.Labels["TaskOwner"] != "" {
+		if containerInfo.Labels["TaskOwner"] != "" && containerInfo.Labels["TaskOwner"] != "PROXY" {
 
 			// Append the container info to the containers slice
 			containers = append(containers, Container{
