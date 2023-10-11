@@ -146,7 +146,15 @@ type Container struct {
 	URL         *string
 }
 
-// ListContainersByType lists all containers of the given type
+// ListContainersByType lists all containers of the given type.
+// Available container types:
+//   - "scraper": Lists all scraper containers that are not proxies.
+//   - "proxy": Lists all proxy containers.
+//
+// Example:
+//
+//	scraperContainers := ListContainersByType("scraper")
+//	proxyContainers := ListContainersByType("proxy")
 func ListContainersByType(containerType string) []Container {
 
 	// Initialize a new docker client
