@@ -144,14 +144,21 @@ type Container struct {
 	URL         string
 }
 
-// ListScraperContainers lists all the containers and return the container IDs
-func ListScraperContainers() []Container {
+// listContainers lists all the containers
+func listContainers() []types.Container {
+
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	utils.ErrorHandler(err)
 	defer cli.Close()
 
 	containersInfo, err := cli.ContainerList(context.Background(), types.ContainerListOptions{All: false})
 	utils.ErrorHandler(err)
+
+	return containersInfo
+}
+
+// ListScraperContainers lists all the containers and return the container IDs
+func ListScraperContainers(containersInfo []types.Container) []Container {
 
 	// Map container list result into custom container struct
 	containers := []Container{}
