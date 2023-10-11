@@ -144,36 +144,44 @@ type Container struct {
 	URL         string
 }
 
-// listContainers lists all the containers
-func listContainers() []types.Container {
-
+// ListContainersByType lists all containers of the given type
+func ListContainersByType(containerType string) []Container {
+	// Initialize a new docker client
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	utils.ErrorHandler(err)
 	defer cli.Close()
 
+	// List all containers
 	containersInfo, err := cli.ContainerList(context.Background(), types.ContainerListOptions{All: false})
 	utils.ErrorHandler(err)
 
-	return containersInfo
-}
-
-// ListScraperContainers lists all the containers and return the container IDs
-func ListScraperContainers(containersInfo []types.Container) []Container {
-
-	// Map container list result into custom container struct
 	containers := []Container{}
 
 	for _, containerInfo := range containersInfo {
-
-		// Filter out the container that runs the app itself and other containers that are not created by this app
-		if containerInfo.Labels["TaskOwner"] != "" && containerInfo.Labels["TaskOwner"] != "PROXY" {
-
-			// Append the container info to the containers slice
+		switch containerType {
+		case "scraper":
+			// logic for listing scraper containers
+			if containerInfo.Labels["TaskOwner"] != "" && containerInfo.Labels["TaskOwner"] != "PROXY" {
+				containers = append(containers, Container{
+					ContainerID: containerInfo.ID[:12],
+					URL:         fmt.Sprintf("/logs-viewer?container_id=%s", containerInfo.ID[:12]),
+					TaskOwner:   containerInfo.Labels["TaskOwner"],
+					TargetName:  containerInfo.Labels["Target"],
+				})
+			}
+		case "proxy":
+			if containerInfo.Labels["TaskOwner"] != "" && containerInfo.Labels["TaskOwner"] != "PROXY" {
+				containers = append(containers, Container{
+					ContainerID: containerInfo.ID[:12],
+					URL:         fmt.Sprintf("/logs-viewer?container_id=%s", containerInfo.ID[:12]),
+					TaskOwner:   containerInfo.Labels["TaskOwner"],
+					TargetName:  containerInfo.Labels["Target"],
+				})
+			}
+		default:
+			// Default to listing all containers
 			containers = append(containers, Container{
 				ContainerID: containerInfo.ID[:12],
-				URL:         fmt.Sprintf("/logs-viewer?container_id=%s", containerInfo.ID[:12]),
-				TaskOwner:   containerInfo.Labels["TaskOwner"],
-				TargetName:  containerInfo.Labels["Target"],
 			})
 		}
 	}
