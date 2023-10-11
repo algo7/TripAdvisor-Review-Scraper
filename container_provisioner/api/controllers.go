@@ -28,7 +28,7 @@ type enrichedR2Obj struct {
 func getMain(c *fiber.Ctx) error {
 
 	// Get the number of running containers
-	runningContainers := len(containers.ListContainers())
+	runningContainers := len(containers.ListScraperContainers())
 
 	// Check if the R2 objects list is cached
 	cachedObjectsList := database.CacheLookUp("r2StorageObjectsList")
@@ -129,7 +129,7 @@ func postProvision(c *fiber.Ctx) error {
 	}
 
 	// Get the number of running containers
-	runningContainers := len(containers.ListContainers())
+	runningContainers := len(containers.ListScraperContainers())
 
 	if runningContainers >= 10 {
 		return c.Render("submission", fiber.Map{
@@ -178,7 +178,7 @@ func getLogs(c *fiber.Ctx) error {
 	}
 
 	// Get ids of all running containers
-	existingContainers := containers.ListContainers()
+	existingContainers := containers.ListScraperContainers()
 
 	// If there are no running containers
 	if len(existingContainers) == 0 {
@@ -209,7 +209,7 @@ func getLogs(c *fiber.Ctx) error {
 func getRunningTasks(c *fiber.Ctx) error {
 
 	// Get ids of all running containers
-	runningContainers := containers.ListContainers()
+	runningContainers := containers.ListScraperContainers()
 
 	// The page status message
 	currentTaskStatus := "There are no running tasks"

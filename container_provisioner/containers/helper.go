@@ -144,8 +144,8 @@ type Container struct {
 	URL         string
 }
 
-// ListContainers lists all the containers and return the container IDs
-func ListContainers() []Container {
+// ListScraperContainers lists all the containers and return the container IDs
+func ListScraperContainers() []Container {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	utils.ErrorHandler(err)
 	defer cli.Close()
