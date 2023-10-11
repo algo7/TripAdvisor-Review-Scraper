@@ -177,7 +177,7 @@ func ListContainersByType(containerType string) []Container {
 			}
 
 		case "proxy":
-			if containerInfo.Labels["TaskOwner"] != "" && containerInfo.Labels["TaskOwner"] != "PROXY" {
+			if containerInfo.Labels["TaskOwner"] != "" && containerInfo.Labels["TaskOwner"] == "PROXY" {
 				containers = append(containers, Container{
 					ContainerID: containerInfo.ID[:12],
 				})
