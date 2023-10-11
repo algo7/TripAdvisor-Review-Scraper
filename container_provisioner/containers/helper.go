@@ -148,7 +148,7 @@ type Container struct {
 
 // ListContainersByType lists all containers of the given type.
 // Available container types:
-//   - "scraper": Lists all scraper containers that are not proxies.
+//   - "scraper": Lists all scraper containers.
 //   - "proxy": Lists all proxy containers.
 //
 // Example:
