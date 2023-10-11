@@ -143,7 +143,7 @@ func postProvision(c *fiber.Ctx) error {
 	scrapeTargetName := utils.GetScrapeTargetNameFromURL(url, scrapeMode)
 
 	// Generate the container config
-	scrapeConfig := containers.ContainerConfigGenerator(scrapeMode, scrapeTargetName, url, uploadIdentifier)
+	scrapeConfig := containers.ContainerConfigGenerator(scrapeMode, scrapeTargetName, url, uploadIdentifier, "")
 
 	// Create the container
 	containerID := containers.CreateContainer(scrapeConfig)
