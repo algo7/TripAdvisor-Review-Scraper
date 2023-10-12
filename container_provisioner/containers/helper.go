@@ -40,8 +40,8 @@ func pullImage(image string) {
 	utils.ErrorHandler(err)
 }
 
-// removeContainer removes the container with the given ID
-func removeContainer(containerID string) {
+// RemoveContainer removes the container with the given ID
+func RemoveContainer(containerID string) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	utils.ErrorHandler(err)
 	defer cli.Close()
