@@ -3,6 +3,8 @@ services:
   vpn:
     image: su:latest
     container_name: vpn
+    labels:
+      - 'TaskOwner=PROXY'
     # Capabilities required to run OpenVPN
     cap_add:
       - NET_ADMIN
