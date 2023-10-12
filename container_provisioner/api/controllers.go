@@ -142,8 +142,15 @@ func postProvision(c *fiber.Ctx) error {
 	// Get the scrape target name from the URL
 	scrapeTargetName := utils.GetScrapeTargetNameFromURL(url, scrapeMode)
 
+	// Get the proxy container address
+	proxyAddress := ""
+	addr, err := containers.AcquireProxyContainer()
+	if err == nil {
+		proxyAddress = *addr
+	}
+
 	// Generate the container config
-	scrapeConfig := containers.ContainerConfigGenerator(scrapeMode, scrapeTargetName, url, uploadIdentifier, "")
+	scrapeConfig := containers.ContainerConfigGenerator(scrapeMode, scrapeTargetName, url, uploadIdentifier, proxyAddress)
 
 	// Create the container
 	containerID := containers.CreateContainer(scrapeConfig)
