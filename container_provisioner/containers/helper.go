@@ -145,6 +145,7 @@ type Container struct {
 	TaskOwner   *string
 	TargetName  *string
 	URL         *string
+	IPAddress   *string
 }
 
 // ListContainersByType lists all containers of the given type.
@@ -188,6 +189,7 @@ func ListContainersByType(containerType string) []Container {
 					URL:         &url,
 					TaskOwner:   &taskOwner,
 					TargetName:  &targetName,
+					IPAddress:   &containerInfo.NetworkSettings.Networks["bridge"].IPAddress,
 				})
 			}
 
@@ -213,7 +215,7 @@ func AcquireProxyContainer() *string {
 		lockKey := "proxy-usage:" + *proxy.ContainerID
 		lockSuccess := database.SetLock(lockKey)
 		if lockSuccess {
-			return proxy.ContainerID
+			return proxy.IPAddress
 		}
 		// If the lock is not successful, try the next proxy container
 	}
