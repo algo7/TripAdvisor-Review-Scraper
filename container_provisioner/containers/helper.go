@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/database"
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/utils"
 
 	"github.com/docker/docker/api/types"
@@ -140,7 +141,7 @@ func TailLog(containerID string) io.Reader {
 
 // Container information
 type Container struct {
-	ContainerID string
+	ContainerID *string
 	TaskOwner   *string
 	TargetName  *string
 	URL         *string
@@ -170,6 +171,9 @@ func ListContainersByType(containerType string) []Container {
 
 	for _, containerInfo := range containersInfo {
 
+		// Get the first 12 characters of the container ID
+		containerID := containerInfo.ID[:12]
+
 		switch containerType {
 
 		case "scraper":
@@ -177,9 +181,10 @@ func ListContainersByType(containerType string) []Container {
 			if containerInfo.Labels["TaskOwner"] != "" && containerInfo.Labels["TaskOwner"] != "PROXY" {
 				taskOwner := containerInfo.Labels["TaskOwner"]
 				targetName := containerInfo.Labels["Target"]
+
 				url := fmt.Sprintf("/logs-viewer?container_id=%s", containerInfo.ID[:12])
 				containers = append(containers, Container{
-					ContainerID: containerInfo.ID[:12],
+					ContainerID: &containerID,
 					URL:         &url,
 					TaskOwner:   &taskOwner,
 					TargetName:  &targetName,
@@ -189,7 +194,7 @@ func ListContainersByType(containerType string) []Container {
 		case "proxy":
 			if containerInfo.Labels["TaskOwner"] != "" && containerInfo.Labels["TaskOwner"] == "PROXY" {
 				containers = append(containers, Container{
-					ContainerID: containerInfo.ID[:12],
+					ContainerID: &containerID,
 				})
 			}
 		default:
@@ -198,6 +203,29 @@ func ListContainersByType(containerType string) []Container {
 	}
 
 	return containers
+}
+
+// AcquireProxyContainer acquires a lock on a proxy container and returns its ID
+func AcquireProxyContainer() *string {
+	availableProxies := ListContainersByType("proxy")
+
+	for _, proxy := range availableProxies {
+		lockKey := "proxy-usage:" + *proxy.ContainerID
+		lockSuccess := database.SetLock(lockKey)
+		if lockSuccess {
+			return proxy.ContainerID
+		}
+		// If the lock is not successful, try the next proxy container
+	}
+
+	// If no proxy container could be locked, return an empty string
+	return nil
+}
+
+// ReleaseProxyContainer releases the lock on a proxy container
+func ReleaseProxyContainer(containerID string) {
+	lockKey := "proxy-usage:" + containerID
+	database.ReleaseLock(lockKey)
 }
 
 // GetResultCSVSizeInContainer gets the size of the result csv file in the container
