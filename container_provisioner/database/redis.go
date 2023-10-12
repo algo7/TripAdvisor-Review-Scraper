@@ -66,6 +66,19 @@ func RedisConnectionCheck() {
 	log.Println("Redis connection established", resp)
 }
 
+// SetLock sets a lock on the given key
+func SetLock(key string) bool {
+
+	ctx := context.Background()
+
+	lockSuccess, err := rdb.SetNX(ctx, key, "1", time.Minute*5).Result()
+	if err != nil {
+		return false
+	}
+
+	return lockSuccess
+}
+
 // getRedisHostAddress checks if custom redis host address is supplied, if not, returns the default address
 func getRedisHostAddress() string {
 
