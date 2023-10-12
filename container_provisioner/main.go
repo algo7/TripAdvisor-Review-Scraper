@@ -7,6 +7,7 @@ import (
 	"syscall"
 
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/api"
+	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/containers"
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/database"
 )
 
@@ -19,7 +20,7 @@ func main() {
 	// Launch a goroutine that will perform cleanup when a signal is received
 	go func() {
 		sig := <-sigCh
-		// cleanup()
+		cleanupScraperContainers()
 		os.Exit(int(sig.(syscall.Signal)))
 	}()
 
@@ -34,4 +35,24 @@ func main() {
 	// Load the API routes
 	api.Router()
 
+}
+
+// cleanupScraperContainers removes all the running scraper containers
+func cleanupScraperContainers() {
+
+	runningScrapers := containers.ListContainersByType("scraper")
+
+	for _, container := range runningScrapers {
+
+		lockKey := "container-cleanup:" + container.ContainerID
+		lockSuccess := database.SetLock(lockKey)
+		if !lockSuccess {
+			continue // skip to the next iteration of the loop
+		}
+
+		// If lockSuccess is true, we have the lock, so we can proceed with the cleanup
+		containers.RemoveContainer(container.ContainerID)
+		database.ReleaseLock(lockKey)
+
+	}
 }
