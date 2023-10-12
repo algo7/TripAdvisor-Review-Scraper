@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -10,6 +11,32 @@ import (
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/containers"
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/database"
 )
+
+const containerImage = "ghcr.io/algo7/tripadvisor-review-scraper/scraper:latest"
+
+var imageLockKey = fmt.Sprintf("image-pull:%s", containerImage)
+
+func init() {
+
+	// Check if the R2_URL environment variable is set
+	if os.Getenv("R2_URL") == "" {
+		log.Fatal("R2_URL environment variable not set")
+	}
+
+	// Check if the redis server is up and running
+	database.RedisConnectionCheck()
+
+	// Try to pull the scraper image
+	lockSuccess := database.SetLock(imageLockKey)
+
+	if !lockSuccess {
+		// If the lock is not acquired, another instance is already pulling the image
+		return
+	}
+
+	// Pull the scraper image
+	containers.PullImage(containerImage)
+}
 
 func main() {
 
@@ -21,20 +48,12 @@ func main() {
 	go func() {
 		sig := <-sigCh
 		cleanupScraperContainers()
+		database.ReleaseLock(imageLockKey)
 		os.Exit(int(sig.(syscall.Signal)))
 	}()
 
-	// Check if the R2_URL environment variable is set
-	if os.Getenv("R2_URL") == "" {
-		log.Fatal("R2_URL environment variable not set")
-	}
-
-	// Check if the redis server is up and running
-	database.RedisConnectionCheck()
-
 	// Load the API routes
 	api.Router()
-
 }
 
 // cleanupScraperContainers removes all the running scraper containers
@@ -49,10 +68,8 @@ func cleanupScraperContainers() {
 		if !lockSuccess {
 			continue // skip to the next iteration of the loop
 		}
-
 		// If lockSuccess is true, we have the lock, so we can proceed with the cleanup
 		containers.RemoveContainer(*container.ContainerID)
 		database.ReleaseLock(lockKey)
-
 	}
 }
