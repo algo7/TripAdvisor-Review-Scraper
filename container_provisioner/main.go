@@ -44,14 +44,14 @@ func cleanupScraperContainers() {
 
 	for _, container := range runningScrapers {
 
-		lockKey := "container-cleanup:" + container.ContainerID
+		lockKey := "container-cleanup:" + *container.ContainerID
 		lockSuccess := database.SetLock(lockKey)
 		if !lockSuccess {
 			continue // skip to the next iteration of the loop
 		}
 
 		// If lockSuccess is true, we have the lock, so we can proceed with the cleanup
-		containers.RemoveContainer(container.ContainerID)
+		containers.RemoveContainer(*container.ContainerID)
 		database.ReleaseLock(lockKey)
 
 	}

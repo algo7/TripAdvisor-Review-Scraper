@@ -190,7 +190,7 @@ func getLogs(c *fiber.Ctx) error {
 
 	// Extract the running container ids
 	for _, container := range existingContainers {
-		runningContainersIds = append(runningContainersIds, container.ContainerID)
+		runningContainersIds = append(runningContainersIds, *container.ContainerID)
 	}
 
 	// If the running containers do not include the containerId
