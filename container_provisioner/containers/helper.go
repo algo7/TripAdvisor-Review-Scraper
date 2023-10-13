@@ -224,8 +224,18 @@ func ListContainersByType(containerType string) []Container {
 	return containers
 }
 
+// ProxyContainer information
+type ProxyContainer struct {
+	ContainerID  string
+	LockKey      string
+	IPAddress    string
+	VPNRegion    string
+	VPNSOCKSPort string
+	VPNHTTPPort  string
+}
+
 // AcquireProxyContainer acquires a lock on a proxy container and returns its ID
-func AcquireProxyContainer() Container {
+func AcquireProxyContainer() ProxyContainer {
 	availableProxies := ListContainersByType("proxy")
 
 	for _, proxy := range availableProxies {
@@ -233,13 +243,20 @@ func AcquireProxyContainer() Container {
 		lockSuccess := database.SetLock(lockKey)
 
 		if lockSuccess {
-			return proxy
+			return ProxyContainer{
+				ContainerID:  *proxy.ContainerID,
+				LockKey:      lockKey,
+				IPAddress:    *proxy.IPAddress,
+				VPNRegion:    *proxy.VPNRegion,
+				VPNSOCKSPort: *proxy.VPNSOCKSPort,
+				VPNHTTPPort:  *proxy.VPNHTTPPort,
+			}
 		}
 		// If the lock is not successful, try the next proxy container
 	}
 
 	// If no proxy container could be locked, return an empty string
-	return Container{}
+	return ProxyContainer{}
 }
 
 // ReleaseProxyContainer releases the lock on a proxy container

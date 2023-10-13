@@ -142,17 +142,11 @@ func postProvision(c *fiber.Ctx) error {
 	// Get the scrape target name from the URL
 	scrapeTargetName := utils.GetScrapeTargetNameFromURL(url, scrapeMode)
 
-	// Get the proxy container address
-	proxyAddress := ""
-	vpnRegionMsg := "None"
-	addr, vpnRegion, lockID, err := containers.AcquireProxyContainer()
-	if err == nil {
-		proxyAddress = *addr
-		vpnRegionMsg = *vpnRegion
-	}
+	// Get the proxy container info
+	proxyContainers := containers.AcquireProxyContainer()
 
 	// Generate the container config
-	scrapeConfig := containers.ContainerConfigGenerator(scrapeMode, scrapeTargetName, url, uploadIdentifier, proxyAddress, vpnRegionMsg)
+	scrapeConfig := containers.ContainerConfigGenerator(scrapeMode, scrapeTargetName, url, uploadIdentifier, *proxyContainers.IPAddress, *proxyContainers.VPNRegion)
 
 	// Create the container
 	containerID := containers.CreateContainer(scrapeConfig)
@@ -160,7 +154,7 @@ func postProvision(c *fiber.Ctx) error {
 	// Start the scraping container via goroutine
 	go func() {
 		containers.Scrape(uploadIdentifier, scrapeTargetName, containerID)
-		database.ReleaseLock(*lockID)
+		database.ReleaseLock(*proxyContainers.ContainerID)
 	}()
 
 	return c.Render("submission", fiber.Map{
