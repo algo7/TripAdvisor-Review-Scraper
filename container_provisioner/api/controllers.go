@@ -158,7 +158,10 @@ func postProvision(c *fiber.Ctx) error {
 	containerID := containers.CreateContainer(scrapeConfig)
 
 	// Start the scraping container via goroutine
-	go containers.Scrape(uploadIdentifier, scrapeTargetName, containerID)
+	go func() {
+		containers.Scrape(uploadIdentifier, scrapeTargetName, containerID)
+		containers.ReleaseProxyContainer(containerID)
+	}()
 
 	return c.Render("submission", fiber.Map{
 		"Title": "Algo7 TripAdvisor Scraper",

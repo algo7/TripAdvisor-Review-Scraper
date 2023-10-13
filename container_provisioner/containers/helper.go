@@ -190,7 +190,6 @@ func ListContainersByType(containerType string) []Container {
 					URL:         &url,
 					TaskOwner:   &taskOwner,
 					TargetName:  &targetName,
-					IPAddress:   &containerInfo.NetworkSettings.Networks["bridge"].IPAddress,
 				})
 			}
 
@@ -200,7 +199,9 @@ func ListContainersByType(containerType string) []Container {
 				containers = append(containers, Container{
 					ContainerID: &containerID,
 					VPNRegion:   &vpnRegion,
+					IPAddress:   &containerInfo.NetworkSettings.Networks["scraper_vpn"].IPAddress,
 				})
+
 			}
 		default:
 			utils.ErrorHandler(fmt.Errorf("Invalid container type"))
@@ -217,6 +218,7 @@ func AcquireProxyContainer() (*string, *string, error) {
 	for _, proxy := range availableProxies {
 		lockKey := "proxy-usage:" + *proxy.ContainerID
 		lockSuccess := database.SetLock(lockKey)
+		fmt.Println(lockSuccess, *proxy.IPAddress, *proxy.VPNRegion)
 		if lockSuccess {
 			return proxy.IPAddress, proxy.VPNRegion, nil
 		}

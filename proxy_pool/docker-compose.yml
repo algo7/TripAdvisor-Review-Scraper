@@ -23,6 +23,8 @@ services:
       - target: 8881
         published: 8881
         protocol: udp
+    networks:
+      - scraper_vpn
     volumes:
       # OpenVPN credentials and config (config.vpn and pass.txt)
       - type: bind
@@ -54,6 +56,8 @@ services:
       - target: 8882
         published: 8882
         protocol: udp
+    networks:
+      - scraper_vpn
     volumes:
       # OpenVPN credentials
       - type: bind
@@ -85,6 +89,8 @@ services:
       - target: 8883
         published: 8883
         protocol: udp
+    networks:
+      - scraper_vpn
     volumes:
       # OpenVPN credentials
       - type: bind
@@ -116,6 +122,8 @@ services:
       - target: 8884
         published: 8884
         protocol: udp
+    networks:
+      - scraper_vpn
     volumes:
       # OpenVPN credentials
       - type: bind
@@ -123,3 +131,7 @@ services:
         target: /VPN
         bind:
           create_host_path: true
+
+networks:
+  scraper_vpn:
+    name: scraper_vpn
