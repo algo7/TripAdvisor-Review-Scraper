@@ -4,6 +4,7 @@ services:
     image: su:latest
     labels:
       - 'TaskOwner=PROXY'
+      - 'vpn.region=CH'
     # Capabilities required to run OpenVPN
     cap_add:
       - NET_ADMIN
@@ -34,6 +35,7 @@ services:
     image: su:latest
     labels:
       - 'TaskOwner=PROXY'
+      - 'vpn.region=SE'
     # Capabilities required to run OpenVPN
     cap_add:
       - NET_ADMIN
@@ -64,6 +66,7 @@ services:
     image: su:latest
     labels:
       - 'TaskOwner=PROXY'
+      - 'vpn.region=UK'
     # Capabilities required to run OpenVPN
     cap_add:
       - NET_ADMIN
@@ -94,6 +97,7 @@ services:
     image: su:latest
     labels:
       - 'TaskOwner=PROXY'
+      - 'vpn.region=BE'
     # Capabilities required to run OpenVPN
     cap_add:
       - NET_ADMIN
