@@ -60,7 +60,7 @@ func ContainerConfigGenerator(
 	scrapeTarget string,
 	scrapeTargetName string,
 	scrapeURL string, uploadIdentifier string,
-	proxyAddress string, proxyLocation string, proxyPort string) *container.Config {
+	proxyAddress string, vpnRegion string) *container.Config {
 
 	var scrapeContainerURL string
 	var targetName string
@@ -78,14 +78,14 @@ func ContainerConfigGenerator(
 	}
 
 	scrapeMode := fmt.Sprintf("SCRAPE_MODE=%s", scrapeTarget)
-	proxySettings := fmt.Sprintf("PROXY_ADDRESS=socks5://%s:%s", proxyAddress, proxyPort)
+	proxySettings := fmt.Sprintf("PROXY_ADDRESS=%s", proxyAddress)
 
 	return &container.Config{
 		Image: containerImage,
 		Labels: map[string]string{
 			"TaskOwner":  uploadIdentifier,
 			"Target":     scrapeTargetName,
-			"vpn.region": proxyLocation,
+			"vpn.region": vpnRegion,
 		},
 		// Env vars required by the js scraper containers
 		Env: []string{
@@ -147,14 +147,14 @@ func TailLog(containerID string) io.Reader {
 
 // Container information
 type Container struct {
-	ContainerID  *string
-	TaskOwner    *string
-	TargetName   *string
-	URL          *string
-	IPAddress    *string
-	VPNRegion    *string
-	VPNSOCKSPort *string
-	VPNHTTPPort  *string
+	ContainerID    *string
+	TaskOwner      *string
+	TargetName     *string
+	URL            *string
+	IPAddress      *string
+	VPNRegion      *string
+	ProxySOCKSPort *string
+	ProxyHTTPPort  *string
 }
 
 // ListContainersByType lists all containers of the given type.
@@ -212,11 +212,11 @@ func ListContainersByType(containerType string) []Container {
 		case "proxy":
 			if taskOwner == "PROXY" {
 				containers = append(containers, Container{
-					ContainerID:  &containerID,
-					VPNRegion:    &vpnRegion,
-					IPAddress:    &containerInfo.NetworkSettings.Networks["scraper_vpn"].IPAddress,
-					VPNSOCKSPort: &vpnSOCKSPort,
-					VPNHTTPPort:  &vpnHTTPPort,
+					ContainerID:    &containerID,
+					VPNRegion:      &vpnRegion,
+					IPAddress:      &containerInfo.NetworkSettings.Networks["scraper_vpn"].IPAddress,
+					ProxySOCKSPort: &vpnSOCKSPort,
+					ProxyHTTPPort:  &vpnHTTPPort,
 				})
 
 			}
@@ -233,10 +233,8 @@ func ListContainersByType(containerType string) []Container {
 type ProxyContainer struct {
 	ContainerID  string
 	LockKey      string
-	IPAddress    string
+	ProxyAddress string
 	VPNRegion    string
-	VPNSOCKSPort string
-	VPNHTTPPort  string
 }
 
 // AcquireProxyContainer acquires a lock on a proxy container and returns its ID
@@ -251,10 +249,8 @@ func AcquireProxyContainer() ProxyContainer {
 			return ProxyContainer{
 				ContainerID:  *proxy.ContainerID,
 				LockKey:      lockKey,
-				IPAddress:    *proxy.IPAddress,
 				VPNRegion:    *proxy.VPNRegion,
-				VPNSOCKSPort: *proxy.VPNSOCKSPort,
-				VPNHTTPPort:  *proxy.VPNHTTPPort,
+				ProxyAddress: fmt.Sprintf("socks5://%s:%s", *proxy.IPAddress, *proxy.ProxySOCKSPort),
 			}
 		}
 		// If the lock is not successful, try the next proxy container

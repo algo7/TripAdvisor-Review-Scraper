@@ -146,7 +146,7 @@ func postProvision(c *fiber.Ctx) error {
 	proxyContainers := containers.AcquireProxyContainer()
 
 	// Generate the container config
-	scrapeConfig := containers.ContainerConfigGenerator(scrapeMode, scrapeTargetName, url, uploadIdentifier, proxyContainers.IPAddress, proxyContainers.VPNRegion, proxyContainers.VPNSOCKSPort)
+	scrapeConfig := containers.ContainerConfigGenerator(scrapeMode, scrapeTargetName, url, uploadIdentifier, proxyContainers.ProxyAddress, proxyContainers.VPNRegion)
 
 	// Create the container
 	containerID := containers.CreateContainer(scrapeConfig)
