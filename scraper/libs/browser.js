@@ -61,7 +61,7 @@ const browserArgs = [
 
 // If proxy is enabled
 if (PROXY_ADDRESS) browserArgs.push(`--proxy-server=${PROXY_ADDRESS}`)
-
+console.log(`Internal Proxy Address: ${PROXY_ADDRESS}`)
 /**
  * Create a browser instance
  */
