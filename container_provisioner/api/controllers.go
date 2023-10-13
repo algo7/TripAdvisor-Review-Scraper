@@ -144,9 +144,11 @@ func postProvision(c *fiber.Ctx) error {
 
 	// Get the proxy container address
 	proxyAddress := ""
-	addr, err := containers.AcquireProxyContainer()
+	vpnRegionMsg := "VPN Region: None"
+	addr, vpnRegion, err := containers.AcquireProxyContainer()
 	if err == nil {
 		proxyAddress = *addr
+		vpnRegionMsg = fmt.Sprintf("VPN Region: %s", *vpnRegion)
 	}
 
 	// Generate the container config
@@ -161,7 +163,7 @@ func postProvision(c *fiber.Ctx) error {
 	return c.Render("submission", fiber.Map{
 		"Title": "Algo7 TripAdvisor Scraper",
 		// "Message": fmt.Sprintf("Your request has been submitted. You will receive an email at %s when the data is ready", email),
-		"Message1":    "Your request has been submitted",
+		"Message1":    fmt.Sprintf("Your request has been submitted. %s", vpnRegionMsg),
 		"Message2":    "You can check the progress of your request below",
 		"Message3":    "Once it's done, you can return to the main page to download the data",
 		"ContainerId": containerID,
