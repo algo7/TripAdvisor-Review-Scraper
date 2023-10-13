@@ -3,9 +3,14 @@ services:
   vpnch:
     image: su:latest
     labels:
+      # This label is used by the container_provisioner to identify the containers that are part of the proxy pool.
       - 'TaskOwner=PROXY'
+      # This label is used by the container_provisioner to show the region of the proxy on the UI.
       - 'vpn.region=CH'
+      # This label is used by the container_provisioner to get the socks port of the proxy.
       - 'proxy.socks.port=8881'
+      # This label is used by the container_provisioner to get the http port of the proxy.
+      # Currently, the container_provisioner only supports socks5 proxies.
       - 'proxy.http.port=8888'
     # Capabilities required to run OpenVPN
     cap_add:
@@ -25,6 +30,8 @@ services:
       - target: 8881
         published: 8881
         protocol: udp
+    # WARNING: Do not Change the name of this network. It is used by the scraper to connect to the proxies.
+    # At this moment, it is hardcoded in the container_provisioner when creating the containers.
     networks:
       - scraper_vpn
     volumes:
