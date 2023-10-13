@@ -1,10 +1,10 @@
 name: Build & Push [VPN Worker]
 on:
   push:
-    # branches:
-    #   - main
-    # paths:
-    #   - 'proxy_pool/**'
+    branches:
+      - main
+    paths:
+      - 'proxy_pool/**'
 
 # Global variables
 env:
