@@ -184,13 +184,14 @@ func ListContainersByType(containerType string) []Container {
 			if containerInfo.Labels["TaskOwner"] != "" && containerInfo.Labels["TaskOwner"] != "PROXY" {
 				taskOwner := containerInfo.Labels["TaskOwner"]
 				targetName := containerInfo.Labels["Target"]
-
+				vpnRegion := containerInfo.Labels["vpn.region"]
 				url := fmt.Sprintf("/logs-viewer?container_id=%s", containerInfo.ID[:12])
 				containers = append(containers, Container{
 					ContainerID: &containerID,
 					URL:         &url,
 					TaskOwner:   &taskOwner,
 					TargetName:  &targetName,
+					VPNRegion:   &vpnRegion,
 				})
 			}
 
