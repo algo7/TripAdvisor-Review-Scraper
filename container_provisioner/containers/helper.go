@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	// containerImage = "ghcr.io/algo7/tripadvisor-review-scraper/scraper:latest"
-	containerImage = "scraper:latest"
+	containerImage = "ghcr.io/algo7/tripadvisor-review-scraper/scraper:latest"
+	// containerImage = "scraper:latest"
 )
 
 // initializeDockerClient initialize a new docker api client
