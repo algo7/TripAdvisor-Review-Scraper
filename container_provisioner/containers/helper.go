@@ -181,7 +181,6 @@ func ListContainersByType(containerType string) []Container {
 		targetName := containerInfo.Labels["Target"]
 		vpnRegion := containerInfo.Labels["vpn.region"]
 		url := fmt.Sprintf("/logs-viewer?container_id=%s", containerInfo.ID[:12])
-		ipAddr := containerInfo.NetworkSettings.Networks["scraper_vpn"].IPAddress
 
 		switch containerType {
 
@@ -203,7 +202,7 @@ func ListContainersByType(containerType string) []Container {
 				containers = append(containers, Container{
 					ContainerID: &containerID,
 					VPNRegion:   &vpnRegion,
-					IPAddress:   &ipAddr,
+					IPAddress:   &containerInfo.NetworkSettings.Networks["scraper_vpn"].IPAddress,
 				})
 
 			}
