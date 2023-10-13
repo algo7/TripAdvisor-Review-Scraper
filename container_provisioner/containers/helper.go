@@ -215,26 +215,27 @@ func ListContainersByType(containerType string) []Container {
 }
 
 // AcquireProxyContainer acquires a lock on a proxy container and returns its ID
-func AcquireProxyContainer() (*string, *string, error) {
+func AcquireProxyContainer() (*string, *string, *string, error) {
 	availableProxies := ListContainersByType("proxy")
 
 	for _, proxy := range availableProxies {
 		lockKey := "proxy-usage:" + *proxy.ContainerID
 		lockSuccess := database.SetLock(lockKey)
-		fmt.Println(lockSuccess, *proxy.IPAddress, *proxy.VPNRegion)
+		fmt.Println(lockSuccess, proxy.IPAddress, proxy.VPNRegion)
 		if lockSuccess {
-			return proxy.IPAddress, proxy.VPNRegion, nil
+			return proxy.IPAddress, proxy.VPNRegion, proxy.ContainerID, nil
 		}
 		// If the lock is not successful, try the next proxy container
 	}
 
 	// If no proxy container could be locked, return an empty string
-	return nil, nil, fmt.Errorf("No proxy container could be acquired")
+	return nil, nil, nil, fmt.Errorf("No proxy container could be acquired")
 }
 
 // ReleaseProxyContainer releases the lock on a proxy container
 func ReleaseProxyContainer(containerID string) {
 	lockKey := "proxy-usage:" + containerID
+	log.Printf("Releasing lock on proxy container %s", lockKey)
 	database.ReleaseLock(lockKey)
 }
 
