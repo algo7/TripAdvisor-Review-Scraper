@@ -148,8 +148,8 @@ type Container struct {
 	URL          *string
 	IPAddress    *string
 	VPNRegion    *string
-	VPNSocksPort *string
-	VPNHttpPort  *string
+	VPNSOCKSPort *string
+	VPNHTTPPort  *string
 }
 
 // ListContainersByType lists all containers of the given type.
@@ -172,19 +172,24 @@ func ListContainersByType(containerType string) []Container {
 	containersInfo, err := cli.ContainerList(context.Background(), types.ContainerListOptions{All: false})
 	utils.ErrorHandler(err)
 
+	// Create a slice of Container structs
 	containers := []Container{}
 
+	// Iterate through the containers and append them to the slice
 	for _, containerInfo := range containersInfo {
 
-		// Get the first 12 characters of the container ID
+		// Extract fields from the container info and map them to the Container struct
 		containerID := containerInfo.ID[:12]
 		taskOwner := containerInfo.Labels["TaskOwner"]
 		targetName := containerInfo.Labels["Target"]
 		vpnRegion := containerInfo.Labels["vpn.region"]
+		vpnSOCKSPort := containerInfo.Labels["vpn.socks.port"]
+		vpnHTTPPort := containerInfo.Labels["vpn.http.port"]
 		url := fmt.Sprintf("/logs-viewer?container_id=%s", containerInfo.ID[:12])
 
 		switch containerType {
 
+		// If the container type is "scraper", only list scraper containers
 		case "scraper":
 			// logic for listing scraper containers
 			if taskOwner != "" && taskOwner != "PROXY" {
@@ -198,15 +203,19 @@ func ListContainersByType(containerType string) []Container {
 				})
 			}
 
+			// If the container type is "proxy", only list proxy containers
 		case "proxy":
 			if taskOwner == "PROXY" {
 				containers = append(containers, Container{
-					ContainerID: &containerID,
-					VPNRegion:   &vpnRegion,
-					IPAddress:   &containerInfo.NetworkSettings.Networks["scraper_vpn"].IPAddress,
+					ContainerID:  &containerID,
+					VPNRegion:    &vpnRegion,
+					IPAddress:    &containerInfo.NetworkSettings.Networks["scraper_vpn"].IPAddress,
+					VPNSOCKSPort: &vpnSOCKSPort,
+					VPNHTTPPort:  &vpnHTTPPort,
 				})
 
 			}
+
 		default:
 			utils.ErrorHandler(fmt.Errorf("Invalid container type"))
 		}
