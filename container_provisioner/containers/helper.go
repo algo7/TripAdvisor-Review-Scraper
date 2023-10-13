@@ -12,11 +12,13 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 )
 
 const (
-	containerImage = "ghcr.io/algo7/tripadvisor-review-scraper/scraper:latest"
+	// containerImage = "ghcr.io/algo7/tripadvisor-review-scraper/scraper:latest"
+	containerImage = "scraper:latest"
 )
 
 // initializeDockerClient initialize a new docker api client
@@ -113,7 +115,13 @@ func CreateContainer(containerConfig *container.Config) string {
 		&container.HostConfig{
 			AutoRemove: false, // Cant set to true otherwise the container got deleted before copying the file
 		},
-		nil, // NetworkConfig
+		&network.NetworkingConfig{
+			EndpointsConfig: map[string]*network.EndpointSettings{
+				"scraper_vpn": {
+					NetworkID: "my-network",
+				},
+			},
+		}, // NetworkConfig
 		nil, // Platform
 		"",  // Container name
 	)
