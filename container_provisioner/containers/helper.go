@@ -146,6 +146,7 @@ type Container struct {
 	TargetName  *string
 	URL         *string
 	IPAddress   *string
+	VPNRegion   *string
 }
 
 // ListContainersByType lists all containers of the given type.
@@ -195,8 +196,10 @@ func ListContainersByType(containerType string) []Container {
 
 		case "proxy":
 			if containerInfo.Labels["TaskOwner"] != "" && containerInfo.Labels["TaskOwner"] == "PROXY" {
+				vpnRegion := containerInfo.Labels["vpn.region"]
 				containers = append(containers, Container{
 					ContainerID: &containerID,
+					VPNRegion:   &vpnRegion,
 				})
 			}
 		default:
