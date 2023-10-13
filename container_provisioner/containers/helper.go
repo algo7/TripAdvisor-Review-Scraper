@@ -148,6 +148,7 @@ type Container struct {
 	URL         *string
 	IPAddress   *string
 	VPNRegion   *string
+	VPNPort     *string
 }
 
 // ListContainersByType lists all containers of the given type.
