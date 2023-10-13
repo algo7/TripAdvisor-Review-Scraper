@@ -221,9 +221,9 @@ func AcquireProxyContainer() (*string, *string, *string, error) {
 	for _, proxy := range availableProxies {
 		lockKey := "proxy-usage:" + *proxy.ContainerID
 		lockSuccess := database.SetLock(lockKey)
-		fmt.Println(lockSuccess, proxy.IPAddress, proxy.VPNRegion)
+
 		if lockSuccess {
-			return proxy.IPAddress, proxy.VPNRegion, proxy.ContainerID, nil
+			return proxy.IPAddress, proxy.VPNRegion, &lockKey, nil
 		}
 		// If the lock is not successful, try the next proxy container
 	}
