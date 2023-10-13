@@ -46,14 +46,14 @@ services:
       - '/dev/net/tun:/dev/net/tun'
     ports:
       # Squid proxy port
-      - target: 8889
+      - target: 8888
         published: 8889
         protocol: tcp
       # Dante proxy port
-      - target: 8882
+      - target: 8881
         published: 8882
         protocol: tcp
-      - target: 8882
+      - target: 8881
         published: 8882
         protocol: udp
     networks:
@@ -79,14 +79,14 @@ services:
       - '/dev/net/tun:/dev/net/tun'
     ports:
       # Squid proxy port
-      - target: 8890
+      - target: 8888
         published: 8890
         protocol: tcp
       # Dante proxy port
-      - target: 8883
+      - target: 8881
         published: 8883
         protocol: tcp
-      - target: 8883
+      - target: 8881
         published: 8883
         protocol: udp
     networks:
@@ -112,14 +112,14 @@ services:
       - '/dev/net/tun:/dev/net/tun'
     ports:
       # Squid proxy port
-      - target: 8891
+      - target: 8888
         published: 8891
         protocol: tcp
       # Dante proxy port
-      - target: 8884
+      - target: 8881
         published: 8884
         protocol: tcp
-      - target: 8884
+      - target: 8881
         published: 8884
         protocol: udp
     networks:
