@@ -1,7 +1,7 @@
 version: '3.9'
 services:
   vpnch:
-    image: ghcr.io/algo7/tripadvisor-review-scraper/vpn_worker:latest
+    image: su:latest
     labels:
       # This label is used by the container_provisioner to identify the containers that are part of the proxy pool.
       - 'TaskOwner=PROXY'
@@ -43,7 +43,7 @@ services:
           create_host_path: true
 
   vpnse:
-    image: ghcr.io/algo7/tripadvisor-review-scraper/vpn_worker:latest
+    image: su:latest
     labels:
       - 'TaskOwner=PROXY'
       - 'vpn.region=SE'
@@ -78,7 +78,7 @@ services:
           create_host_path: true
 
   vpnuk:
-    image: ghcr.io/algo7/tripadvisor-review-scraper/vpn_worker:latest
+    image: su:latest
     labels:
       - 'TaskOwner=PROXY'
       - 'vpn.region=UK'
@@ -113,7 +113,7 @@ services:
           create_host_path: true
 
   vpnbe:
-    image: ghcr.io/algo7/tripadvisor-review-scraper/vpn_worker:latest
+    image: su:latest
     labels:
       - 'TaskOwner=PROXY'
       - 'vpn.region=BE'
