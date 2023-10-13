@@ -142,4 +142,7 @@ services:
 
 networks:
   scraper_vpn:
+    # WARNING: Do not Change the name of this network. It is used by the scraper to connect to the proxies.
+    # At this moment, it is hardcoded in the container_provisioner when creating the containers.
     name: scraper_vpn
+    driver: bridge
