@@ -56,7 +56,7 @@ func RemoveContainer(containerID string) {
 }
 
 // ContainerConfigGenerator generates the container config depending on the scrape target
-func ContainerConfigGenerator(scrapeTarget string, scrapeTargetName string, scrapeURL string, uploadIdentifier string, proxyAddress string) *container.Config {
+func ContainerConfigGenerator(scrapeTarget string, scrapeTargetName string, scrapeURL string, uploadIdentifier string, proxyAddress string, proxyLocation string) *container.Config {
 	var scrapeContainerURL string
 	var targetName string
 
@@ -78,8 +78,9 @@ func ContainerConfigGenerator(scrapeTarget string, scrapeTargetName string, scra
 	return &container.Config{
 		Image: containerImage,
 		Labels: map[string]string{
-			"TaskOwner": uploadIdentifier,
-			"Target":    scrapeTargetName,
+			"TaskOwner":  uploadIdentifier,
+			"Target":     scrapeTargetName,
+			"vpn.region": proxyLocation,
 		},
 		// Env vars required by the js scraper containers
 		Env: []string{
