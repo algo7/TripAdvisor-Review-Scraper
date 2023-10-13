@@ -1,0 +1,121 @@
+version: '3.9'
+services:
+  vpnch:
+    image: su:latest
+    labels:
+      - 'TaskOwner=PROXY'
+    # Capabilities required to run OpenVPN
+    cap_add:
+      - NET_ADMIN
+    # Devices required to run OpenVPN
+    devices:
+      - '/dev/net/tun:/dev/net/tun'
+    ports:
+      # Squid proxy port
+      - target: 8888
+        published: 8888
+        protocol: tcp
+      # Dante proxy port
+      - target: 8881
+        published: 8881
+        protocol: tcp
+      - target: 8881
+        published: 8881
+        protocol: udp
+    volumes:
+      # OpenVPN credentials and config (config.vpn and pass.txt)
+      - type: bind
+        source: ./VPN/CH
+        target: /VPN
+        bind:
+          create_host_path: true
+
+  vpnse:
+    image: su:latest
+    labels:
+      - 'TaskOwner=PROXY'
+    # Capabilities required to run OpenVPN
+    cap_add:
+      - NET_ADMIN
+    # Devices required to run OpenVPN
+    devices:
+      - '/dev/net/tun:/dev/net/tun'
+    ports:
+      # Squid proxy port
+      - target: 8889
+        published: 8889
+        protocol: tcp
+      # Dante proxy port
+      - target: 8882
+        published: 8882
+        protocol: tcp
+      - target: 8882
+        published: 8882
+        protocol: udp
+    volumes:
+      # OpenVPN credentials
+      - type: bind
+        source: ./VPN/SE
+        target: /VPN
+        bind:
+          create_host_path: true
+
+  vpnuk:
+    image: su:latest
+    labels:
+      - 'TaskOwner=PROXY'
+    # Capabilities required to run OpenVPN
+    cap_add:
+      - NET_ADMIN
+    # Devices required to run OpenVPN
+    devices:
+      - '/dev/net/tun:/dev/net/tun'
+    ports:
+      # Squid proxy port
+      - target: 8890
+        published: 8890
+        protocol: tcp
+      # Dante proxy port
+      - target: 8883
+        published: 8883
+        protocol: tcp
+      - target: 8883
+        published: 8883
+        protocol: udp
+    volumes:
+      # OpenVPN credentials
+      - type: bind
+        source: ./VPN/UK
+        target: /VPN
+        bind:
+          create_host_path: true
+
+  vpnbe:
+    image: su:latest
+    labels:
+      - 'TaskOwner=PROXY'
+    # Capabilities required to run OpenVPN
+    cap_add:
+      - NET_ADMIN
+    # Devices required to run OpenVPN
+    devices:
+      - '/dev/net/tun:/dev/net/tun'
+    ports:
+      # Squid proxy port
+      - target: 8891
+        published: 8891
+        protocol: tcp
+      # Dante proxy port
+      - target: 8884
+        published: 8884
+        protocol: tcp
+      - target: 8884
+        published: 8884
+        protocol: udp
+    volumes:
+      # OpenVPN credentials
+      - type: bind
+        source: ./VPN/BE
+        target: /VPN
+        bind:
+          create_host_path: true
