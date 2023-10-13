@@ -56,7 +56,12 @@ func RemoveContainer(containerID string) {
 }
 
 // ContainerConfigGenerator generates the container config depending on the scrape target
-func ContainerConfigGenerator(scrapeTarget string, scrapeTargetName string, scrapeURL string, uploadIdentifier string, proxyAddress string, proxyLocation string) *container.Config {
+func ContainerConfigGenerator(
+	scrapeTarget string,
+	scrapeTargetName string,
+	scrapeURL string, uploadIdentifier string,
+	proxyAddress string, proxyLocation string, proxyPort string) *container.Config {
+
 	var scrapeContainerURL string
 	var targetName string
 
@@ -73,7 +78,7 @@ func ContainerConfigGenerator(scrapeTarget string, scrapeTargetName string, scra
 	}
 
 	scrapeMode := fmt.Sprintf("SCRAPE_MODE=%s", scrapeTarget)
-	proxySettings := fmt.Sprintf("PROXY_ADDRESS=%s", proxyAddress)
+	proxySettings := fmt.Sprintf("PROXY_ADDRESS=socks5://%s:%s", proxyAddress, proxyPort)
 
 	return &container.Config{
 		Image: containerImage,
