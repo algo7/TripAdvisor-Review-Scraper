@@ -246,7 +246,7 @@ func AcquireProxyContainer() ProxyContainer {
 		lockKey := "proxy-usage:" + *proxy.ContainerID
 		lockSuccess := database.SetLock(lockKey)
 
-		if lockSuccess {
+		if lockSuccess && proxy.ProxySOCKSPort != nil && proxy.IPAddress != nil {
 			return ProxyContainer{
 				ContainerID:  *proxy.ContainerID,
 				LockKey:      lockKey,
