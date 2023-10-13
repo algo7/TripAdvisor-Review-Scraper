@@ -115,13 +115,14 @@ func CreateContainer(containerConfig *container.Config) string {
 		&container.HostConfig{
 			AutoRemove: false, // Cant set to true otherwise the container got deleted before copying the file
 		},
+		// NetworkConfig
 		&network.NetworkingConfig{
 			EndpointsConfig: map[string]*network.EndpointSettings{
 				"scraper_vpn": {
-					NetworkID: "my-network",
+					NetworkID: "scraper_vpn",
 				},
 			},
-		}, // NetworkConfig
+		},
 		nil, // Platform
 		"",  // Container name
 	)
