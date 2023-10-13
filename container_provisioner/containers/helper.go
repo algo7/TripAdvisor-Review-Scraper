@@ -142,13 +142,14 @@ func TailLog(containerID string) io.Reader {
 
 // Container information
 type Container struct {
-	ContainerID *string
-	TaskOwner   *string
-	TargetName  *string
-	URL         *string
-	IPAddress   *string
-	VPNRegion   *string
-	VPNPort     *string
+	ContainerID  *string
+	TaskOwner    *string
+	TargetName   *string
+	URL          *string
+	IPAddress    *string
+	VPNRegion    *string
+	VPNSocksPort *string
+	VPNHttpPort  *string
 }
 
 // ListContainersByType lists all containers of the given type.
