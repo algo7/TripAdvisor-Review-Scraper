@@ -16,3 +16,8 @@ updates:
     directory: '/container_provisioner'
     schedule:
       interval: 'daily'
+
+  - package-ecosystem: 'npm'
+    directory: '/scraper'
+    schedule:
+      interval: 'daily'

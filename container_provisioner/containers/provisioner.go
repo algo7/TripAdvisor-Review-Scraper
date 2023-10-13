@@ -32,7 +32,7 @@ func Scrape(uploadIdentifier string, targetName string, containerID string) {
 	case status := <-statusCh:
 		// If the container exited with non-zero status code, remove the container and return an error
 		if status.StatusCode != 0 {
-			removeContainer(containerID)
+			RemoveContainer(containerID)
 			return
 		}
 	}
@@ -60,5 +60,5 @@ func Scrape(uploadIdentifier string, targetName string, containerID string) {
 	utils.R2UploadObject(exportedFileName, uploadIdentifier, file)
 
 	// Remove the container
-	removeContainer(containerID)
+	RemoveContainer(containerID)
 }

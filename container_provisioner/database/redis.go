@@ -3,7 +3,7 @@ package database
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -63,7 +63,30 @@ func RedisConnectionCheck() {
 	resp, err := rdb.Ping(ctx).Result()
 	utils.ErrorHandler(err)
 
-	fmt.Println("Redis connection established", resp)
+	log.Println("Redis connection established", resp)
+}
+
+// SetLock sets a lock on the given key
+func SetLock(key string) bool {
+
+	ctx := context.Background()
+
+	lockSuccess, err := rdb.SetNX(ctx, key, "1", time.Minute*5).Result()
+
+	if err != nil {
+		return false
+	}
+
+	return lockSuccess
+}
+
+// ReleaseLock releases the lock on the given key
+func ReleaseLock(key string) {
+
+	ctx := context.Background()
+
+	err := rdb.Del(ctx, key).Err()
+	utils.ErrorHandler(err)
 }
 
 // getRedisHostAddress checks if custom redis host address is supplied, if not, returns the default address

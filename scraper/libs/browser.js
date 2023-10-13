@@ -6,9 +6,61 @@ import randUserAgent from "rand-user-agent";
 import { EventEmitter } from 'events';
 
 // Environments variables
-let { CONCURRENCY } = process.env;
+let { CONCURRENCY, PROXY_ADDRESS } = process.env;
 CONCURRENCY = parseInt(CONCURRENCY) + 1;
 if (!CONCURRENCY) CONCURRENCY = 3;
+
+// Arguments for the browser
+const browserArgs = [
+    '--disable-gpu',
+    '--disable-web-security',
+    '--disable-dev-shm-usage',
+    '--disable-setuid-sandbox',
+    '--no-sandbox',
+    '--autoplay-policy=user-gesture-required',
+    '--disable-background-networking',
+    '--disable-background-timer-throttling',
+    '--disable-backgrounding-occluded-windows',
+    '--disable-breakpad',
+    '--disable-client-side-phishing-detection',
+    '--disable-component-update',
+    '--disable-default-apps',
+    '--disable-domain-reliability',
+    '--disable-extensions',
+    '--disable-features=AudioServiceOutOfProcess',
+    '--disable-hang-monitor',
+    '--disable-ipc-flooding-protection',
+    '--disable-notifications',
+    '--disable-offer-store-unmasked-wallet-cards',
+    '--disable-popup-blocking',
+    '--disable-print-preview',
+    '--disable-prompt-on-repost',
+    '--disable-renderer-backgrounding',
+    '--disable-setuid-sandbox',
+    '--disable-speech-api',
+    '--disable-sync',
+    '--hide-scrollbars',
+    '--ignore-gpu-blacklist',
+    '--metrics-recording-only',
+    '--mute-audio',
+    '--no-default-browser-check',
+    '--no-first-run',
+    '--no-pings',
+    '--no-zygote',
+    '--password-store=basic',
+    '--use-gl=swiftshader',
+    '--use-mock-keychain',
+    '--disable-gl-drawing-for-tests',
+    '-bwsi',
+    '--disable-canvas-aa',
+    '--disable-2d-canvas-clip-aa',
+    '--disable-accelerated-2d-canvas',
+    '--disable-infobars',
+    '--ignore-certificate-errors',
+]
+
+// If proxy is enabled
+if (PROXY_ADDRESS) browserArgs.push(`--proxy-server=${PROXY_ADDRESS}`)
 
 /**
  * Create a browser instance
@@ -28,52 +80,7 @@ class Browser extends EventEmitter {
                 width: 1280,
                 height: 1024,
             },
-            args: [
-                '--disable-gpu',
-                '--disable-dev-shm-usage',
-                '--disable-setuid-sandbox',
-                '--no-sandbox',
-                '--autoplay-policy=user-gesture-required',
-                '--disable-background-networking',
-                '--disable-background-timer-throttling',
-                '--disable-backgrounding-occluded-windows',
-                '--disable-breakpad',
-                '--disable-client-side-phishing-detection',
-                '--disable-component-update',
-                '--disable-default-apps',
-                '--disable-domain-reliability',
-                '--disable-extensions',
-                '--disable-features=AudioServiceOutOfProcess',
-                '--disable-hang-monitor',
-                '--disable-ipc-flooding-protection',
-                '--disable-notifications',
-                '--disable-offer-store-unmasked-wallet-cards',
-                '--disable-popup-blocking',
-                '--disable-print-preview',
-                '--disable-prompt-on-repost',
-                '--disable-renderer-backgrounding',
-                '--disable-setuid-sandbox',
-                '--disable-speech-api',
-                '--disable-sync',
-                '--hide-scrollbars',
-                '--ignore-gpu-blacklist',
-                '--metrics-recording-only',
-                '--mute-audio',
-                '--no-default-browser-check',
-                '--no-first-run',
-                '--no-pings',
-                '--no-zygote',
-                '--password-store=basic',
-                '--use-gl=swiftshader',
-                '--use-mock-keychain',
-                '--disable-gl-drawing-for-tests',
-                '-bwsi',
-                '--disable-canvas-aa',
-                '--disable-2d-canvas-clip-aa',
-                '--disable-accelerated-2d-canvas',
-                '--disable-infobars',
-                '--ignore-certificate-errors',
-            ],
+            args: browserArgs,
 
         };
         // The browser instance
@@ -108,8 +115,8 @@ class Browser extends EventEmitter {
         if (!this.browser) {
             this.browser = await this.launch()
             const newPage = await this.browser.newPage()
-            await newPage.setDefaultTimeout(8 * 1000);
-            await newPage.setDefaultNavigationTimeout(8 * 1000)
+            await newPage.setDefaultTimeout(8 * 10000);
+            await newPage.setDefaultNavigationTimeout(8 * 10000)
             // Generate a random user agent
             await newPage.setUserAgent(randUserAgent("desktop"))
             this.pageInUse.push(newPage)
@@ -125,8 +132,8 @@ class Browser extends EventEmitter {
 
         if (openedPage < CONCURRENCY) {
             const newPage = await this.browser.newPage()
-            await newPage.setDefaultTimeout(8 * 1000);
-            await newPage.setDefaultNavigationTimeout(8 * 1000)
+            await newPage.setDefaultTimeout(8 * 10000);
+            await newPage.setDefaultNavigationTimeout(8 * 10000)
             await newPage.setUserAgent(randUserAgent("desktop"))
             this.pageInUse.push(newPage)
             return newPage
@@ -177,7 +184,7 @@ class Browser extends EventEmitter {
     */
     async reportTabStats() {
 
-        const openedPage = await this.#countPage()
+        const openedPage = await this.#countPage() - 1
         // If the countPage function is able to get the page opened
         if (openedPage) return {
             heartbeat: {

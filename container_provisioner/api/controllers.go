@@ -28,7 +28,7 @@ type enrichedR2Obj struct {
 func getMain(c *fiber.Ctx) error {
 
 	// Get the number of running containers
-	runningContainers := len(containers.ListContainers())
+	runningContainers := len(containers.ListContainersByType("scraper"))
 
 	// Check if the R2 objects list is cached
 	cachedObjectsList := database.CacheLookUp("r2StorageObjectsList")
@@ -129,9 +129,9 @@ func postProvision(c *fiber.Ctx) error {
 	}
 
 	// Get the number of running containers
-	runningContainers := len(containers.ListContainers())
+	runningContainers := len(containers.ListContainersByType("scraper"))
 
-	if runningContainers >= 10 {
+	if runningContainers >= 5 {
 		return c.Render("submission", fiber.Map{
 			"Title":      "Algo7 TripAdvisor Scraper",
 			"Message1":   "Sorry, we are currently busy. Please try again later",
@@ -142,19 +142,25 @@ func postProvision(c *fiber.Ctx) error {
 	// Get the scrape target name from the URL
 	scrapeTargetName := utils.GetScrapeTargetNameFromURL(url, scrapeMode)
 
+	// Get the proxy container info
+	proxyContainers := containers.AcquireProxyContainer()
+
 	// Generate the container config
-	scrapeConfig := containers.ContainerConfigGenerator(scrapeMode, scrapeTargetName, url, uploadIdentifier)
+	scrapeConfig := containers.ContainerConfigGenerator(scrapeMode, scrapeTargetName, url, uploadIdentifier, proxyContainers.ProxyAddress, proxyContainers.VPNRegion)
 
 	// Create the container
 	containerID := containers.CreateContainer(scrapeConfig)
 
 	// Start the scraping container via goroutine
-	go containers.Scrape(uploadIdentifier, scrapeTargetName, containerID)
+	go func() {
+		containers.Scrape(uploadIdentifier, scrapeTargetName, containerID)
+		database.ReleaseLock(proxyContainers.LockKey)
+	}()
 
 	return c.Render("submission", fiber.Map{
 		"Title": "Algo7 TripAdvisor Scraper",
 		// "Message": fmt.Sprintf("Your request has been submitted. You will receive an email at %s when the data is ready", email),
-		"Message1":    "Your request has been submitted. ",
+		"Message1":    fmt.Sprintf("Your request has been submitted. VPN Region: %s", proxyContainers.VPNRegion),
 		"Message2":    "You can check the progress of your request below",
 		"Message3":    "Once it's done, you can return to the main page to download the data",
 		"ContainerId": containerID,
@@ -178,7 +184,7 @@ func getLogs(c *fiber.Ctx) error {
 	}
 
 	// Get ids of all running containers
-	existingContainers := containers.ListContainers()
+	existingContainers := containers.ListContainersByType("scraper")
 
 	// If there are no running containers
 	if len(existingContainers) == 0 {
@@ -190,7 +196,7 @@ func getLogs(c *fiber.Ctx) error {
 
 	// Extract the running container ids
 	for _, container := range existingContainers {
-		runningContainersIds = append(runningContainersIds, container.ContainerID)
+		runningContainersIds = append(runningContainersIds, *container.ContainerID)
 	}
 
 	// If the running containers do not include the containerId
@@ -209,7 +215,7 @@ func getLogs(c *fiber.Ctx) error {
 func getRunningTasks(c *fiber.Ctx) error {
 
 	// Get ids of all running containers
-	runningContainers := containers.ListContainers()
+	runningContainers := containers.ListContainersByType("scraper")
 
 	// The page status message
 	currentTaskStatus := "There are no running tasks"

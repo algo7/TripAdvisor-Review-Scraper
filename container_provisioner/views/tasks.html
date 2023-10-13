@@ -105,6 +105,7 @@
               <th>Running Tasks</th>
               <th>Target Name</th>
               <th>Task Owner</th>
+              <th>VPN Location</th>
               <th>Link</th>
             </tr>
           </thead>
@@ -114,6 +115,7 @@
               <td>{{.ContainerID}}</td>
               <td>{{.TargetName}}</td>
               <td>{{.TaskOwner}}</td>
+              <td>{{.VPNRegion}}</td>
               <td><a href="{{.URL}}">View Logs</a></td>
             </tr>
             {{end}}

@@ -7,8 +7,11 @@ services:
       SCRAPE_MODE: RESTO
       CONCURRENCY: 4
       LANGUAGE: en
+      # Can be http, https, socks4, socks5
+      # If not set, no proxy will be used
+      PROXY_ADDRESS: http://proxy:3128
     # Image name
-    image: ghcr.io/algo7/tripadvisor-review-scraper/scraper:latest
+    image: scrape:latest
     volumes:
       - type: bind
         source: ./reviews
