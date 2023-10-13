@@ -177,16 +177,18 @@ func ListContainersByType(containerType string) []Container {
 
 		// Get the first 12 characters of the container ID
 		containerID := containerInfo.ID[:12]
+		taskOwner := containerInfo.Labels["TaskOwner"]
+		targetName := containerInfo.Labels["Target"]
+		vpnRegion := containerInfo.Labels["vpn.region"]
+		url := fmt.Sprintf("/logs-viewer?container_id=%s", containerInfo.ID[:12])
+		ipAddr := containerInfo.NetworkSettings.Networks["scraper_vpn"].IPAddress
 
 		switch containerType {
 
 		case "scraper":
 			// logic for listing scraper containers
-			if containerInfo.Labels["TaskOwner"] != "" && containerInfo.Labels["TaskOwner"] != "PROXY" {
-				taskOwner := containerInfo.Labels["TaskOwner"]
-				targetName := containerInfo.Labels["Target"]
-				vpnRegion := containerInfo.Labels["vpn.region"]
-				url := fmt.Sprintf("/logs-viewer?container_id=%s", containerInfo.ID[:12])
+			if taskOwner != "" && taskOwner != "PROXY" {
+
 				containers = append(containers, Container{
 					ContainerID: &containerID,
 					URL:         &url,
@@ -197,12 +199,11 @@ func ListContainersByType(containerType string) []Container {
 			}
 
 		case "proxy":
-			if containerInfo.Labels["TaskOwner"] != "" && containerInfo.Labels["TaskOwner"] == "PROXY" {
-				vpnRegion := containerInfo.Labels["vpn.region"]
+			if taskOwner == "PROXY" {
 				containers = append(containers, Container{
 					ContainerID: &containerID,
 					VPNRegion:   &vpnRegion,
-					IPAddress:   &containerInfo.NetworkSettings.Networks["scraper_vpn"].IPAddress,
+					IPAddress:   &ipAddr,
 				})
 
 			}
