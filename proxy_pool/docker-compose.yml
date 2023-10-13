@@ -5,6 +5,8 @@ services:
     labels:
       - 'TaskOwner=PROXY'
       - 'vpn.region=CH'
+      - 'vpn.socks.port=8881'
+      - 'vpn.http.port=8888'
     # Capabilities required to run OpenVPN
     cap_add:
       - NET_ADMIN
@@ -38,6 +40,8 @@ services:
     labels:
       - 'TaskOwner=PROXY'
       - 'vpn.region=SE'
+      - 'vpn.socks.port=8882'
+      - 'vpn.http.port=8889'
     # Capabilities required to run OpenVPN
     cap_add:
       - NET_ADMIN
@@ -71,6 +75,8 @@ services:
     labels:
       - 'TaskOwner=PROXY'
       - 'vpn.region=UK'
+      - 'vpn.socks.port=8883'
+      - 'vpn.http.port=8890'
     # Capabilities required to run OpenVPN
     cap_add:
       - NET_ADMIN
@@ -104,6 +110,8 @@ services:
     labels:
       - 'TaskOwner=PROXY'
       - 'vpn.region=BE'
+      - 'vpn.socks.port=8884'
+      - 'vpn.http.port=8891'
     # Capabilities required to run OpenVPN
     cap_add:
       - NET_ADMIN
