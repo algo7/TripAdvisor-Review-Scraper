@@ -188,8 +188,9 @@ func ListContainersByType(containerType string) []Container {
 		taskOwner := containerInfo.Labels["TaskOwner"]
 		targetName := containerInfo.Labels["Target"]
 		vpnRegion := containerInfo.Labels["vpn.region"]
-		vpnSOCKSPort := containerInfo.Labels["vpn.socks.port"]
-		vpnHTTPPort := containerInfo.Labels["vpn.http.port"]
+		vpnSOCKSPort := containerInfo.Labels["proxy.socks.port"]
+		vpnHTTPPort := containerInfo.Labels["proxy.http.port"]
+		log.Println("VPN HTTP Port: ", vpnHTTPPort)
 		url := fmt.Sprintf("/logs-viewer?container_id=%s", containerInfo.ID[:12])
 
 		switch containerType {
