@@ -146,7 +146,7 @@ func postProvision(c *fiber.Ctx) error {
 	proxyContainers := containers.AcquireProxyContainer()
 
 	// Generate the container config
-	scrapeConfig := containers.ContainerConfigGenerator(scrapeMode, scrapeTargetName, url, uploadIdentifier, *proxyContainers.IPAddress, *proxyContainers.VPNRegion)
+	scrapeConfig := containers.ContainerConfigGenerator(scrapeMode, scrapeTargetName, url, uploadIdentifier, proxyContainers.IPAddress, proxyContainers.VPNRegion)
 
 	// Create the container
 	containerID := containers.CreateContainer(scrapeConfig)
@@ -154,13 +154,13 @@ func postProvision(c *fiber.Ctx) error {
 	// Start the scraping container via goroutine
 	go func() {
 		containers.Scrape(uploadIdentifier, scrapeTargetName, containerID)
-		database.ReleaseLock(*proxyContainers.ContainerID)
+		database.ReleaseLock(proxyContainers.LockKey)
 	}()
 
 	return c.Render("submission", fiber.Map{
 		"Title": "Algo7 TripAdvisor Scraper",
 		// "Message": fmt.Sprintf("Your request has been submitted. You will receive an email at %s when the data is ready", email),
-		"Message1":    fmt.Sprintf("Your request has been submitted. VPN Region: %s", vpnRegionMsg),
+		"Message1":    fmt.Sprintf("Your request has been submitted. VPN Region: %s", proxyContainers.VPNRegion),
 		"Message2":    "You can check the progress of your request below",
 		"Message3":    "Once it's done, you can return to the main page to download the data",
 		"ContainerId": containerID,
