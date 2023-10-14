@@ -58,10 +58,11 @@ const browserArgs = [
     '--disable-infobars',
     '--ignore-certificate-errors',
 ]
+const defaultPageTimeOut = 8 * 2 * 10000
 
 // If proxy is enabled
 if (PROXY_ADDRESS) browserArgs.push(`--proxy-server=${PROXY_ADDRESS}`)
-console.log(`Internal Proxy Address: ${PROXY_ADDRESS}`)
+
 /**
  * Create a browser instance
  */
@@ -115,8 +116,8 @@ class Browser extends EventEmitter {
         if (!this.browser) {
             this.browser = await this.launch()
             const newPage = await this.browser.newPage()
-            await newPage.setDefaultTimeout(8 * 10000);
-            await newPage.setDefaultNavigationTimeout(8 * 10000)
+            await newPage.setDefaultTimeout(defaultPageTimeOut);
+            await newPage.setDefaultNavigationTimeout(defaultPageTimeOut)
             // Generate a random user agent
             await newPage.setUserAgent(randUserAgent("desktop"))
             this.pageInUse.push(newPage)
@@ -132,8 +133,8 @@ class Browser extends EventEmitter {
 
         if (openedPage < CONCURRENCY) {
             const newPage = await this.browser.newPage()
-            await newPage.setDefaultTimeout(8 * 10000);
-            await newPage.setDefaultNavigationTimeout(8 * 10000)
+            await newPage.setDefaultTimeout(defaultPageTimeOut);
+            await newPage.setDefaultNavigationTimeout(defaultPageTimeOut)
             await newPage.setUserAgent(randUserAgent("desktop"))
             this.pageInUse.push(newPage)
             return newPage
