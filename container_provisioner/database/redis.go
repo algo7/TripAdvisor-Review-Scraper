@@ -71,7 +71,7 @@ func SetLock(key string) bool {
 
 	ctx := context.Background()
 
-	lockSuccess, err := rdb.SetNX(ctx, key, "1", time.Minute*5).Result()
+	lockSuccess, err := rdb.SetNX(ctx, key, "1", 0).Result()
 
 	if err != nil {
 		return false
