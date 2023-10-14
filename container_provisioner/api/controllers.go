@@ -154,7 +154,7 @@ func postProvision(c *fiber.Ctx) error {
 	// Start the scraping container via goroutine
 	go func() {
 		containers.Scrape(uploadIdentifier, scrapeTargetName, containerID)
-		database.ReleaseLock(proxyContainers.LockKey)
+		containers.ReleaseProxyContainer(proxyContainers.ContainerID)
 	}()
 
 	return c.Render("submission", fiber.Map{
