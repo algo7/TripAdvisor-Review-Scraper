@@ -91,7 +91,7 @@ func ContainerConfigGenerator(
 		},
 		// Env vars required by the js scraper containers
 		Env: []string{
-			"CONCURRENCY=2",
+			"CONCURRENCY=10",
 			"IS_PROVISIONER=true",
 			scrapeMode,
 			scrapeContainerURL,
