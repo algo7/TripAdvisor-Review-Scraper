@@ -153,3 +153,4 @@ networks:
     # At this moment, it is hardcoded in the container_provisioner when creating the containers.
     name: scraper_vpn
     driver: bridge
+    attachable: true
