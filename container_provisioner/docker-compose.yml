@@ -32,7 +32,7 @@ services:
         protocol: tcp
     # Set up a dedicated network
     networks:
-      - scraper
+      - container_provisioner
 
   # Service name
   redis:
@@ -47,9 +47,12 @@ services:
         protocol: tcp
     # Set up a dedicated network
     networks:
-      - scraper
+      - container_provisioner
+
 ## Config section
 # Define the network type
 networks:
-  scraper:
+  container_provisioner:
+    name: container_provisioner
+    driver: bridge
     external: false
