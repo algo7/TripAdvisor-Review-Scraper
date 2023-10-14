@@ -242,7 +242,6 @@ func ListContainersByType(containerType string) []Container {
 // ProxyContainer information
 type ProxyContainer struct {
 	ContainerID  string
-	LockKey      string
 	ProxyAddress string
 	VPNRegion    string
 }
@@ -258,7 +257,6 @@ func AcquireProxyContainer() ProxyContainer {
 		if lockSuccess && proxy.ProxySOCKSPort != nil && proxy.IPAddress != nil {
 			return ProxyContainer{
 				ContainerID:  *proxy.ContainerID,
-				LockKey:      lockKey,
 				VPNRegion:    *proxy.VPNRegion,
 				ProxyAddress: fmt.Sprintf("socks5://%s:%s", *proxy.IPAddress, *proxy.ProxySOCKSPort),
 			}
