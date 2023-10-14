@@ -18,6 +18,7 @@ services:
     # Devices required to run OpenVPN
     devices:
       - '/dev/net/tun:/dev/net/tun'
+    # NOTE: These port mappings are only used when you are connecting to the proxy pool from outside of docker network without the container_provisioner (e.g. from your host machine).
     ports:
       # Squid proxy port
       - target: 8888
@@ -47,8 +48,8 @@ services:
     labels:
       - 'TaskOwner=PROXY'
       - 'vpn.region=SE'
-      - 'proxy.socks.port=8882'
-      - 'proxy.http.port=8889'
+      - 'proxy.socks.port=8881'
+      - 'proxy.http.port=8888'
     # Capabilities required to run OpenVPN
     cap_add:
       - NET_ADMIN
@@ -82,8 +83,8 @@ services:
     labels:
       - 'TaskOwner=PROXY'
       - 'vpn.region=UK'
-      - 'proxy.socks.port=8883'
-      - 'proxy.http.port=8890'
+      - 'proxy.socks.port=8881'
+      - 'proxy.http.port=8888'
     # Capabilities required to run OpenVPN
     cap_add:
       - NET_ADMIN
@@ -117,8 +118,8 @@ services:
     labels:
       - 'TaskOwner=PROXY'
       - 'vpn.region=BE'
-      - 'proxy.socks.port=8884'
-      - 'proxy.http.port=8891'
+      - 'proxy.socks.port=8881'
+      - 'proxy.http.port=8888'
     # Capabilities required to run OpenVPN
     cap_add:
       - NET_ADMIN
