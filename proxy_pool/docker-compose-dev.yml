@@ -18,6 +18,7 @@ services:
     # Devices required to run OpenVPN
     devices:
       - '/dev/net/tun:/dev/net/tun'
+    # NOTE: These ports are only used when you are connecting to the proxy pool from outside of docker network without the container_provisioner.
     ports:
       # Squid proxy port
       - target: 8888
