@@ -148,6 +148,41 @@ services:
         bind:
           create_host_path: true
 
+  vpnde:
+    image: ghcr.io/algo7/tripadvisor-review-scraper/vpn_worker:latest
+    labels:
+      - 'TaskOwner=PROXY'
+      - 'vpn.region=DE'
+      - 'proxy.socks.port=8881'
+      - 'proxy.http.port=8888'
+    # Capabilities required to run OpenVPN
+    cap_add:
+      - NET_ADMIN
+    # Devices required to run OpenVPN
+    devices:
+      - '/dev/net/tun:/dev/net/tun'
+    ports:
+      # Squid proxy port
+      - target: 8888
+        published: 8891
+        protocol: tcp
+      # Dante proxy port
+      - target: 8881
+        published: 8884
+        protocol: tcp
+      - target: 8881
+        published: 8884
+        protocol: udp
+    networks:
+      - scraper_vpn
+    volumes:
+      # OpenVPN credentials
+      - type: bind
+        source: ./VPN/DE
+        target: /VPN
+        bind:
+          create_host_path: true
+
 networks:
   scraper_vpn:
     # WARNING: Do not Change the name of this network. It is used by the scraper to connect to the proxies.
