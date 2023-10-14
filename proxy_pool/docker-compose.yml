@@ -1,12 +1,12 @@
 version: '3.9'
 services:
-  vpnch:
+  vpnch5:
     image: ghcr.io/algo7/tripadvisor-review-scraper/vpn_worker:latest
     labels:
       # This label is used by the container_provisioner to identify the containers that are part of the proxy pool.
       - 'TaskOwner=PROXY'
       # This label is used by the container_provisioner to show the region of the proxy on the UI.
-      - 'vpn.region=CH'
+      - 'vpn.region=CH5'
       # This label is used by the container_provisioner to get the socks port of the proxy.
       - 'proxy.socks.port=8881'
       # This label is used by the container_provisioner to get the http port of the proxy.
@@ -38,17 +38,22 @@ services:
     volumes:
       # OpenVPN credentials and config (config.vpn and pass.txt)
       - type: bind
-        source: ./VPN/CH
+        source: ./VPN/CH5
         target: /VPN
         bind:
           create_host_path: true
 
-  vpnse:
+  vpnch14:
     image: ghcr.io/algo7/tripadvisor-review-scraper/vpn_worker:latest
     labels:
+      # This label is used by the container_provisioner to identify the containers that are part of the proxy pool.
       - 'TaskOwner=PROXY'
-      - 'vpn.region=SE'
+      # This label is used by the container_provisioner to show the region of the proxy on the UI.
+      - 'vpn.region=CH14'
+      # This label is used by the container_provisioner to get the socks port of the proxy.
       - 'proxy.socks.port=8881'
+      # This label is used by the container_provisioner to get the http port of the proxy.
+      # Currently, the container_provisioner only supports socks5 proxies.
       - 'proxy.http.port=8888'
     # Capabilities required to run OpenVPN
     cap_add:
@@ -56,34 +61,30 @@ services:
     # Devices required to run OpenVPN
     devices:
       - '/dev/net/tun:/dev/net/tun'
-    ports:
-      # Squid proxy port
-      - target: 8888
-        published: 8889
-        protocol: tcp
-      # Dante proxy port
-      - target: 8881
-        published: 8882
-        protocol: tcp
-      - target: 8881
-        published: 8882
-        protocol: udp
+
+    # WARNING: Do not Change the name of this network. It is used by the scraper to connect to the proxies.
+    # At this moment, it is hardcoded in the container_provisioner when creating the containers.
     networks:
       - scraper_vpn
     volumes:
-      # OpenVPN credentials
+      # OpenVPN credentials and config (config.vpn and pass.txt)
       - type: bind
-        source: ./VPN/SE
+        source: ./VPN/CH76
         target: /VPN
         bind:
           create_host_path: true
 
-  vpnuk:
+  vpnch46:
     image: ghcr.io/algo7/tripadvisor-review-scraper/vpn_worker:latest
     labels:
+      # This label is used by the container_provisioner to identify the containers that are part of the proxy pool.
       - 'TaskOwner=PROXY'
-      - 'vpn.region=UK'
+      # This label is used by the container_provisioner to show the region of the proxy on the UI.
+      - 'vpn.region=CH46'
+      # This label is used by the container_provisioner to get the socks port of the proxy.
       - 'proxy.socks.port=8881'
+      # This label is used by the container_provisioner to get the http port of the proxy.
+      # Currently, the container_provisioner only supports socks5 proxies.
       - 'proxy.http.port=8888'
     # Capabilities required to run OpenVPN
     cap_add:
@@ -91,34 +92,30 @@ services:
     # Devices required to run OpenVPN
     devices:
       - '/dev/net/tun:/dev/net/tun'
-    ports:
-      # Squid proxy port
-      - target: 8888
-        published: 8890
-        protocol: tcp
-      # Dante proxy port
-      - target: 8881
-        published: 8883
-        protocol: tcp
-      - target: 8881
-        published: 8883
-        protocol: udp
+
+    # WARNING: Do not Change the name of this network. It is used by the scraper to connect to the proxies.
+    # At this moment, it is hardcoded in the container_provisioner when creating the containers.
     networks:
       - scraper_vpn
     volumes:
-      # OpenVPN credentials
+      # OpenVPN credentials and config (config.vpn and pass.txt)
       - type: bind
-        source: ./VPN/UK
+        source: ./VPN/CH76
         target: /VPN
         bind:
           create_host_path: true
 
-  vpnbe:
+  vpnch58:
     image: ghcr.io/algo7/tripadvisor-review-scraper/vpn_worker:latest
     labels:
+      # This label is used by the container_provisioner to identify the containers that are part of the proxy pool.
       - 'TaskOwner=PROXY'
-      - 'vpn.region=BE'
+      # This label is used by the container_provisioner to show the region of the proxy on the UI.
+      - 'vpn.region=CH58'
+      # This label is used by the container_provisioner to get the socks port of the proxy.
       - 'proxy.socks.port=8881'
+      # This label is used by the container_provisioner to get the http port of the proxy.
+      # Currently, the container_provisioner only supports socks5 proxies.
       - 'proxy.http.port=8888'
     # Capabilities required to run OpenVPN
     cap_add:
@@ -126,34 +123,30 @@ services:
     # Devices required to run OpenVPN
     devices:
       - '/dev/net/tun:/dev/net/tun'
-    ports:
-      # Squid proxy port
-      - target: 8888
-        published: 8891
-        protocol: tcp
-      # Dante proxy port
-      - target: 8881
-        published: 8884
-        protocol: tcp
-      - target: 8881
-        published: 8884
-        protocol: udp
+
+    # WARNING: Do not Change the name of this network. It is used by the scraper to connect to the proxies.
+    # At this moment, it is hardcoded in the container_provisioner when creating the containers.
     networks:
       - scraper_vpn
     volumes:
-      # OpenVPN credentials
+      # OpenVPN credentials and config (config.vpn and pass.txt)
       - type: bind
-        source: ./VPN/BE
+        source: ./VPN/CH76
         target: /VPN
         bind:
           create_host_path: true
 
-  vpnde:
+  vpnch66:
     image: ghcr.io/algo7/tripadvisor-review-scraper/vpn_worker:latest
     labels:
+      # This label is used by the container_provisioner to identify the containers that are part of the proxy pool.
       - 'TaskOwner=PROXY'
-      - 'vpn.region=DE'
+      # This label is used by the container_provisioner to show the region of the proxy on the UI.
+      - 'vpn.region=CH66'
+      # This label is used by the container_provisioner to get the socks port of the proxy.
       - 'proxy.socks.port=8881'
+      # This label is used by the container_provisioner to get the http port of the proxy.
+      # Currently, the container_provisioner only supports socks5 proxies.
       - 'proxy.http.port=8888'
     # Capabilities required to run OpenVPN
     cap_add:
@@ -161,24 +154,76 @@ services:
     # Devices required to run OpenVPN
     devices:
       - '/dev/net/tun:/dev/net/tun'
-    ports:
-      # Squid proxy port
-      - target: 8888
-        published: 8892
-        protocol: tcp
-      # Dante proxy port
-      - target: 8881
-        published: 8885
-        protocol: tcp
-      - target: 8881
-        published: 8885
-        protocol: udp
+
+    # WARNING: Do not Change the name of this network. It is used by the scraper to connect to the proxies.
+    # At this moment, it is hardcoded in the container_provisioner when creating the containers.
     networks:
       - scraper_vpn
     volumes:
-      # OpenVPN credentials
+      # OpenVPN credentials and config (config.vpn and pass.txt)
       - type: bind
-        source: ./VPN/DE
+        source: ./VPN/CH76
+        target: /VPN
+        bind:
+          create_host_path: true
+
+  vpnch70:
+    image: ghcr.io/algo7/tripadvisor-review-scraper/vpn_worker:latest
+    labels:
+      # This label is used by the container_provisioner to identify the containers that are part of the proxy pool.
+      - 'TaskOwner=PROXY'
+      # This label is used by the container_provisioner to show the region of the proxy on the UI.
+      - 'vpn.region=CH70'
+      # This label is used by the container_provisioner to get the socks port of the proxy.
+      - 'proxy.socks.port=8881'
+      # This label is used by the container_provisioner to get the http port of the proxy.
+      # Currently, the container_provisioner only supports socks5 proxies.
+      - 'proxy.http.port=8888'
+    # Capabilities required to run OpenVPN
+    cap_add:
+      - NET_ADMIN
+    # Devices required to run OpenVPN
+    devices:
+      - '/dev/net/tun:/dev/net/tun'
+    # WARNING: Do not Change the name of this network. It is used by the scraper to connect to the proxies.
+    # At this moment, it is hardcoded in the container_provisioner when creating the containers.
+    networks:
+      - scraper_vpn
+    volumes:
+      # OpenVPN credentials and config (config.vpn and pass.txt)
+      - type: bind
+        source: ./VPN/CH76
+        target: /VPN
+        bind:
+          create_host_path: true
+
+  vpnch76:
+    image: ghcr.io/algo7/tripadvisor-review-scraper/vpn_worker:latest
+    labels:
+      # This label is used by the container_provisioner to identify the containers that are part of the proxy pool.
+      - 'TaskOwner=PROXY'
+      # This label is used by the container_provisioner to show the region of the proxy on the UI.
+      - 'vpn.region=CH76'
+      # This label is used by the container_provisioner to get the socks port of the proxy.
+      - 'proxy.socks.port=8881'
+      # This label is used by the container_provisioner to get the http port of the proxy.
+      # Currently, the container_provisioner only supports socks5 proxies.
+      - 'proxy.http.port=8888'
+    # Capabilities required to run OpenVPN
+    cap_add:
+      - NET_ADMIN
+    # Devices required to run OpenVPN
+    devices:
+      - '/dev/net/tun:/dev/net/tun'
+
+    # WARNING: Do not Change the name of this network. It is used by the scraper to connect to the proxies.
+    # At this moment, it is hardcoded in the container_provisioner when creating the containers.
+    networks:
+      - scraper_vpn
+    volumes:
+      # OpenVPN credentials and config (config.vpn and pass.txt)
+      - type: bind
+        source: ./VPN/CH76
         target: /VPN
         bind:
           create_host_path: true
