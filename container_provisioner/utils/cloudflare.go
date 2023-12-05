@@ -60,7 +60,7 @@ func R2ListObjects() []R2Obj {
 	// List objects in R2
 	listObjectsOutput, err := r2Client.ListObjectsV2(ctx, &r2.ListObjectsV2Input{
 		Bucket:     &data.BucketName,
-		FetchOwner: true,
+		FetchOwner: aws.Bool(true),
 	})
 	ErrorHandler(err)
 
