@@ -17,6 +17,7 @@ A simple scraper for TripAdvisor reviews.
   - [Run the container provisioner](#run-the-container-provisioner)
   - [Visit the UI](#visit-the-ui)
   - [Live Demo](#live-demo)
+- [Proxy Pool](#proxy-pool)
 
 ## How to Install Docker:
 1. [Windows](https://docs.docker.com/desktop/windows/install/)
@@ -84,3 +85,5 @@ The UI is accessible at `http://localhost:3000`.
 
 ## Live Demo
 A live demo of the container provisioner is available at [https://algo7.tools](https://algo7.tools).
+
+# Proxy Pool
