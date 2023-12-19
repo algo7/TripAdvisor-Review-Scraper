@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.24.0
 	github.com/aws/aws-sdk-go-v2/config v1.26.1
 	github.com/aws/aws-sdk-go-v2/credentials v1.16.12
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.47.5
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.47.6
 	github.com/docker/docker v24.0.7+incompatible
 	github.com/gofiber/fiber/v2 v2.51.0
 	github.com/gofiber/template/html/v2 v2.0.5
