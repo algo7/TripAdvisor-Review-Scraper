@@ -1,5 +1,5 @@
 # TripAdvisor-Review-Scraper
-A simple scraper for TripAdvisor reviews.
+A simple scraper for TripAdvisor (Hotel, Restaurant, Airline) reviews.
 
 ## Table of Contents
 
