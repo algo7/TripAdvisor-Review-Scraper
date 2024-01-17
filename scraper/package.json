@@ -35,6 +35,6 @@
     "rand-user-agent": "^2.0.46"
   },
   "devDependencies": {
-    "eslint": "^8.55.0"
+    "eslint": "^8.56.0"
   }
 }
