@@ -1,6 +1,14 @@
 # TripAdvisor-Review-Scraper
 A simple scraper for TripAdvisor (Hotel, Restaurant, Airline) reviews.
 
+[![Build & Push [Container Provisioner]](https://github.com/algo7/TripAdvisor-Review-Scraper/actions/workflows/ci_container_provisioner.yml/badge.svg?branch=main)](https://github.com/algo7/TripAdvisor-Review-Scraper/actions/workflows/ci_container_provisioner.yml)
+
+[![Build & Push [Scraper]](https://github.com/algo7/TripAdvisor-Review-Scraper/actions/workflows/ci_scraper.yml/badge.svg?branch=main)](https://github.com/algo7/TripAdvisor-Review-Scraper/actions/workflows/ci_scraper.yml)
+
+[![Build & Push [VPN Worker]](https://github.com/algo7/TripAdvisor-Review-Scraper/actions/workflows/ci_vpn_worker.yml/badge.svg)](https://github.com/algo7/TripAdvisor-Review-Scraper/actions/workflows/ci_vpn_worker.yml)
+
+[![CodeQL](https://github.com/algo7/TripAdvisor-Review-Scraper/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/algo7/TripAdvisor-Review-Scraper/actions/workflows/codeql.yml)
+
 # [Current Issues](https://github.com/algo7/TripAdvisor-Review-Scraper/issues)
 
 ## Table of Contents
