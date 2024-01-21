@@ -37,6 +37,9 @@ const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
         // Wait for the content to load
         await page.waitForSelector('#LanguageFilter_0');
 
+        // Simulate random mouse movement
+        await page.mouse.move(Math.random() * 1000, Math.random() * 1000);
+
         // Determin current URL
         const currentURL = page.url();
 
@@ -141,6 +144,7 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
 
         for (let index = 0; index < reviewPageUrls.length; index++) {
 
+
             // Open a new page
             const page = await browser.getNewPage()
 
@@ -149,6 +153,9 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, hotelName, hot
 
             // Wait for the content to load
             await page.waitForSelector('body');
+
+            // Simulate random mouse movement
+            await page.mouse.move(Math.random() * 1000, Math.random() * 1000);
 
             // Determine current URL
             const currentURL = page.url();
