@@ -35,7 +35,7 @@ const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
         await page.goto(hotelUrl);
 
         // Wait for the content to load
-        await page.waitForSelector('body');
+        await page.waitForSelector('#LanguageFilter_0');
 
         // Determin current URL
         const currentURL = page.url();
@@ -80,6 +80,7 @@ const extractAllReviewPageUrls = async (hotelUrl, position, browser) => {
             return { noReviewPages, url, totalReviewCount, };
 
         });
+
 
         // Destructure function outputs
         let { noReviewPages, url, totalReviewCount, } = getReviewPageUrls;

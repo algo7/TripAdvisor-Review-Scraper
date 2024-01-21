@@ -2,6 +2,7 @@
 import puppeteer from 'puppeteer-extra'
 import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
 import blockResourcesPlugin from 'puppeteer-extra-plugin-block-resources';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import randUserAgent from "rand-user-agent";
 import { EventEmitter } from 'events';
 
@@ -78,8 +79,8 @@ class Browser extends EventEmitter {
             headless: true,
             devtools: false,
             defaultViewport: {
-                width: 1280,
-                height: 1024,
+                width: 1366,
+                height: 768,
             },
             args: browserArgs,
 
@@ -102,6 +103,7 @@ class Browser extends EventEmitter {
         puppeteer
             .use(blockResourcesPlugin({ blockedTypes: new Set(['stylesheet', 'image', 'font', 'media', 'other']) }))
             .use(AdblockerPlugin({ blockTrackers: true }))
+            .use(StealthPlugin())
         this.browser = await puppeteer.launch(this.config)
         return this.browser
     }
@@ -119,7 +121,7 @@ class Browser extends EventEmitter {
             await newPage.setDefaultTimeout(defaultPageTimeOut);
             await newPage.setDefaultNavigationTimeout(defaultPageTimeOut)
             // Generate a random user agent
-            await newPage.setUserAgent(randUserAgent("desktop"))
+            await newPage.setUserAgent(randUserAgent("desktop", "chrome", "windows"))
             this.pageInUse.push(newPage)
 
             return newPage

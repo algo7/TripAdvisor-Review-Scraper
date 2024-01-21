@@ -32,7 +32,8 @@
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-adblocker": "^2.13.6",
     "puppeteer-extra-plugin-block-resources": "^2.4.3",
-    "rand-user-agent": "^2.0.46"
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "rand-user-agent": "^2.0.47"
   },
   "devDependencies": {
     "eslint": "^8.56.0"
