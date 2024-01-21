@@ -8,6 +8,6 @@ The Proxy Pool service can also be used directly with the scraper. Just make sur
 ```bash
 docker pull ghcr.io/algo7/tripadvisor-review-scraper/vpn_worker:latest
 ```
-2. Create a docker-compose.yml file containing the configurations for each proxy (see the docker-compose.yml provided in the proxy_pool folder).
+2. Create a docker-compose.yml file containing the configurations for each proxy (see the docker-compose.yml provided).
 3. Place the OpenVPN config file of each proxy in the corresponding bind mount folder speicified in the docker-compose.yml file.
 4. Run `docker-compose up` to start the container.

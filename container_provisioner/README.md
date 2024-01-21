@@ -28,4 +28,4 @@ The `docker-compose.yml` for the provisioner is located in the `container_provis
 The UI is accessible at `http://localhost:3000`.
 
 ## Live Demo
-A live demo of the container provisioner is available at [https://algo7.tools](https://algo7.tools).
+A live demo of the container provisioner is available at [https://scraper.algo7.tools](https://scraper.algo7.tools).
