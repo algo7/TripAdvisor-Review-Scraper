@@ -59,4 +59,11 @@ A simple scraper for TripAdvisor (Hotel, Restaurant, Airline) reviews.
 3. The hotel scraper uses date of review instead of date of stay as the date because the date of stay is not always available.
 
 # Container Provisioner
+Automates the process of provisioning containers for the scraper.
+
+Please read more about the container provisioner [here](https://github.com/algo7/TripAdvisor-Review-Scraper/tree/main/container_provisioner)
+
 # Proxy Pool
+Provides a pool of proxies for the scraper to use.
+
+Please read more about the proxy pool [here](https://github.com/algo7/TripAdvisor-Review-Scraper/tree/main/proxy_pool)
