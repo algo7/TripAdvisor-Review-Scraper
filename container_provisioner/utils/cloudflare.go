@@ -105,6 +105,7 @@ func CreateR2Client(accessKeyID string, accessKeySecret string, accountID string
 	cfg, err := config.LoadDefaultConfig(ctx,
 		config.WithEndpointResolverWithOptions(r2Resolver),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKeyID, accessKeySecret, "")),
+		config.WithRegion("auto"),
 	)
 	ErrorHandler(err)
 
