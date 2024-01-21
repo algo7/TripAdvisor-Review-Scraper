@@ -1,9 +1,12 @@
 # TripAdvisor-Review-Scraper
 A simple scraper for TripAdvisor (Hotel, Restaurant, Airline) reviews.
 
+# [Current Issues](https://github.com/algo7/TripAdvisor-Review-Scraper/issues)
+
 ## Table of Contents
 
 - [TripAdvisor-Review-Scraper](#tripadvisor-review-scraper)
+- [Current Issues](#current-issues)
   - [Table of Contents](#table-of-contents)
   - [How to Install Docker:](#how-to-install-docker)
   - [Run Using Docker Compose](#run-using-docker-compose)
