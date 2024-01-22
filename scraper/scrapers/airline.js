@@ -150,6 +150,9 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, airlineName, a
             // Simulate random mouse movement
             await page.mouse.move(Math.random() * 1000, Math.random() * 1000);
 
+            // Wait for the page to load
+            await page.waitForTimeout(10000 * Math.random());
+
             const reviewExpandable = await page.evaluate(() => {
                 if (document.querySelector('[data-test-target="expand-review"]')) return true
                 return false
