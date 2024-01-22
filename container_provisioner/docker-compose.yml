@@ -8,6 +8,7 @@ services:
     environment:
       IS_CONTAINER: true
       REDIS_HOST: redis:6379
+      REDIS_PASS: ''
       R2_URL: https://storage.algo7.tools/
     # Image name
     image: ghcr.io/algo7/tripadvisor-review-scraper/container_provisioner:latest

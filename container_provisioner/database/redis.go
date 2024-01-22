@@ -14,9 +14,9 @@ import (
 
 var (
 	rdb = redis.NewClient(&redis.Options{
-		Addr:     getRedisHostAddress(), // use the given Addr or default Addr
-		Password: "",                    // no password set
-		DB:       0,                     // use default DB
+		Addr:     getRedisHostAddress(),   // use the given Addr or default Addr
+		Password: os.Getenv("REDIS_PASS"), // no password set
+		DB:       0,                       // use default DB
 	})
 )
 
