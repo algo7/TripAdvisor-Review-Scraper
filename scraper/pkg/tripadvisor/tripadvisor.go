@@ -128,9 +128,8 @@ func Query() {
 	// Set the necessary headers as per the original Axios request.
 	req.Header.Set("Origin", "https://www.tripadvisor.com")
 	req.Header.Set("Pragma", "no-cache")
-	req.Header.Set("Referer", "https://www.tripadvisor.com/Airline_Review-d8729141-Reviews-or20-Ryanair.html")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.101 Safari/537.36")
-	req.Header.Set("X-Requested-By", "bpo-request")
+	req.Header.Set("X-Requested-By", "someone-special")
 	req.Header.Set("Cookie", "asdasdsa")
 	req.Header.Set("Content-Type", "application/json;charset=utf-8")
 	// Send the request using an http.Client.
