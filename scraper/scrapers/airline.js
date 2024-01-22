@@ -29,7 +29,10 @@ const extractAllReviewPageUrls = async (airlineUrl, position, browser) => {
         await page.goto(airlineUrl);
 
         // Wait for the content to load
-        await page.waitForSelector('body');
+        await page.waitForSelector('#LanguageFilter_0');
+
+        // Simulate random mouse movement
+        await page.mouse.move(Math.random() * 1000, Math.random() * 1000);
 
         // Wait for the page to load
         await page.waitForTimeout(1000 * 5);
@@ -143,6 +146,9 @@ const scrape = async (totalReviewCount, reviewPageUrls, position, airlineName, a
 
             // Wait for the content to load
             await page.waitForSelector('body');
+
+            // Simulate random mouse movement
+            await page.mouse.move(Math.random() * 1000, Math.random() * 1000);
 
             const reviewExpandable = await page.evaluate(() => {
                 if (document.querySelector('[data-test-target="expand-review"]')) return true
