@@ -1,5 +1,5 @@
 # Container Provisioner
-Container Provisioner is a tool written in [Go](https://go.dev/) that provides a UI for the users to interact with the scraper. It uses [Docker API](https://docs.docker.com/engine/api/) to provision the containers and run the scraper. The UI is written in raw HTML and JavaScript while the backend web framwork is [Fiber](https://docs.gofiber.io/).
+Container Provisioner is a tool written in [Go](https://go.dev/) that provides a UI for the users to interact with the scraper. It uses the [Docker API](https://docs.docker.com/engine/api/) to provision the containers and run the scraper. The UI is written in raw HTML and JavaScript while the backend web framwork is [Fiber](https://docs.gofiber.io/).
 
 The scraped reviews will be uploaded to [Cloudflare R2 Buckets](https://www.cloudflare.com/lp/pg-r2/) for storing. R2 is S3-Compatible; therefore, technically, one can also use AWS S3 for storing the scraped reviews.
 
