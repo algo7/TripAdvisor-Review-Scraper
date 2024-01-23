@@ -8,10 +8,10 @@ import (
 	"net/http"
 )
 
-// endPointURL is the URL to the TripAdvisor GraphQL endpoint.
+// endPointURL is the URL to the TripAdvisor GraphQL endpoint
 const endPointURL = "https://www.tripadvisor.com/data/graphql/ids"
 
-// MakeRequest is a function that sends a POST request to the TripAdvisor GraphQL endpoint.
+// MakeRequest is a function that sends a POST request to the TripAdvisor GraphQL endpoint
 func MakeRequest(queryID string, language string, locationID uint32, offset uint32, limit uint32) (responses *Responses, err error) {
 
 	requestFilter := Filter{
@@ -55,7 +55,7 @@ func MakeRequest(queryID string, language string, locationID uint32, offset uint
 		return nil, fmt.Errorf("Error marshalling request body: %w", err)
 	}
 
-	// Create a new request using http.NewRequest, setting the method to POST.
+	// Create a new request using http.NewRequest, setting the method to POST
 	req, err := http.NewRequest(http.MethodPost, endPointURL, bytes.NewBuffer(jsonPayload))
 	if err != nil {
 		return nil, fmt.Errorf("Error creating request: %w", err)
@@ -107,7 +107,7 @@ func MakeRequest(queryID string, language string, locationID uint32, offset uint
 	return &responseData, err
 }
 
-// GetQueryID is a function that returns the query ID for the given query type.
+// GetQueryID is a function that returns the query ID for the given query type
 func GetQueryID(queryType string) (queryID string) {
 
 	switch queryType {
@@ -120,6 +120,7 @@ func GetQueryID(queryType string) (queryID string) {
 	}
 }
 
+// FetchReviewCount is a function that fetches the review count for the given location ID and query type
 func FetchReviewCount(locationID uint32, queryType string) (reviewCount int, err error) {
 
 	// Get the query ID for the given query type.
