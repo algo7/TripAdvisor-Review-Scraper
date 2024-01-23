@@ -1,0 +1,2 @@
+# DEPRECATION WARNING
+This scraper is deprecated and should not be used. The scraper goes the traditional way of parsing HTML and is not very robust. It is recommended to use [new scraper](https://github.com/algo7/TripAdvisor-Review-Scraper/tree/main/scraper) written in Go instead. It is much faster because it calls the API directly.
