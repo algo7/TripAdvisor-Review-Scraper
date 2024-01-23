@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 )
 
@@ -43,16 +44,10 @@ func MakeRequest(queryID string, language string, locationID uint32, offset uint
 
 	request := Requests{requestPayload}
 
-	// Marshal the request body into JSON.
-	// jsonPayload, err := json.Marshal(request)
-	// if err != nil {
-	// 	log.Fatal("Error marshalling request body: ", err)
-	// }
-
-	// Serialize requestPayload to JSON with indentation for pretty printing
-	jsonPayload, err := json.MarshalIndent(request, "", "  ")
+	// Marshal the request body into JSON
+	jsonPayload, err := json.Marshal(request)
 	if err != nil {
-		return nil, fmt.Errorf("Error marshalling request body: %w", err)
+		log.Fatal("Error marshalling request body: ", err)
 	}
 
 	// Create a new request using http.NewRequest, setting the method to POST
@@ -61,7 +56,7 @@ func MakeRequest(queryID string, language string, locationID uint32, offset uint
 		return nil, fmt.Errorf("Error creating request: %w", err)
 	}
 
-	// Set the necessary headers as per the original Axios request.
+	// Set the necessary headers as per the original Axios request
 	req.Header.Set("Origin", "https://www.tripadvisor.com")
 	req.Header.Set("Pragma", "no-cache")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.101 Safari/537.36")
@@ -77,7 +72,7 @@ func MakeRequest(queryID string, language string, locationID uint32, offset uint
 	}
 	defer resp.Body.Close()
 
-	// Check the response status code.
+	// Check the response status code
 	if resp.StatusCode != http.StatusOK {
 		// Check for rate limiting
 		if resp.StatusCode == http.StatusTooManyRequests {
@@ -86,23 +81,15 @@ func MakeRequest(queryID string, language string, locationID uint32, offset uint
 		return nil, fmt.Errorf("Error response status code: %d", resp.StatusCode)
 	}
 
-	// Read the response body.
+	// Read the response body
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("Error reading response body: %w", err)
 	}
 
-	// Marshal the response body into the Response struct.
+	// Marshal the response body into the Response struct
 	responseData := Responses{}
 	err = json.Unmarshal(responseBody, &responseData)
-
-	// Marshal the response body into JSON to pretty print it with ident.
-	// jsonResponse, err := json.MarshalIndent(responseData, "", "  ")
-	// if err != nil {
-	// 	log.Fatal("Error marshalling response body: ", err)
-	// }
-
-	// log.Println(string(jsonResponse))
 
 	return &responseData, err
 }
@@ -167,5 +154,3 @@ func CalculateOffset(iteration uint32) (offset uint32) {
 	offset = iteration * ReviewLimit
 	return offset
 }
-
-
