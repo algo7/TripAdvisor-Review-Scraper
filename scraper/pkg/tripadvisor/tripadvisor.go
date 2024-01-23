@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 )
 
@@ -98,12 +97,12 @@ func MakeRequest(queryID string, language string, locationID uint32, offset uint
 	err = json.Unmarshal(responseBody, &responseData)
 
 	// Marshal the response body into JSON to pretty print it with ident.
-	jsonResponse, err := json.MarshalIndent(responseData, "", "  ")
-	if err != nil {
-		log.Fatal("Error marshalling response body: ", err)
-	}
+	// jsonResponse, err := json.MarshalIndent(responseData, "", "  ")
+	// if err != nil {
+	// 	log.Fatal("Error marshalling response body: ", err)
+	// }
 
-	log.Println(string(jsonResponse))
+	// log.Println(string(jsonResponse))
 
 	return &responseData, err
 }
