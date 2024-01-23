@@ -5,6 +5,7 @@ on:
       - main
     paths:
       - 'scraper/**'
+      - '.github/workflows/ci_scraper.yml'
 
 # Global variables
 env:
