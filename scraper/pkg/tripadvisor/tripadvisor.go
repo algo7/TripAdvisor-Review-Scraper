@@ -14,18 +14,18 @@ import (
 const endPointURL = "https://www.tripadvisor.com/data/graphql/ids"
 
 // Query is a function that sends a POST request to the TripAdvisor GraphQL endpoint.
-func Query() error {
+func Query(language string, locationID uint32, offset uint32, limit uint32) error {
 
 	requestFilter := Filter{
 		Axis:       "LANGUAGE",
-		Selections: []string{"en"},
+		Selections: []string{language},
 	}
 
 	requestVariables := Variables{
-		LocationID:     8729141,
-		Offset:         0,
+		LocationID:     locationID,
+		Offset:         offset,
 		Filters:        Filters{requestFilter},
-		Limit:          1,
+		Limit:          limit,
 		NeedKeywords:   false,
 		PrefsCacheKey:  "locationReviewPrefs_8729141",
 		KeywordVariant: "location_keywords_v2_llr_order_30_en",

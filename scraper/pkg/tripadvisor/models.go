@@ -11,13 +11,13 @@ type Filters []Filter
 
 // Variables is a struct that represents the variables object in the request body to TripAdvisor endpoints.
 type Variables struct {
-	LocationID   int     `json:"locationId"`
-	Offset       int     `json:"offset"`
+	LocationID   uint32  `json:"locationId"`
+	Offset       uint32  `json:"offset"`
 	Prefs        any     `json:"prefs"` // null
 	Filters      Filters `json:"filters"`
 	InitialPrefs struct {
 	} `json:"initialPrefs"` // empty struct
-	Limit          int    `json:"limit"`
+	Limit          uint32 `json:"limit"`
 	FilterCacheKey any    `json:"filterCacheKey"` // null
 	PrefsCacheKey  string `json:"prefsCacheKey"`  // format "locationReviewPrefs_<localtionID>"
 	NeedKeywords   bool   `json:"needKeywords"`   // false
