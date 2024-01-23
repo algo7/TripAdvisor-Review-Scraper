@@ -24,7 +24,10 @@ func GetHTTPClientWithProxy(proxyHost string) (*http.Client, error) {
 	log.Println("Proxy server is operational")
 
 	httpTransport := &http.Transport{
-		Proxy: http.ProxyURL(proxyURL),
+		Proxy:             http.ProxyURL(proxyURL),
+		ForceAttemptHTTP2: true,
+		// If set to true, new connections will not be established to the proxy server every time.
+		DisableKeepAlives: false,
 	}
 
 	return &http.Client{
