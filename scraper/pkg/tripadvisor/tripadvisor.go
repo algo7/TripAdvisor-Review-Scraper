@@ -147,6 +147,28 @@ func FetchReviewCount(locationID uint32, queryType string) (reviewCount int, err
 	return 0, fmt.Errorf("no reviews found for location ID %d", locationID)
 }
 
+// CalculateIterations is a function that calculates the number of iterations required to fetch all reviews
+func CalculateIterations(reviewCount uint32) (iterations uint32) {
+
+	// Calculate the number of iterations required to fetch all reviews
+	iterations = reviewCount / ReviewLimit
+
+	// If the review count is not a multiple of ReviewLimit, add one more iteration
+	if reviewCount%ReviewLimit != 0 {
+		return iterations + 1
+	}
+
+	return iterations
+}
+
+//   // Default review page count
+//   let noReviewPages = totalReviewCount / 10;
+
+//   // Calculate the last review page
+//   if (totalReviewCount % 10 !== 0) {
+// 	  noReviewPages = ((totalReviewCount - totalReviewCount % 10) / 10) + 1;
+//   }
+
 // // Create a file to save the CSV data
 // fileName := "reviews.csv"
 // // Create a file to save the CSV data

@@ -5,6 +5,9 @@ const (
 	HotelQueryID = "b83d781ada1db6f2"
 	// AirlineQueryID is the pre-registered query ID for airline reviews
 	AirlineQueryID = "83003f8d5a7b1762"
+
+	// ReviewLimit is the maximum number of reviews that can be fetched in a single request
+	ReviewLimit uint32 = 20
 )
 
 // Filter is a struct that represents the filter object in the request body to TripAdvisor endpoints
