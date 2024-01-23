@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"log"
 	"math/rand"
+	"net/http"
 	"os"
 	"strconv"
 	"time"
@@ -23,14 +24,30 @@ func main() {
 	}
 	locationID := uint32(parsedLocationID)
 
+	// Get the proxy host if set
+	proxyHost := os.Getenv("PROXY_HOST")
+
+	client := &http.Client{}
+
+	// If the proxy host is set, use the proxy client
+	if proxyHost != "" {
+		client, err = tripadvisor.GetHTTPClientWithProxy(proxyHost)
+		if err != nil {
+			log.Fatalf("Error creating HTTP client with the give proxy %s: %v", proxyHost, err)
+		}
+	}
+
 	// CSV file
 	fileName := "reviews.csv"
 	headers := []string{"Title", "Text", "Rating", "Year", "Month", "Day"}
 
 	// Fetch the review count for the given location ID
-	count, err := tripadvisor.FetchReviewCount(locationID, queryType)
+	count, err := tripadvisor.FetchReviewCount(client, locationID, queryType)
 	if err != nil {
 		log.Fatalf("Error fetching review count: %v", err)
+	}
+	if count == 0 {
+		log.Fatalf("No reviews found for location ID %d", locationID)
 	}
 	log.Printf("Review count: %d", count)
 
@@ -67,7 +84,7 @@ func main() {
 		offset := tripadvisor.CalculateOffset(i)
 
 		// Make the request to the TripAdvisor GraphQL endpoint
-		resp, err := tripadvisor.MakeRequest(queryID, "en", locationID, offset, 20)
+		resp, err := tripadvisor.MakeRequest(client, queryID, "en", locationID, offset, 20)
 		if err != nil {
 			log.Fatalf("Error making request at iteration %d: %v", i, err)
 		}

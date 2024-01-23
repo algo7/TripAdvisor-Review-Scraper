@@ -10,8 +10,11 @@ import (
 )
 
 // MakeRequest is a function that sends a POST request to the TripAdvisor GraphQL endpoint
-func MakeRequest(queryID string, language string, locationID uint32, offset uint32, limit uint32) (responses *Responses, err error) {
+func MakeRequest(client *http.Client, queryID string, language string, locationID uint32, offset uint32, limit uint32) (responses *Responses, err error) {
 
+	/*
+	* Prepare the request body
+	 */
 	requestFilter := Filter{
 		Axis:       "LANGUAGE",
 		Selections: []string{language},
@@ -61,8 +64,7 @@ func MakeRequest(queryID string, language string, locationID uint32, offset uint
 	req.Header.Set("Cookie", "asdasdsa")
 	req.Header.Set("Content-Type", "application/json;charset=utf-8")
 
-	// Send the request using an http.Client.
-	client := &http.Client{}
+	// Send the request
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("Error sending request: %w", err)
@@ -105,13 +107,13 @@ func GetQueryID(queryType string) (queryID string) {
 }
 
 // FetchReviewCount is a function that fetches the review count for the given location ID and query type
-func FetchReviewCount(locationID uint32, queryType string) (reviewCount int, err error) {
+func FetchReviewCount(client *http.Client, locationID uint32, queryType string) (reviewCount int, err error) {
 
 	// Get the query ID for the given query type.
 	queryID := GetQueryID(queryType)
 
 	// Make the request to the TripAdvisor GraphQL endpoint.
-	responses, err := MakeRequest(queryID, "en", locationID, 0, 1)
+	responses, err := MakeRequest(client, queryID, "en", locationID, 0, 1)
 	if err != nil {
 		return 0, fmt.Errorf("error making request: %w", err)
 	}
