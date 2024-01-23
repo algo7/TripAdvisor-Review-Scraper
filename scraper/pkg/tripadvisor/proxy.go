@@ -35,6 +35,7 @@ func GetHTTPClientWithProxy(proxyHost string) (*http.Client, error) {
 
 	return &http.Client{
 		Transport: httpTransport,
+		Timeout:   10 * time.Second,
 	}, nil
 }
 

@@ -109,7 +109,11 @@ func main() {
 		// Check if the response is not empty and if the response contains reviews
 		if len(response) > 0 && len(response[0].Data.Locations) > 0 {
 
+			// Get the reviews from the response
 			reviews := response[0].Data.Locations[0].ReviewListPage.Reviews
+
+			// Create a slice to store the data to be written to the CSV file
+			dataToWrite := make([][]string, len(reviews))
 
 			// Iterating over the reviews and writing to the CSV file
 			for _, row := range reviews {
@@ -122,10 +126,14 @@ func main() {
 					row.CreatedDate[8:10],
 				}
 
-				err := writer.Write(row)
-				if err != nil {
-					log.Fatalf("Error writing row to csv at iteration %d: %v", i, err)
-				}
+				// Append the row to the dataToWrite slice
+				dataToWrite = append(dataToWrite, row)
+			}
+
+			// Write data to the CSV file
+			err = writer.WriteAll(dataToWrite)
+			if err != nil {
+				log.Fatalf("Error writing data to csv: %v", err)
 			}
 		}
 
