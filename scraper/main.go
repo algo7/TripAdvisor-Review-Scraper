@@ -50,10 +50,6 @@ func main() {
 		log.Printf("IP: %s", ip)
 	}
 
-	// CSV file
-	fileName := "reviews.csv"
-	headers := []string{"Title", "Text", "Rating", "Year", "Month", "Day"}
-
 	// Fetch the review count for the given location ID
 	reviewCount, err := tripadvisor.FetchReviewCount(client, locationID, queryType)
 	if err != nil {
@@ -65,6 +61,7 @@ func main() {
 	log.Printf("Review count: %d", reviewCount)
 
 	// Create a file to save the CSV data
+	fileName := "reviews.csv"
 	fileHandle, err := os.Create(fileName)
 	if err != nil {
 		log.Fatalf("Error creating file %s: %v", fileName, err)
@@ -76,6 +73,7 @@ func main() {
 	defer writer.Flush()
 
 	// Writing header to the CSV file
+	headers := []string{"Title", "Text", "Rating", "Year", "Month", "Day"}
 	err = writer.Write(headers)
 	if err != nil {
 		log.Fatalf("Error writing header to csv: %v", err)
