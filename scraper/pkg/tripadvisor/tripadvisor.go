@@ -78,6 +78,11 @@ func MakeRequest(queryID string, language string, locationID uint32, offset uint
 	}
 	defer resp.Body.Close()
 
+	// Check the response status code.
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Error response status code: %d", resp.StatusCode)
+	}
+
 	// Read the response body.
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
