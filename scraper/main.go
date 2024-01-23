@@ -77,7 +77,7 @@ func main() {
 
 		// Introduce random delay to avoid getting blocked. The delay is between 1 and 5 seconds
 		delay := rand.Intn(5) + 1
-		log.Printf("Iteration: %d,Delaying for %d seconds", i, delay)
+		log.Printf("Iteration: %d. Delaying for %d seconds", i, delay)
 		time.Sleep(time.Duration(delay) * time.Second)
 
 		// Calculate the offset for the current iteration
