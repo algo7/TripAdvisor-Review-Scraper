@@ -211,7 +211,7 @@ func ParseURL(url string, locationType string) (locationID uint32, locationName 
 		urlSplit := strings.Split(url, "-")
 
 		// Trim the d from the location ID
-		locationID, err := strconv.ParseUint(strings.TrimLeft(urlSplit[3], "d"), 10, 32)
+		locationID, err := strconv.ParseUint(strings.TrimLeft(urlSplit[2], "d"), 10, 32)
 		if err != nil {
 			return 0, "", fmt.Errorf("Error parsing location ID: %w", err)
 		}
