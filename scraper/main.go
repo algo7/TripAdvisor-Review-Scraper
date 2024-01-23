@@ -34,11 +34,14 @@ func main() {
 
 	// If the proxy host is set, use the proxy client
 	if proxyHost != "" {
+
+		// Get the HTTP client with the proxy
 		client, err = tripadvisor.GetHTTPClientWithProxy(proxyHost)
 		if err != nil {
 			log.Fatalf("Error creating HTTP client with the give proxy %s: %v", proxyHost, err)
 		}
 		log.Printf("Using proxy: %s", proxyHost)
+
 		// Check IP
 		ip, err := tripadvisor.CheckIP(client)
 		if err != nil {
