@@ -19,13 +19,13 @@ func main() {
 	if err != nil {
 		log.Fatal("The location ID must be an positive integer")
 	}
+	locationID := uint32(parsedLocationID)
 
 	// Get the query ID for the given query type.
 	queryID := tripadvisor.GetQueryID(queryType)
 	if err != nil {
 		log.Fatal("The location ID must be an positive integer")
 	}
-	locationID := uint32(parsedLocationID)
 
 	// Get the proxy host if set
 	proxyHost := os.Getenv("PROXY_HOST")
@@ -109,13 +109,14 @@ func main() {
 
 		// Now it's safe to dereference responses
 		response := *resp
+
 		// Check if the response is not empty and if the response contains reviews
 		if len(response) > 0 && len(response[0].Data.Locations) > 0 {
 
 			// Get the reviews from the response
 			reviews := response[0].Data.Locations[0].ReviewListPage.Reviews
 
-			// Iterating over the reviews and writing to the CSV file
+			// Iterating over the reviews
 			for _, row := range reviews {
 				row := []string{
 					row.Title,
@@ -133,6 +134,7 @@ func main() {
 		}
 
 	}
+
 	// Write data to the CSV file
 	err = writer.WriteAll(dataToWrite)
 	if err != nil {

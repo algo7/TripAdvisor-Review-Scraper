@@ -12,6 +12,7 @@ import (
 // GetHTTPClientWithProxy returns an HTTP client that uses the proxy server
 func GetHTTPClientWithProxy(proxyHost string) (*http.Client, error) {
 
+	// Parse the proxy URL into a URL struct
 	proxyURL, err := url.Parse(proxyHost)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing proxy URL: %w", err)
