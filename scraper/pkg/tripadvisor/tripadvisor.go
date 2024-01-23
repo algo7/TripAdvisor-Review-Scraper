@@ -2,20 +2,20 @@ package tripadvisor
 
 import (
 	"bytes"
-	"encoding/csv"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
-	"os"
-	"strconv"
+
+	"github.com/algo7/TripAdvisor-Review-Scraper/scraper/pkg/files"
 )
 
 // endPointURL is the URL to the TripAdvisor GraphQL endpoint.
 const endPointURL = "https://www.tripadvisor.com/data/graphql/ids"
 
 // Query is a function that sends a POST request to the TripAdvisor GraphQL endpoint.
-func Query() {
+func Query() error {
 
 	requestFilter := Filter{
 		Axis:       "LANGUAGE",
@@ -100,41 +100,19 @@ func Query() {
 
 	log.Println(string(jsonResponse))
 
-	// // Loop through the reviews array and print the review text.
-	// for _, review := range response[0].Data.Locations[0].ReviewListPage.Reviews {
-	// 	log.Println(review.Text)
-	// 	log.Println(review.Title)
-	// }
-
-
-
-	writer := csv.NewWriter(file)
-	defer writer.Flush()
-
-	// Writing header to the CSV file
-	header := []string{"Title", "Text", "Rating", "Year", "Month", "Day"}
-	if err := writer.Write(header); err != nil {
-		log.Fatalln("Error writing header to csv:", err)
+	// Create a file to save the CSV data
+	fileName := "reviews.csv"
+	fileHandle, err := files.CreateReviewsCSV(fileName)
+	if err != nil {
+		return fmt.Errorf("Error creating file %s: %w", fileName, err)
 	}
 
-	// Iterating over the reviews and writing to the CSV file
-	for _, review := range response[0].Data.Locations[0].ReviewListPage.Reviews {
-
-		// Parses the date in yyyy-mm-dd format
-		row := []string{
-			review.Title,
-			review.Text,
-			strconv.Itoa(review.Rating),
-			review.CreatedDate[0:4],
-			review.CreatedDate[5:7],
-			review.CreatedDate[8:10],
-		}
-		if err := writer.Write(row); err != nil {
-			log.Fatalln("Error writing row to csv:", err)
-		}
+	// Write the reviews to the CSV file
+	headers := []string{"Title", "Text", "Rating", "Year", "Month", "Day"}
+	err = files.WriteReviewToCSV(fileHandle, headers, response[0].Data.Locations[0].ReviewListPage.Reviews)
+	if err != nil {
+		return fmt.Errorf("Error writing reviews to %s file: %w", fileName, err)
 	}
-	// Print the response body to console (or handle it as needed).
-	log.Println(resp.StatusCode)
-	// log.Println(string(responseBody))
 
+	return nil
 }
