@@ -112,7 +112,7 @@ func ParseCredsFromJSON(fileName string) Creds {
 func GetLocationNameFromURL(url string, scrapOption string) string {
 
 	// Split the url by "-"
-	splitURL := strings.Split(url, "_")
+	splitURL := strings.Split(url, "-")
 
 	switch scrapOption {
 	case "HOTEL", "RESTO":
