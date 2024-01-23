@@ -26,7 +26,7 @@ func MakeRequest(queryID string, language string, locationID uint32, offset uint
 		Filters:        Filters{requestFilter},
 		Limit:          limit,
 		NeedKeywords:   false,
-		PrefsCacheKey:  "locationReviewPrefs_8729141",
+		PrefsCacheKey:  fmt.Sprintf("locationReviewPrefs_%d", locationID),
 		KeywordVariant: "location_keywords_v2_llr_order_30_en",
 		InitialPrefs:   struct{}{},
 		FilterCacheKey: nil,
