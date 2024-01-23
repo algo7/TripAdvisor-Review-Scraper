@@ -1,4 +1,4 @@
-FROM --platform=arm64 gcr.io/distroless/static-debian12
+FROM --platform=amd64 gcr.io/distroless/static-debian12
 
 WORKDIR /
 
