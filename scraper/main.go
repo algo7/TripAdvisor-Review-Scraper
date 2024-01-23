@@ -101,3 +101,13 @@ func main() {
 
 	}
 }
+
+func init() {
+	// Check if the environment variables are set
+	if os.Getenv("QUERY_TYPE") == "" {
+		log.Fatal("QUERY_TYPE not set")
+	}
+	if os.Getenv("LOCATION_ID") == "" {
+		log.Fatal("LOCATION_ID not set")
+	}
+}
