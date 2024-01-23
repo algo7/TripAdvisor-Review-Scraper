@@ -251,7 +251,7 @@ func ReleaseProxyContainer(containerID string) {
 	database.ReleaseLock(lockKey)
 }
 
-// GetResultCSVSizeInContainer gets the size of the result csv file in the container
+// getResultCSVSizeInContainer gets the size of the result csv file in the container
 func getResultCSVSizeInContainer(containerID, filePathInContainer string) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	utils.ErrorHandler(err)
