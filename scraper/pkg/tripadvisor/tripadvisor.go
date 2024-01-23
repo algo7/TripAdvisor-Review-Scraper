@@ -12,8 +12,8 @@ import (
 // endPointURL is the URL to the TripAdvisor GraphQL endpoint.
 const endPointURL = "https://www.tripadvisor.com/data/graphql/ids"
 
-// Query is a function that sends a POST request to the TripAdvisor GraphQL endpoint.
-func Query(queryID string, language string, locationID uint32, offset uint32, limit uint32) (response *Response, err error) {
+// MakeRequest is a function that sends a POST request to the TripAdvisor GraphQL endpoint.
+func MakeRequest(queryID string, language string, locationID uint32, offset uint32, limit uint32) (response *Response, err error) {
 
 	requestFilter := Filter{
 		Axis:       "LANGUAGE",
@@ -57,7 +57,7 @@ func Query(queryID string, language string, locationID uint32, offset uint32, li
 	}
 
 	// Create a new request using http.NewRequest, setting the method to POST.
-	req, err := http.NewRequest("POST", endPointURL, bytes.NewBuffer(jsonPayload))
+	req, err := http.NewRequest(http.MethodPost, endPointURL, bytes.NewBuffer(jsonPayload))
 	if err != nil {
 		return nil, fmt.Errorf("Error creating request: %w", err)
 	}
