@@ -7,14 +7,13 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 )
 
 // endPointURL is the URL to the TripAdvisor GraphQL endpoint.
 const endPointURL = "https://www.tripadvisor.com/data/graphql/ids"
 
 // Query is a function that sends a POST request to the TripAdvisor GraphQL endpoint.
-func Query(language string, locationID uint32, offset uint32, limit uint32) error {
+func Query(queryID string, language string, locationID uint32, offset uint32, limit uint32) (response *Response, err error) {
 
 	requestFilter := Filter{
 		Axis:       "LANGUAGE",
@@ -35,7 +34,7 @@ func Query(language string, locationID uint32, offset uint32, limit uint32) erro
 	}
 
 	requestExtensions := Extensions{
-		PreRegisteredQueryID: "b83d781ada1db6f2",
+		PreRegisteredQueryID: queryID,
 	}
 
 	requestPayload := Request{
@@ -54,16 +53,13 @@ func Query(language string, locationID uint32, offset uint32, limit uint32) erro
 	// Serialize requestPayload to JSON with indentation for pretty printing
 	jsonPayload, err := json.MarshalIndent(request, "", "  ")
 	if err != nil {
-		log.Fatal("Error marshalling request payload: ", err)
+		return nil, fmt.Errorf("Error marshalling request body: %w", err)
 	}
-
-	// Print pretty JSON payload (optional)
-	log.Println(string(jsonPayload))
 
 	// Create a new request using http.NewRequest, setting the method to POST.
 	req, err := http.NewRequest("POST", endPointURL, bytes.NewBuffer(jsonPayload))
 	if err != nil {
-		log.Fatal("Error creating request: ", err)
+		return nil, fmt.Errorf("Error creating request: %w", err)
 	}
 
 	// Set the necessary headers as per the original Axios request.
@@ -73,49 +69,50 @@ func Query(language string, locationID uint32, offset uint32, limit uint32) erro
 	req.Header.Set("X-Requested-By", "someone-special")
 	req.Header.Set("Cookie", "asdasdsa")
 	req.Header.Set("Content-Type", "application/json;charset=utf-8")
+
 	// Send the request using an http.Client.
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal("Error sending request: ", err)
+		return nil, fmt.Errorf("Error sending request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	// Read the response body.
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal("Error reading response body: ", err)
+		return nil, fmt.Errorf("Error reading response body: %w", err)
 	}
 
 	// Marshal the response body into the Response struct.
-	response := Response{}
-	err = json.Unmarshal(responseBody, &response)
+	responseData := Response{}
+	err = json.Unmarshal(responseBody, &responseData)
 
 	// Marshal the response body into JSON to pretty print it with ident.
-	jsonResponse, err := json.MarshalIndent(response, "", "  ")
+	jsonResponse, err := json.MarshalIndent(responseData, "", "  ")
 	if err != nil {
 		log.Fatal("Error marshalling response body: ", err)
 	}
 
 	log.Println(string(jsonResponse))
 
-	// Create a file to save the CSV data
-	fileName := "reviews.csv"
-	// Create a file to save the CSV data
-	fileHandle, err := os.Create(fileName)
-	if err != nil {
-		return fmt.Errorf("Error creating file %s: %v", fileName, err)
-	}
-
-	// Defer closing the file until the function returns
-	defer fileHandle.Close()
-
-	// Write the reviews to the CSV file
-	headers := []string{"Title", "Text", "Rating", "Year", "Month", "Day"}
-	err = WriteReviewToCSV(fileHandle, headers, response[0].Data.Locations[0].ReviewListPage.Reviews)
-	if err != nil {
-		return fmt.Errorf("Error writing reviews to %s file: %w", fileName, err)
-	}
-
-	return nil
+	return &responseData, err
 }
+
+// // Create a file to save the CSV data
+// fileName := "reviews.csv"
+// // Create a file to save the CSV data
+// fileHandle, err := os.Create(fileName)
+// if err != nil {
+// 	return fmt.Errorf("Error creating file %s: %v", fileName, err)
+// }
+
+// // Defer closing the file until the function returns
+// defer fileHandle.Close()
+
+// // Write the reviews to the CSV file
+// headers := []string{"Title", "Text", "Rating", "Year", "Month", "Day"}
+// err = WriteReviewToCSV(fileHandle, headers, response[0].Data.Locations[0].ReviewListPage.Reviews)
+// if err != nil {
+// 	return fmt.Errorf("Error writing reviews to %s file: %w", fileName, err)
+// }
