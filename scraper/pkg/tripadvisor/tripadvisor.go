@@ -168,28 +168,4 @@ func CalculateOffset(iteration uint32) (offset uint32) {
 	return offset
 }
 
-//   // Default review page count
-//   let noReviewPages = totalReviewCount / 10;
 
-//   // Calculate the last review page
-//   if (totalReviewCount % 10 !== 0) {
-// 	  noReviewPages = ((totalReviewCount - totalReviewCount % 10) / 10) + 1;
-//   }
-
-// // Create a file to save the CSV data
-// fileName := "reviews.csv"
-// // Create a file to save the CSV data
-// fileHandle, err := os.Create(fileName)
-// if err != nil {
-// 	return fmt.Errorf("Error creating file %s: %v", fileName, err)
-// }
-
-// // Defer closing the file until the function returns
-// defer fileHandle.Close()
-
-// // Write the reviews to the CSV file
-// headers := []string{"Title", "Text", "Rating", "Year", "Month", "Day"}
-// err = WriteReviewToCSV(fileHandle, headers, response[0].Data.Locations[0].ReviewListPage.Reviews)
-// if err != nil {
-// 	return fmt.Errorf("Error writing reviews to %s file: %w", fileName, err)
-// }
