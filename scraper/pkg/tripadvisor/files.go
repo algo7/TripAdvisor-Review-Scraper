@@ -7,21 +7,6 @@ import (
 	"strconv"
 )
 
-// CreateReviewsCSV is a function that creates a CSV file of reviews.
-func CreateReviewsCSV(fileName string) (fileHandle *os.File, error error) {
-
-	// Create a file to save the CSV data
-	file, err := os.Create(fileName)
-	if err != nil {
-		return nil, fmt.Errorf("Error creating file %s: %v", fileName, err)
-	}
-
-	// Defer closing the file until the function returns
-	defer file.Close()
-
-	return file, nil
-}
-
 // WriteReviewToCSV is a function that writes data to a CSV file.
 func WriteReviewToCSV(fileHandle *os.File, headers []string, reviews Reviews) error {
 

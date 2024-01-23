@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 )
 
 // endPointURL is the URL to the TripAdvisor GraphQL endpoint.
@@ -100,10 +101,14 @@ func Query() error {
 
 	// Create a file to save the CSV data
 	fileName := "reviews.csv"
-	fileHandle, err := CreateReviewsCSV(fileName)
+	// Create a file to save the CSV data
+	fileHandle, err := os.Create(fileName)
 	if err != nil {
-		return fmt.Errorf("Error creating file %s: %w", fileName, err)
+		return fmt.Errorf("Error creating file %s: %v", fileName, err)
 	}
+
+	// Defer closing the file until the function returns
+	defer fileHandle.Close()
 
 	// Write the reviews to the CSV file
 	headers := []string{"Title", "Text", "Rating", "Year", "Month", "Day"}
