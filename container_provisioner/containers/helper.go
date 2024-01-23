@@ -59,44 +59,20 @@ func RemoveContainer(containerID string) {
 
 // ContainerConfigGenerator generates the container config depending on the scrape target
 func ContainerConfigGenerator(
-	scrapeTarget string,
-	scrapeTargetName string,
-	scrapeURL string, uploadIdentifier string,
+	locationURL string, uploadIdentifier string,
 	proxyAddress string, vpnRegion string) *container.Config {
-
-	var scrapeContainerURL string
-	var targetName string
-
-	switch scrapeTarget {
-	case "HOTEL":
-		scrapeContainerURL = fmt.Sprintf("HOTEL_URL=%s", scrapeURL)
-		targetName = fmt.Sprintf("HOTEL_NAME=%s", scrapeTargetName)
-	case "RESTO":
-		scrapeContainerURL = fmt.Sprintf("RESTO_URL=%s", scrapeURL)
-		targetName = fmt.Sprintf("RESTO_NAME=%s", scrapeTargetName)
-	case "AIRLINE":
-		scrapeContainerURL = fmt.Sprintf("AIRLINE_URL=%s", scrapeURL)
-		targetName = fmt.Sprintf("AIRLINE_NAME=%s", scrapeTargetName)
-	}
-
-	scrapeMode := fmt.Sprintf("SCRAPE_MODE=%s", scrapeTarget)
-	proxySettings := fmt.Sprintf("PROXY_ADDRESS=%s", proxyAddress)
 
 	return &container.Config{
 		Image: containerImage,
 		Labels: map[string]string{
 			"TaskOwner":  uploadIdentifier,
-			"Target":     scrapeTargetName,
+			"Target":     locationURL,
 			"vpn.region": vpnRegion,
 		},
 		// Env vars required by the js scraper containers
 		Env: []string{
-			"CONCURRENCY=2",
-			"IS_PROVISIONER=true",
-			scrapeMode,
-			scrapeContainerURL,
-			targetName,
-			proxySettings,
+			fmt.Sprintf("LOCATION_URL=%s", locationURL),
+			fmt.Sprintf("PROXY_HOST=%s", proxyAddress),
 		},
 		Tty: true,
 	}
