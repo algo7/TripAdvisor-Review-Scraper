@@ -40,11 +40,11 @@ func main() {
 		}
 		log.Printf("Using proxy: %s", proxyHost)
 		// Check IP
-		ip, err := tripadvisor.CheckIP(client)
-		if err != nil {
-			log.Fatalf("Error checking IP: %v", err)
-		}
-		log.Printf("IP: %s", ip)
+		// ip, err := tripadvisor.CheckIP(client)
+		// if err != nil {
+		// 	log.Fatalf("Error checking IP: %v", err)
+		// }
+		// log.Printf("IP: %s", ip)
 	}
 
 	// CSV file
@@ -52,14 +52,14 @@ func main() {
 	headers := []string{"Title", "Text", "Rating", "Year", "Month", "Day"}
 
 	// Fetch the review count for the given location ID
-	count, err := tripadvisor.FetchReviewCount(client, locationID, queryType)
+	reviewCount, err := tripadvisor.FetchReviewCount(client, locationID, queryType)
 	if err != nil {
 		log.Fatalf("Error fetching review count: %v", err)
 	}
-	if count == 0 {
+	if reviewCount == 0 {
 		log.Fatalf("No reviews found for location ID %d", locationID)
 	}
-	log.Printf("Review count: %d", count)
+	log.Printf("Review count: %d", reviewCount)
 
 	// Create a file to save the CSV data
 	fileHandle, err := os.Create(fileName)
@@ -79,8 +79,11 @@ func main() {
 	}
 
 	// Calculate the number of iterations required to fetch all reviews
-	iterations := tripadvisor.CalculateIterations(uint32(count))
+	iterations := tripadvisor.CalculateIterations(uint32(reviewCount))
 	log.Printf("Total Iterations: %d", iterations)
+
+	// Create a slice to store the data to be written to the CSV file
+	dataToWrite := make([][]string, 0, reviewCount)
 
 	// Scrape the reviews
 	for i := uint32(0); i < iterations; i++ {
@@ -112,9 +115,6 @@ func main() {
 			// Get the reviews from the response
 			reviews := response[0].Data.Locations[0].ReviewListPage.Reviews
 
-			// Create a slice to store the data to be written to the CSV file
-			dataToWrite := make([][]string, len(reviews))
-
 			// Iterating over the reviews and writing to the CSV file
 			for _, row := range reviews {
 				row := []string{
@@ -130,13 +130,13 @@ func main() {
 				dataToWrite = append(dataToWrite, row)
 			}
 
-			// Write data to the CSV file
-			err = writer.WriteAll(dataToWrite)
-			if err != nil {
-				log.Fatalf("Error writing data to csv: %v", err)
-			}
 		}
 
+	}
+	// Write data to the CSV file
+	err = writer.WriteAll(dataToWrite)
+	if err != nil {
+		log.Fatalf("Error writing data to csv: %v", err)
 	}
 }
 
