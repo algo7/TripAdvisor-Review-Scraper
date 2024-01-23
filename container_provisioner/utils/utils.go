@@ -128,14 +128,11 @@ func GetLocationNameFromURL(url string, scrapOption string) string {
 func ValidateTripAdvisorURL(url string, scrapOption string) bool {
 	switch scrapOption {
 	case "HOTEL":
-		match, _ := regexp.MatchString(tripAdvisorHotelURLRegexp.String(), url)
-		return match
+		return tripAdvisorHotelURLRegexp.MatchString(url)
 	case "RESTO":
-		match, _ := regexp.MatchString(tripAdvisorRestaurantRegexp.String(), url)
-		return match
+		return tripAdvisorRestaurantRegexp.MatchString(url)
 	case "AIRLINE":
-		match, _ := regexp.MatchString(tripAdvisorAirlineRegexp.String(), url)
-		return match
+		return tripAdvisorAirlineRegexp.MatchString(url)
 	default:
 		return false
 	}
