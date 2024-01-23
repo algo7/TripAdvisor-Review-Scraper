@@ -1,7 +1,9 @@
 package tripadvisor
 
 import (
+	"context"
 	"fmt"
+	"net"
 	"net/http"
 
 	"golang.org/x/net/proxy"
@@ -17,8 +19,9 @@ func GetHTTPClientWithProxy(proxyHost string) (*http.Client, error) {
 
 	// Configure the HTTP client to use the dialer
 	httpTransport := &http.Transport{
-		// Set the Dial function to the dialer.Dial method
-		Dial: dialer.Dial,
+		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+			return dialer.Dial(network, addr)
+		},
 	}
 
 	return &http.Client{

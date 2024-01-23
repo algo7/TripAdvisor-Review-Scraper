@@ -19,18 +19,18 @@ services:
     devices:
       - '/dev/net/tun:/dev/net/tun'
     # NOTE: These port mappings are only used when you are connecting to the proxy pool from outside of docker network without the container_provisioner (e.g. from your host machine).
-    ports:
-      # Squid proxy port
-      - target: 8888
-        published: 8888
-        protocol: tcp
-      # Dante proxy port
-      - target: 8881
-        published: 8881
-        protocol: tcp
-      - target: 8881
-        published: 8881
-        protocol: udp
+    # ports:
+    #   # Squid proxy port
+    #   - target: 8888
+    #     published: 8888
+    #     protocol: tcp
+    #   # Dante proxy port
+    #   - target: 8881
+    #     published: 8881
+    #     protocol: tcp
+    #   - target: 8881
+    #     published: 8881
+    #     protocol: udp
     # WARNING: Do not Change the name of this network. It is used by the scraper to connect to the proxies.
     # At this moment, it is hardcoded in the container_provisioner when creating the containers.
     networks:
@@ -69,7 +69,7 @@ services:
     volumes:
       # OpenVPN credentials and config (config.vpn and pass.txt)
       - type: bind
-        source: ./VPN/CH76
+        source: ./VPN/CH14
         target: /VPN
         bind:
           create_host_path: true
@@ -92,7 +92,18 @@ services:
     # Devices required to run OpenVPN
     devices:
       - '/dev/net/tun:/dev/net/tun'
-
+    ports:
+      # Squid proxy port
+      - target: 8888
+        published: 8888
+        protocol: tcp
+      # Dante proxy port
+      - target: 8881
+        published: 8881
+        protocol: tcp
+      - target: 8881
+        published: 8881
+        protocol: udp
     # WARNING: Do not Change the name of this network. It is used by the scraper to connect to the proxies.
     # At this moment, it is hardcoded in the container_provisioner when creating the containers.
     networks:
@@ -100,7 +111,7 @@ services:
     volumes:
       # OpenVPN credentials and config (config.vpn and pass.txt)
       - type: bind
-        source: ./VPN/CH76
+        source: ./VPN/CH46
         target: /VPN
         bind:
           create_host_path: true
@@ -131,7 +142,7 @@ services:
     volumes:
       # OpenVPN credentials and config (config.vpn and pass.txt)
       - type: bind
-        source: ./VPN/CH76
+        source: ./VPN/CH58
         target: /VPN
         bind:
           create_host_path: true
@@ -162,7 +173,7 @@ services:
     volumes:
       # OpenVPN credentials and config (config.vpn and pass.txt)
       - type: bind
-        source: ./VPN/CH76
+        source: ./VPN/CH66
         target: /VPN
         bind:
           create_host_path: true
@@ -192,7 +203,7 @@ services:
     volumes:
       # OpenVPN credentials and config (config.vpn and pass.txt)
       - type: bind
-        source: ./VPN/CH76
+        source: ./VPN/CH70
         target: /VPN
         bind:
           create_host_path: true
