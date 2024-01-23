@@ -16,6 +16,9 @@ func main() {
 	// Scraper variables
 	queryType := os.Getenv("QUERY_TYPE")
 	parsedLocationID, err := strconv.Atoi(os.Getenv("LOCATION_ID"))
+	if err != nil {
+		log.Fatal("The location ID must be an positive integer")
+	}
 
 	// Get the query ID for the given query type.
 	queryID := tripadvisor.GetQueryID(queryType)
