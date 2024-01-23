@@ -106,12 +106,7 @@ func Query() {
 	// 	log.Println(review.Title)
 	// }
 
-	// Create a file to save the CSV data
-	file, err := os.Create("reviews.csv")
-	if err != nil {
-		log.Fatal("Cannot create file", err)
-	}
-	defer file.Close()
+
 
 	writer := csv.NewWriter(file)
 	defer writer.Flush()
