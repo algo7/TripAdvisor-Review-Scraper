@@ -12,17 +12,19 @@ import (
 )
 
 func main() {
+	// Scraper variables
 	queryType := os.Getenv("QUERY_TYPE")
 	parsedLocationID, err := strconv.Atoi(os.Getenv("LOCATION_ID"))
-	if err != nil {
-		log.Fatalf("Error parsing location ID: %v", err)
-	}
-	locationID := uint32(parsedLocationID)
-	fileName := "reviews.csv"
-	headers := []string{"Title", "Text", "Rating", "Year", "Month", "Day"}
-
 	// Get the query ID for the given query type.
 	queryID := tripadvisor.GetQueryID(queryType)
+	if err != nil {
+		log.Fatal("The location ID must be an positive integer")
+	}
+	locationID := uint32(parsedLocationID)
+
+	// CSV file
+	fileName := "reviews.csv"
+	headers := []string{"Title", "Text", "Rating", "Year", "Month", "Day"}
 
 	// Fetch the review count for the given location ID
 	count, err := tripadvisor.FetchReviewCount(locationID, queryType)
