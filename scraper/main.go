@@ -69,9 +69,8 @@ func main() {
 	}
 	defer fileHandle.Close()
 
-	// Create a new csv writer
+	// Create a new csv writer. We are using writeAll so defer writer.Flush() is not required
 	writer := csv.NewWriter(fileHandle)
-	defer writer.Flush()
 
 	// Writing header to the CSV file
 	headers := []string{"Title", "Text", "Rating", "Year", "Month", "Day"}
