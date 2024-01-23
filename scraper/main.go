@@ -35,11 +35,19 @@ func main() {
 		if err != nil {
 			log.Fatalf("Error creating HTTP client with the give proxy %s: %v", proxyHost, err)
 		}
+		log.Printf("Using proxy: %s", proxyHost)
 	}
 
 	// CSV file
 	fileName := "reviews.csv"
 	headers := []string{"Title", "Text", "Rating", "Year", "Month", "Day"}
+
+	// Check IP
+	ip, err := tripadvisor.CheckIP(client)
+	if err != nil {
+		log.Fatalf("Error checking IP: %v", err)
+	}
+	log.Printf("IP: %s", ip)
 
 	// Fetch the review count for the given location ID
 	count, err := tripadvisor.FetchReviewCount(client, locationID, queryType)
