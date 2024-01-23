@@ -1,12 +1,10 @@
-package files
+package tripadvisor
 
 import (
 	"encoding/csv"
 	"fmt"
 	"os"
 	"strconv"
-
-	"github.com/algo7/TripAdvisor-Review-Scraper/scraper/pkg/tripadvisor"
 )
 
 // CreateReviewsCSV is a function that creates a CSV file of reviews.
@@ -25,7 +23,7 @@ func CreateReviewsCSV(fileName string) (fileHandle *os.File, error error) {
 }
 
 // WriteReviewToCSV is a function that writes data to a CSV file.
-func WriteReviewToCSV(fileHandle *os.File, headers []string, reviews tripadvisor.Reviews) error {
+func WriteReviewToCSV(fileHandle *os.File, headers []string, reviews Reviews) error {
 
 	// Create a new csv writer
 	writer := csv.NewWriter(fileHandle)

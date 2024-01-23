@@ -7,8 +7,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-
-	"github.com/algo7/TripAdvisor-Review-Scraper/scraper/pkg/files"
 )
 
 // endPointURL is the URL to the TripAdvisor GraphQL endpoint.
@@ -102,14 +100,14 @@ func Query() error {
 
 	// Create a file to save the CSV data
 	fileName := "reviews.csv"
-	fileHandle, err := files.CreateReviewsCSV(fileName)
+	fileHandle, err := CreateReviewsCSV(fileName)
 	if err != nil {
 		return fmt.Errorf("Error creating file %s: %w", fileName, err)
 	}
 
 	// Write the reviews to the CSV file
 	headers := []string{"Title", "Text", "Rating", "Year", "Month", "Day"}
-	err = files.WriteReviewToCSV(fileHandle, headers, response[0].Data.Locations[0].ReviewListPage.Reviews)
+	err = WriteReviewToCSV(fileHandle, headers, response[0].Data.Locations[0].ReviewListPage.Reviews)
 	if err != nil {
 		return fmt.Errorf("Error writing reviews to %s file: %w", fileName, err)
 	}
