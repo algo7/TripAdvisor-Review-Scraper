@@ -40,11 +40,11 @@ func main() {
 		}
 		log.Printf("Using proxy: %s", proxyHost)
 		// Check IP
-		// ip, err := tripadvisor.CheckIP(client)
-		// if err != nil {
-		// 	log.Fatalf("Error checking IP: %v", err)
-		// }
-		// log.Printf("IP: %s", ip)
+		ip, err := tripadvisor.CheckIP(client)
+		if err != nil {
+			log.Fatalf("Error checking IP: %v", err)
+		}
+		log.Printf("IP: %s", ip)
 	}
 
 	// CSV file
