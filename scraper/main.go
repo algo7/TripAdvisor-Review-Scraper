@@ -52,7 +52,6 @@ func main() {
 		if err != nil {
 			log.Fatalf("Error creating HTTP client with the give proxy %s: %v", proxyHost, err)
 		}
-		log.Printf("Using proxy: %s", proxyHost)
 
 		// Check IP
 		ip, err := tripadvisor.CheckIP(client)
