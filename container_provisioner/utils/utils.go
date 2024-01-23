@@ -9,7 +9,6 @@ import (
 	"os"
 	"regexp"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -106,24 +105,6 @@ func ParseCredsFromJSON(fileName string) Creds {
 	ErrorHandler(err)
 
 	return creds
-}
-
-// GetScrapeTargetNameFromURL get the scrape target name from the given URL
-func GetScrapeTargetNameFromURL(url string, scrapOption string) string {
-	// Split the url by "-"
-	splitURL := strings.Split(url, "-")
-
-	switch scrapOption {
-	case "HOTEL", "RESTO":
-		return splitURL[4]
-	case "AIRLINE":
-		if len(splitURL) > 4 {
-			return fmt.Sprintf("%s-%s", splitURL[3], splitURL[4])
-		}
-		return splitURL[3]
-	default:
-		return ""
-	}
 }
 
 // ValidateTripAdvisorURL validates the TripAdvisor URLs
