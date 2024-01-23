@@ -48,32 +48,26 @@ type Request struct {
 // Requests is a slice of Request structs
 type Requests []Request
 
-// Review is a slice of Review structs
-type Review struct {
-	CreatedDate     string `json:"createdDate"`
-	PublishedDate   string `json:"publishedDate"`
-	Rating          int    `json:"rating"`
-	PublishPlatform string `json:"publishPlatform"`
-	TripInfo        struct {
-		StayDate string `json:"stayDate"`
-		TripType string `json:"tripType"`
-	} `json:"tripInfo"`
-	LocationID int      `json:"locationId"`
-	Labels     []string `json:"labels"`
-	Title      string   `json:"title"`
-	Text       string   `json:"text"`
-}
-
-// Reviews is a slice of Review structs
-type Reviews []Review
-
 // Response is a struct that represents the response body from TripAdvisor endpoints
 type Response struct {
 	Data struct {
 		Locations []struct {
 			ReviewListPage struct {
-				TotalCount int     `json:"totalCount"`
-				Reviews    Reviews `json:"reviews"`
+				TotalCount int `json:"totalCount"`
+				Reviews    []struct {
+					CreatedDate     string `json:"createdDate"`
+					PublishedDate   string `json:"publishedDate"`
+					Rating          int    `json:"rating"`
+					PublishPlatform string `json:"publishPlatform"`
+					TripInfo        struct {
+						StayDate string `json:"stayDate"`
+						TripType string `json:"tripType"`
+					} `json:"tripInfo"`
+					LocationID int      `json:"locationId"`
+					Labels     []string `json:"labels"`
+					Title      string   `json:"title"`
+					Text       string   `json:"text"`
+				} `json:"reviews"`
 			} `json:"reviewListPage"`
 		} `json:"locations"`
 	} `json:"data,omitempty"`
