@@ -12,8 +12,12 @@ import (
 )
 
 func main() {
-	queryType := "HOTEL"
-	locationID := uint32(231860)
+	queryType := os.Getenv("QUERY_TYPE")
+	parsedLocationID, err := strconv.Atoi(os.Getenv("LOCATION_ID"))
+	if err != nil {
+		log.Fatalf("Error parsing location ID: %v", err)
+	}
+	locationID := uint32(parsedLocationID)
 	fileName := "reviews.csv"
 	headers := []string{"Title", "Text", "Rating", "Year", "Month", "Day"}
 
