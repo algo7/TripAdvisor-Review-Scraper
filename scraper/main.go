@@ -15,18 +15,22 @@ import (
 func main() {
 	// Scraper variables
 	locationURL := os.Getenv("LOCATION_URL")
+	log.Printf("Location URL: %s", locationURL)
 
 	// Get the query type from the URL
 	queryType := tripadvisor.GetURLType(locationURL)
 	if queryType == "" {
 		log.Fatal("Invalid URL")
 	}
+	log.Printf("Location Type: %s", queryType)
 
 	// Parse the location ID and location name from the URL
 	locationID, locationName, err := tripadvisor.ParseURL(locationURL, queryType)
 	if err != nil {
 		log.Fatalf("Error parsing URL: %v", err)
 	}
+	log.Printf("Location ID: %d", locationID)
+	log.Printf("Location Name: %s", locationName)
 
 	// Get the query ID for the given query type.
 	queryID := tripadvisor.GetQueryID(queryType)
