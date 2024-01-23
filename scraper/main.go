@@ -14,12 +14,19 @@ import (
 
 func main() {
 	// Scraper variables
-	queryType := os.Getenv("QUERY_TYPE")
-	parsedLocationID, err := strconv.Atoi(os.Getenv("LOCATION_ID"))
-	if err != nil {
-		log.Fatal("The location ID must be an positive integer")
+	locationURL := os.Getenv("LOCATION_URL")
+
+	// Get the query type from the URL
+	queryType := tripadvisor.GetURLType(locationURL)
+	if queryType == "" {
+		log.Fatal("Invalid URL")
 	}
-	locationID := uint32(parsedLocationID)
+
+	// Parse the location ID and location name from the URL
+	locationID, locationName, err := tripadvisor.ParseURL(locationURL, queryType)
+	if err != nil {
+		log.Fatalf("Error parsing URL: %v", err)
+	}
 
 	// Get the query ID for the given query type.
 	queryID := tripadvisor.GetQueryID(queryType)
@@ -73,7 +80,7 @@ func main() {
 	writer := csv.NewWriter(fileHandle)
 
 	// Writing header to the CSV file
-	headers := []string{"Title", "Text", "Rating", "Year", "Month", "Day"}
+	headers := []string{"Location Name", "Title", "Text", "Rating", "Year", "Month", "Day"}
 	err = writer.Write(headers)
 	if err != nil {
 		log.Fatalf("Error writing header to csv: %v", err)
@@ -120,6 +127,7 @@ func main() {
 			// Iterating over the reviews
 			for _, row := range reviews {
 				row := []string{
+					locationName,
 					row.Title,
 					row.Text,
 					strconv.Itoa(row.Rating),
@@ -145,10 +153,7 @@ func main() {
 
 func init() {
 	// Check if the environment variables are set
-	if os.Getenv("QUERY_TYPE") == "" {
-		log.Fatal("QUERY_TYPE not set")
-	}
-	if os.Getenv("LOCATION_ID") == "" {
-		log.Fatal("LOCATION_ID not set")
+	if os.Getenv("LOCATION_URL") == "" {
+		log.Fatal("LOCATION_URL not set")
 	}
 }
