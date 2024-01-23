@@ -65,7 +65,7 @@ type Review struct {
 type Reviews []Review
 
 // Response is a struct that represents the response body from TripAdvisor endpoints
-type Response []struct {
+type Response struct {
 	Data struct {
 		Locations []struct {
 			ReviewListPage struct {
@@ -75,3 +75,6 @@ type Response []struct {
 		} `json:"locations"`
 	} `json:"data,omitempty"`
 }
+
+// Responses is a slice of Response structs
+type Responses []Response

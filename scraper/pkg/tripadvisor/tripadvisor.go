@@ -13,7 +13,7 @@ import (
 const endPointURL = "https://www.tripadvisor.com/data/graphql/ids"
 
 // MakeRequest is a function that sends a POST request to the TripAdvisor GraphQL endpoint.
-func MakeRequest(queryID string, language string, locationID uint32, offset uint32, limit uint32) (response *Response, err error) {
+func MakeRequest(queryID string, language string, locationID uint32, offset uint32, limit uint32) (responses *Responses, err error) {
 
 	requestFilter := Filter{
 		Axis:       "LANGUAGE",
@@ -94,7 +94,7 @@ func MakeRequest(queryID string, language string, locationID uint32, offset uint
 	}
 
 	// Marshal the response body into the Response struct.
-	responseData := Response{}
+	responseData := Responses{}
 	err = json.Unmarshal(responseBody, &responseData)
 
 	// Marshal the response body into JSON to pretty print it with ident.
@@ -106,6 +106,22 @@ func MakeRequest(queryID string, language string, locationID uint32, offset uint
 	log.Println(string(jsonResponse))
 
 	return &responseData, err
+}
+
+func FetchReviewCount(locationID uint32) (reviewCount int, err error) {
+	// Make the request to the TripAdvisor GraphQL endpoint.
+	responses, err := MakeRequest("location-review-location-review-list", "en_US", locationID, 0, 10)
+	if err != nil {
+		return 0, fmt.Errorf("error making request: %w", err)
+	}
+
+	// Dereference the pointer and then use len
+	if len(*responses) > 0 && len((*responses)[0].Data.Locations) > 0 {
+		reviewCount = (*responses)[0].Data.Locations[0].ReviewListPage.TotalCount
+		return reviewCount, nil
+	}
+
+	return 0, fmt.Errorf("no reviews found for location ID %d", locationID)
 }
 
 // // Create a file to save the CSV data
