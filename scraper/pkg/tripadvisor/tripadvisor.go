@@ -108,16 +108,39 @@ func MakeRequest(queryID string, language string, locationID uint32, offset uint
 	return &responseData, err
 }
 
-func FetchReviewCount(locationID uint32) (reviewCount int, err error) {
+// GetQueryID is a function that returns the query ID for the given query type.
+func GetQueryID(queryType string) (queryID string) {
+
+	switch queryType {
+	case "HOTEL":
+		return HotelQueryID
+	case "AIRLINE":
+		return AirlineQueryID
+	default:
+		return HotelQueryID
+	}
+}
+
+func FetchReviewCount(locationID uint32, queryType string) (reviewCount int, err error) {
+
+	// Get the query ID for the given query type.
+	queryID := GetQueryID(queryType)
+
 	// Make the request to the TripAdvisor GraphQL endpoint.
-	responses, err := MakeRequest("location-review-location-review-list", "en_US", locationID, 0, 10)
+	responses, err := MakeRequest(queryID, "en", locationID, 0, 1)
 	if err != nil {
 		return 0, fmt.Errorf("error making request: %w", err)
 	}
 
-	// Dereference the pointer and then use len
-	if len(*responses) > 0 && len((*responses)[0].Data.Locations) > 0 {
-		reviewCount = (*responses)[0].Data.Locations[0].ReviewListPage.TotalCount
+	// Check if responses is nil before dereferencing
+	if responses == nil {
+		return 0, fmt.Errorf("received nil response for location ID %d", locationID)
+	}
+
+	// Now it's safe to dereference responses
+	response := *responses
+	if len(response) > 0 && len(response[0].Data.Locations) > 0 {
+		reviewCount = response[0].Data.Locations[0].ReviewListPage.TotalCount
 		return reviewCount, nil
 	}
 
