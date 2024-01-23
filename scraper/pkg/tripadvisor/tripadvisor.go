@@ -180,8 +180,8 @@ func CalculateOffset(iteration uint32) (offset uint32) {
 	return offset
 }
 
-// ValidateURL is a function that validates the URL and returns the type of URL
-func ValidateURL(url string) string {
+// GetURLType is a function that validates the URL and returns the type of URL
+func GetURLType(url string) string {
 	if tripAdvisorHotelURLRegexp.MatchString(url) {
 		return "HOTEL"
 	}
