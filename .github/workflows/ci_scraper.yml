@@ -32,11 +32,12 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: 'go.mod'
-          cache-dependency-path: 'go.sum'
+          go-version-file: './scraper/go.mod'
+          cache-dependency-path: './scraper/go.sum'
       - run: go version
 
       - name: Build Go Application
+        working-directory: './scraper'
         run: make build
 
       - name: Set up QEMU
