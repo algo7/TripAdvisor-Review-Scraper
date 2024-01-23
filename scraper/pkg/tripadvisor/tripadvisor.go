@@ -161,6 +161,13 @@ func CalculateIterations(reviewCount uint32) (iterations uint32) {
 	return iterations
 }
 
+// CalculateOffset is a function that calculates the offset for the given iteration
+func CalculateOffset(iteration uint32) (offset uint32) {
+	// Calculate the offset for the given iteration
+	offset = iteration * ReviewLimit
+	return offset
+}
+
 //   // Default review page count
 //   let noReviewPages = totalReviewCount / 10;
 
