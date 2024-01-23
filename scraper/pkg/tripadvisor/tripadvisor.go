@@ -7,6 +7,8 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
+	"strings"
 )
 
 // MakeRequest is a function that sends a POST request to the TripAdvisor GraphQL endpoint
@@ -133,27 +135,6 @@ func FetchReviewCount(client *http.Client, locationID uint32, queryType string) 
 	return 0, fmt.Errorf("no reviews found for location ID %d", locationID)
 }
 
-// CalculateIterations is a function that calculates the number of iterations required to fetch all reviews
-func CalculateIterations(reviewCount uint32) (iterations uint32) {
-
-	// Calculate the number of iterations required to fetch all reviews
-	iterations = reviewCount / ReviewLimit
-
-	// If the review count is not a multiple of ReviewLimit, add one more iteration
-	if reviewCount%ReviewLimit != 0 {
-		return iterations + 1
-	}
-
-	return iterations
-}
-
-// CalculateOffset is a function that calculates the offset for the given iteration
-func CalculateOffset(iteration uint32) (offset uint32) {
-	// Calculate the offset for the given iteration
-	offset = iteration * ReviewLimit
-	return offset
-}
-
 // CheckIP takes in a http client and calls ipinfo.io/ip to check the current IP address
 func CheckIP(client *http.Client) (ip string, err error) {
 
@@ -176,4 +157,83 @@ func CheckIP(client *http.Client) (ip string, err error) {
 	}
 
 	return string(responseBody), nil
+}
+
+// CalculateIterations is a function that calculates the number of iterations required to fetch all reviews
+func CalculateIterations(reviewCount uint32) (iterations uint32) {
+
+	// Calculate the number of iterations required to fetch all reviews
+	iterations = reviewCount / ReviewLimit
+
+	// If the review count is not a multiple of ReviewLimit, add one more iteration
+	if reviewCount%ReviewLimit != 0 {
+		return iterations + 1
+	}
+
+	return iterations
+}
+
+// CalculateOffset is a function that calculates the offset for the given iteration
+func CalculateOffset(iteration uint32) (offset uint32) {
+	// Calculate the offset for the given iteration
+	offset = iteration * ReviewLimit
+	return offset
+}
+
+// ValidateURL is a function that validates the URL and returns the type of URL
+func ValidateURL(url string) string {
+	if tripAdvisorHotelURLRegexp.MatchString(url) {
+		return "HOTEL"
+	}
+
+	if tripAdvisorRestaurantRegexp.MatchString(url) {
+		return "RESTO"
+	}
+
+	if tripAdvisorAirlineRegexp.MatchString(url) {
+		return "AIRLINE"
+	}
+
+	return ""
+}
+
+// ParseURL is a function that parses the URL and returns the location ID and the location name
+func ParseURL(url string, locationType string) (locationID uint32, locationName string, error error) {
+	// Sample hotel url: https://www.tripadvisor.com/Hotel_Review-g188107-d231860-Reviews-Beau_Rivage_Palace-Lausanne_Canton_of_Vaud.html
+	// Sample restaurant url: https://www.tripadvisor.com/Restaurant_Review-g187265-d11827759-Reviews-La_Terrasse-Lyon_Rhone_Auvergne_Rhone_Alpes.html
+	// Sample airline url: https://www.tripadvisor.com/Airline_Review-d8728979-Reviews-Pegasus-Airlines
+
+	switch locationType {
+
+	case "HOTEL", "RESTO":
+
+		// Split the URL by -
+		urlSplit := strings.Split(url, "-")
+
+		// Trim the d from the location ID
+		locationID, err := strconv.ParseInt(strings.TrimLeft(urlSplit[3], "d"), 10, 32)
+		if err != nil {
+			return 0, "", fmt.Errorf("Error parsing location ID: %w", err)
+		}
+
+		// Extract the location name from the URL
+		locationName = urlSplit[4]
+
+		return uint32(locationID), locationName, nil
+
+	case "AIRLINE":
+
+		urlSplit := strings.Split(url, "-")
+
+		locationID, err := strconv.ParseInt(strings.TrimLeft(urlSplit[1], "d"), 10, 32)
+		if err != nil {
+			return 0, "", fmt.Errorf("Error parsing location ID: %w", err)
+		}
+
+		locationName = strings.Join(urlSplit[3:], "_")
+
+		return uint32(locationID), locationName, nil
+	default:
+		return 0, "", fmt.Errorf("Invalid location type: %s", locationType)
+	}
 }

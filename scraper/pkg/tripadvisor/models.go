@@ -1,5 +1,7 @@
 package tripadvisor
 
+import "regexp"
+
 const (
 
 	// EndPointURL is the URL to the TripAdvisor GraphQL endpoint
@@ -13,6 +15,12 @@ const (
 
 	// ReviewLimit is the maximum number of reviews that can be fetched in a single request
 	ReviewLimit uint32 = 20
+)
+
+var (
+	tripAdvisorHotelURLRegexp   = regexp.MustCompile(`^https:\/\/www\.tripadvisor\.com\/Hotel_Review-g\d{6,10}-d\d{1,10}-Reviews-[\w-]{1,255}\.html$`)
+	tripAdvisorRestaurantRegexp = regexp.MustCompile(`^https:\/\/www\.tripadvisor\.com\/Restaurant_Review-g\d{6,10}-d\d{1,10}-Reviews-[\w-]{1,255}\.html$`)
+	tripAdvisorAirlineRegexp    = regexp.MustCompile(`^https:\/\/www\.tripadvisor\.com\/Airline_Review-d\d{6,10}-Reviews-[\w-]{1,255}$`)
 )
 
 // Filter is a struct that represents the filter object in the request body to TripAdvisor endpoints
