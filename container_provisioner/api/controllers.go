@@ -155,6 +155,7 @@ func postProvision(c *fiber.Ctx) error {
 	// Generate the container config
 	scrapeConfig := containers.ContainerConfigGenerator(
 		url,
+		locationName,
 		uploadIdentifier,
 		proxyContainers.ProxyAddress,
 		proxyContainers.VPNRegion)
