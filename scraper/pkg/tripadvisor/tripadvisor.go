@@ -80,6 +80,10 @@ func MakeRequest(queryID string, language string, locationID uint32, offset uint
 
 	// Check the response status code.
 	if resp.StatusCode != http.StatusOK {
+		// Check for rate limiting
+		if resp.StatusCode == http.StatusTooManyRequests {
+			return nil, fmt.Errorf("Rate Limit Detected: %d", resp.StatusCode)
+		}
 		return nil, fmt.Errorf("Error response status code: %d", resp.StatusCode)
 	}
 
