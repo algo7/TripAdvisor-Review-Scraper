@@ -1,6 +1,13 @@
 package tripadvisor
 
-// Filter is a struct that represents the filter object in the request body to TripAdvisor endpoints.
+const (
+	// HotelQueryID is the pre-registered query ID for hotel reviews
+	HotelQueryID = "b83d781ada1db6f2"
+	// AirlineQueryID is the pre-registered query ID for airline reviews
+	AirlineQueryID = "83003f8d5a7b1762"
+)
+
+// Filter is a struct that represents the filter object in the request body to TripAdvisor endpoints
 type Filter struct {
 	Axis       string   `json:"axis"`
 	Selections []string `json:"selections"`
@@ -9,7 +16,7 @@ type Filter struct {
 // Filters is a slice of Filter structs.
 type Filters []Filter
 
-// Variables is a struct that represents the variables object in the request body to TripAdvisor endpoints.
+// Variables is a struct that represents the variables object in the request body to TripAdvisor endpoints
 type Variables struct {
 	LocationID   uint32  `json:"locationId"`
 	Offset       uint32  `json:"offset"`
@@ -29,16 +36,16 @@ type Extensions struct {
 	PreRegisteredQueryID string `json:"preRegisteredQueryId"`
 }
 
-// Request is a struct that represents the request body to query TripAdvisor endpoints.
+// Request is a struct that represents the request body to query TripAdvisor endpoints
 type Request struct {
 	Variables  Variables  `json:"variables"`
 	Extensions Extensions `json:"extensions"`
 }
 
-// Requests is a slice of Request structs.
+// Requests is a slice of Request structs
 type Requests []Request
 
-// Review is a slice of Review structs.
+// Review is a slice of Review structs
 type Review struct {
 	CreatedDate     string `json:"createdDate"`
 	PublishedDate   string `json:"publishedDate"`
@@ -54,10 +61,10 @@ type Review struct {
 	Text       string   `json:"text"`
 }
 
-// Reviews is a slice of Review structs.
+// Reviews is a slice of Review structs
 type Reviews []Review
 
-// Response is a struct that represents the response body from TripAdvisor endpoints.
+// Response is a struct that represents the response body from TripAdvisor endpoints
 type Response []struct {
 	Data struct {
 		Locations []struct {
