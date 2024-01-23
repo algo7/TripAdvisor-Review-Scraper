@@ -1,10 +1,15 @@
 package tripadvisor
 
 const (
+
+	// EndPointURL is the URL to the TripAdvisor GraphQL endpoint
+	EndPointURL string = "https://www.tripadvisor.com/data/graphql/ids"
+
 	// HotelQueryID is the pre-registered query ID for hotel reviews
-	HotelQueryID = "b83d781ada1db6f2"
+	HotelQueryID string = "b83d781ada1db6f2"
+
 	// AirlineQueryID is the pre-registered query ID for airline reviews
-	AirlineQueryID = "83003f8d5a7b1762"
+	AirlineQueryID string = "83003f8d5a7b1762"
 
 	// ReviewLimit is the maximum number of reviews that can be fetched in a single request
 	ReviewLimit uint32 = 20
