@@ -139,21 +139,32 @@ func postProvision(c *fiber.Ctx) error {
 		})
 	}
 
-	// Get the scrape target name from the URL
-	scrapeTargetName := utils.GetScrapeTargetNameFromURL(url, scrapeMode)
+	// Get the location name
+	locationName := utils.GetLocationNameFromURL(url, scrapeMode)
+	if locationName == "" {
+		return c.Render("submission", fiber.Map{
+			"Title":      "Algo7 TripAdvisor Scraper",
+			"Message1":   "Invalid URL",
+			"ReturnHome": true,
+		})
+	}
 
 	// Get the proxy container info
 	proxyContainers := containers.AcquireProxyContainer()
 
 	// Generate the container config
-	scrapeConfig := containers.ContainerConfigGenerator(scrapeMode, scrapeTargetName, url, uploadIdentifier, proxyContainers.ProxyAddress, proxyContainers.VPNRegion)
+	scrapeConfig := containers.ContainerConfigGenerator(
+		url,
+		uploadIdentifier,
+		proxyContainers.ProxyAddress,
+		proxyContainers.VPNRegion)
 
 	// Create the container
 	containerID := containers.CreateContainer(scrapeConfig)
 
 	// Start the scraping container via goroutine
 	go func() {
-		containers.Scrape(uploadIdentifier, scrapeTargetName, containerID)
+		containers.Scrape(uploadIdentifier, locationName, containerID)
 		containers.ReleaseProxyContainer(proxyContainers.ContainerID)
 	}()
 

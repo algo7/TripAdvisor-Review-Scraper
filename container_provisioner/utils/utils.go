@@ -108,19 +108,17 @@ func ParseCredsFromJSON(fileName string) Creds {
 	return creds
 }
 
-// GetScrapeTargetNameFromURL get the scrape target name from the given URL
-func GetScrapeTargetNameFromURL(url string, scrapOption string) string {
+// GetLocationNameFromURL get the scrape target name from the given URL
+func GetLocationNameFromURL(url string, scrapOption string) string {
+
 	// Split the url by "-"
-	splitURL := strings.Split(url, "-")
+	splitURL := strings.Split(url, "_")
 
 	switch scrapOption {
 	case "HOTEL", "RESTO":
 		return splitURL[4]
 	case "AIRLINE":
-		if len(splitURL) > 4 {
-			return fmt.Sprintf("%s-%s", splitURL[3], splitURL[4])
-		}
-		return splitURL[3]
+		return strings.Join(splitURL[3:], "_")
 	default:
 		return ""
 	}
@@ -130,14 +128,11 @@ func GetScrapeTargetNameFromURL(url string, scrapOption string) string {
 func ValidateTripAdvisorURL(url string, scrapOption string) bool {
 	switch scrapOption {
 	case "HOTEL":
-		match, _ := regexp.MatchString(tripAdvisorHotelURLRegexp.String(), url)
-		return match
+		return tripAdvisorHotelURLRegexp.MatchString(url)
 	case "RESTO":
-		match, _ := regexp.MatchString(tripAdvisorRestaurantRegexp.String(), url)
-		return match
+		return tripAdvisorRestaurantRegexp.MatchString(url)
 	case "AIRLINE":
-		match, _ := regexp.MatchString(tripAdvisorAirlineRegexp.String(), url)
-		return match
+		return tripAdvisorAirlineRegexp.MatchString(url)
 	default:
 		return false
 	}

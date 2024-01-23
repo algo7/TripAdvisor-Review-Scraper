@@ -1,35 +1,8 @@
-# syntax=docker/dockerfile:1
-# base image
-FROM node:19-slim AS base
-LABEL "org.opencontainers.image.source" = "https://github.com/algo7/TripAdvisor-Review-Scraper"
+FROM --platform=amd64 gcr.io/distroless/static-debian12
 
-# Set the working directory
-WORKDIR /puppeteer
+WORKDIR /
 
-# Install libs for Puppeteer
-RUN apt update && apt upgrade -y && apt --no-install-recommends install -y libnss3 libxss1 libasound2 libatk-bridge2.0-0 libgtk-3-0 libdrm-dev libgbm-dev && mkdir reviews source && chown -R node:node reviews source && npm config set update-notifier false
+# The application has to be built first with CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -ldflags="-s -w" main.go outside of docker
+COPY main .
 
-
-# Copy the pkg json files
-COPY package.json package-lock.json ./
-
-## 2nd Stage: install dependencies
-FROM base as dependencies
-
-RUN npm ci --omit=dev
-
-## 3rd Stage: build the final image
-FROM base as release
-
-# Copy the dependencies from the dependencies stage
-COPY --from=dependencies /puppeteer/node_modules ./node_modules
-
-# Copy rest of the files [from local to the image]
-COPY . .
-
-# Drop privilege
-USER node
-
-ENV FORCE_COLOR=1 
-
-CMD ["npm","run","start:prod"]
+CMD ["./main"]

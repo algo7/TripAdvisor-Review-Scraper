@@ -38,7 +38,7 @@ func Scrape(uploadIdentifier string, targetName string, containerID string) {
 	}
 
 	// The file path in the container
-	filePathInContainer := "/puppeteer/reviews/All.csv"
+	filePathInContainer := "reviews.csv"
 
 	// Get the file size in the container
 	getResultCSVSizeInContainer(containerID, filePathInContainer)
