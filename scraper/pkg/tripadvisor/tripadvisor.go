@@ -154,7 +154,7 @@ func CalculateOffset(iteration uint32) (offset uint32) {
 	return offset
 }
 
-// CheckIP takes in a http client and calls ipinfo.io/ip to check the IP address
+// CheckIP takes in a http client and calls ipinfo.io/ip to check the current IP address
 func CheckIP(client *http.Client) (ip string, err error) {
 
 	// Make the request to ipinfo.io/ip
