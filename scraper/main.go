@@ -30,6 +30,7 @@ func main() {
 	// Get the proxy host if set
 	proxyHost := os.Getenv("PROXY_HOST")
 
+	// The default HTTP client
 	client := &http.Client{}
 
 	// If the proxy host is set, use the proxy client
