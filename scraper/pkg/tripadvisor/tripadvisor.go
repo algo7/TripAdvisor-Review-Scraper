@@ -12,14 +12,14 @@ import (
 )
 
 // MakeRequest is a function that sends a POST request to the TripAdvisor GraphQL endpoint
-func MakeRequest(client *http.Client, queryID string, language string, locationID uint32, offset uint32, limit uint32) (responses *Responses, err error) {
+func MakeRequest(client *http.Client, queryID string, language []string, locationID uint32, offset uint32, limit uint32) (responses *Responses, err error) {
 
 	/*
 	* Prepare the request body
 	 */
 	requestFilter := Filter{
 		Axis:       "LANGUAGE",
-		Selections: []string{language},
+		Selections: language,
 	}
 
 	requestVariables := Variables{
@@ -103,19 +103,21 @@ func GetQueryID(queryType string) (queryID string) {
 		return HotelQueryID
 	case "AIRLINE":
 		return AirlineQueryID
+	case "ATTRACTION":
+		return AttractionQueryID
 	default:
 		return HotelQueryID
 	}
 }
 
 // FetchReviewCount is a function that fetches the review count for the given location ID and query type
-func FetchReviewCount(client *http.Client, locationID uint32, queryType string) (reviewCount int, err error) {
+func FetchReviewCount(client *http.Client, locationID uint32, queryType string, languages []string) (reviewCount int, err error) {
 
 	// Get the query ID for the given query type.
 	queryID := GetQueryID(queryType)
 
 	// Make the request to the TripAdvisor GraphQL endpoint.
-	responses, err := MakeRequest(client, queryID, "en", locationID, 0, 1)
+	responses, err := MakeRequest(client, queryID, languages, locationID, 0, 1)
 	if err != nil {
 		return 0, fmt.Errorf("error making request: %w", err)
 	}
@@ -127,6 +129,7 @@ func FetchReviewCount(client *http.Client, locationID uint32, queryType string) 
 
 	// Now it's safe to dereference responses
 	response := *responses
+
 	if len(response) > 0 && len(response[0].Data.Locations) > 0 {
 		reviewCount = response[0].Data.Locations[0].ReviewListPage.TotalCount
 		return reviewCount, nil
@@ -194,6 +197,10 @@ func GetURLType(url string) string {
 		return "AIRLINE"
 	}
 
+	if tripAdvisorAttractionRegexp.MatchString(url) {
+		return "ATTRACTION"
+	}
+
 	return ""
 }
 
@@ -202,10 +209,11 @@ func ParseURL(url string, locationType string) (locationID uint32, locationName 
 	// Sample hotel url: https://www.tripadvisor.com/Hotel_Review-g188107-d231860-Reviews-Beau_Rivage_Palace-Lausanne_Canton_of_Vaud.html
 	// Sample restaurant url: https://www.tripadvisor.com/Restaurant_Review-g187265-d11827759-Reviews-La_Terrasse-Lyon_Rhone_Auvergne_Rhone_Alpes.html
 	// Sample airline url: https://www.tripadvisor.com/Airline_Review-d8728979-Reviews-Pegasus-Airlines
+	// Sample attraction url: https://www.tripadvisor.com/Attraction_Review-g187261-d195616-Reviews-Mont_Blanc-Chamonix_Haute_Savoie_Auvergne_Rhone_Alpes.html
 
 	switch locationType {
 
-	case "HOTEL", "RESTO":
+	case "HOTEL", "RESTO", "ATTRACTION":
 
 		// Split the URL by -
 		urlSplit := strings.Split(url, "-")

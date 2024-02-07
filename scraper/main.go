@@ -7,15 +7,26 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/algo7/TripAdvisor-Review-Scraper/scraper/pkg/tripadvisor"
 )
 
+// var LANGUAGES = []string{"en", "fr", "pt", "es", "de", "it", "ru", "ja", "zh", "ko", "nl", "sv", "da", "fi", "no", "pl", "hu", "cs", "el", "tr", "th", "ar", "he", "id", "ms", "vi", "tl", "uk", "ro", "bg", "hr", "sr", "sk", "sl", "et", "lv", "lt", "sq", "mk", "hi", "bn", "pa", "gu", "ta", "te", "kn", "ml", "mr", "ur", "fa", "ne", "si", "my", "km", "lo", "am", "ka", "hy", "az", "uz", "tk", "ky", "tg", "mn", "bo", "sd", "ps", "ku", "gl", "eu", "ca", "is", "af", "xh", "zu", "ny", "st", "tn", "sn", "sw", "rw", "so", "mg", "eo", "cy", "gd", "gv", "ga", "mi", "sm", "to", "haw", "id", "jw"}
+var LANGUAGES = []string{"en"}
+
 func main() {
 	// Scraper variables
 	locationURL := os.Getenv("LOCATION_URL")
 	log.Printf("Location URL: %s", locationURL)
+
+	// Get the languages from the environment variable of use "en" as default
+	languages := LANGUAGES
+	if os.Getenv("LANGUAGES") != "" {
+		languages = strings.Split(os.Getenv("LANGUAGES"), "|")
+	}
+	log.Printf("Languages: %v", languages)
 
 	// Get the query type from the URL
 	queryType := tripadvisor.GetURLType(locationURL)
@@ -62,7 +73,7 @@ func main() {
 	}
 
 	// Fetch the review count for the given location ID
-	reviewCount, err := tripadvisor.FetchReviewCount(client, locationID, queryType)
+	reviewCount, err := tripadvisor.FetchReviewCount(client, locationID, queryType, languages)
 	if err != nil {
 		log.Fatalf("Error fetching review count: %v", err)
 	}
@@ -108,7 +119,7 @@ func main() {
 		offset := tripadvisor.CalculateOffset(i)
 
 		// Make the request to the TripAdvisor GraphQL endpoint
-		resp, err := tripadvisor.MakeRequest(client, queryID, "en", locationID, offset, 20)
+		resp, err := tripadvisor.MakeRequest(client, queryID, languages, locationID, offset, 20)
 		if err != nil {
 			log.Fatalf("Error making request at iteration %d: %v", i, err)
 		}
