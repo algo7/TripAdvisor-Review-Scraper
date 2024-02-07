@@ -13,6 +13,9 @@ const (
 	// AirlineQueryID is the pre-registered query ID for airline reviews
 	AirlineQueryID string = "83003f8d5a7b1762"
 
+	// AttractionQueryID is the pre-registered query ID for attraction reviews
+	AttractionQueryID string = "b83d781ada1db6f2"
+
 	// ReviewLimit is the maximum number of reviews that can be fetched in a single request
 	ReviewLimit uint32 = 20
 )
@@ -21,6 +24,7 @@ var (
 	tripAdvisorHotelURLRegexp   = regexp.MustCompile(`^https:\/\/www\.tripadvisor\.com\/Hotel_Review-g\d{6,10}-d\d{1,10}-Reviews-[\w-]{1,255}\.html$`)
 	tripAdvisorRestaurantRegexp = regexp.MustCompile(`^https:\/\/www\.tripadvisor\.com\/Restaurant_Review-g\d{6,10}-d\d{1,10}-Reviews-[\w-]{1,255}\.html$`)
 	tripAdvisorAirlineRegexp    = regexp.MustCompile(`^https:\/\/www\.tripadvisor\.com\/Airline_Review-d\d{6,10}-Reviews-[\w-]{1,255}$`)
+	tripAdvisorAttractionRegexp = regexp.MustCompile(`^https:\/\/www\.tripadvisor\.com\/Attraction_Review-g\d{6,10}-d\d{1,10}-Reviews-[\w-]{1,255}\.html$`)
 )
 
 // Filter is a struct that represents the filter object in the request body to TripAdvisor endpoints

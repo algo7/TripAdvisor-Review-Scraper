@@ -20,12 +20,18 @@ The scraper needs a single environment variable to run: `LOCATION_URL`, which is
 1. Airline: `https://www.tripadvisor.com/Airline_Review-d8729113-Reviews-Lufthansa`
 2. Hotel: `https://www.tripadvisor.com/Hotel_Review-g188107-d231860-Reviews-Beau_Rivage_Palace-Lausanne_Canton_of_Vaud.html`
 3. Restaurant: `https://www.tripadvisor.com/Restaurant_Review-g187265-d11827759-Reviews-La_Terrasse-Lyon_Rhone_Auvergne_Rhone_Alpes.html`
+4. Attraction: `https://www.tripadvisor.com/Attraction_Review-g187261-d1008501-Reviews-Les_Ailes_du_Mont_Blanc-Chamonix_Haute_Savoie_Auvergne_Rhone_Alpes.html`
 
 Note that the URL has to be from  `https://www.tripadvisor.com` and not other TripAdvisor domains such as `.fr`, `.ch`, `.de`, etc.
+
+The scaper may use a `LANGUAGES` environment variable to specify the languages in which to scrape the reviews. The languages should be | and in the format `en|fr|de|es|pt`. If the `LANGUAGES` environment variable is not set, the scraper will default to English.
+
 
 Run using the binary directly:
 ```bash
 export LOCATION_URL=<TripAdvisor_URL>
+# optional
+export LANGUAGES="en|fr|de|es|pt"
 ./binary_name
 ```
 
