@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -184,15 +185,29 @@ func main() {
 		}
 	} else {
 		// Write the data to the JSON file
+		const layout = "2006-01-02"
+
+		sort.Slice(allReviews, func(i, j int) bool {
+			iTime, err := time.Parse(layout, allReviews[i].CreatedDate)
+			if err != nil {
+				log.Fatalf("Error parsing time: %v", err)
+			}
+
+			jTime, err := time.Parse(layout, allReviews[j].CreatedDate)
+			if err != nil {
+				log.Fatalf("Error parsing time: %v", err)
+			}
+
+			return iTime.Before(jTime)
+		})
+
 		data, err := json.Marshal(allReviews)
 		if err != nil {
-			log.Printf("Could not marshal data: %v", err)
-			return
+			log.Fatalf("Could not marshal data: %v", err)
 		}
 		_, err = fileHandle.Write(data)
 		if err != nil {
-			log.Printf("Could not write data: %v", err)
-			return
+			log.Fatalf("Could not write data: %v", err)
 		}
 	}
 }
