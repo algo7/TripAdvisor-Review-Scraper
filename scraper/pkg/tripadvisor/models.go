@@ -65,6 +65,51 @@ type Request struct {
 // Requests is a slice of Request structs
 type Requests []Request
 
+// Photo is a struct that represents the photo object in the response body from TripAdvisor endpoints
+type Photo struct {
+	ID         int      `json:"id"`
+	Statuses   []string `json:"statuses"`
+	PhotoSizes []struct {
+		Width  int    `json:"width"`
+		Height int    `json:"height"`
+		URL    string `json:"url"`
+	} `json:"photoSizes"`
+}
+
+// Photos is a slice of Photo structs
+type Photos []Photo
+
+// UserProfile is a struct that represents the user profile object in the response body from TripAdvisor endpoints
+type UserProfile struct {
+	IsMe               bool `json:"isMe"`
+	IsVerified         bool `json:"isVerified"`
+	ContributionCounts struct {
+		SumAllUgc   int `json:"sumAllUgc"`
+		SumAllLikes int `json:"sumAllLikes"`
+	} `json:"contributionCounts"`
+	IsFollowing bool   `json:"isFollowing"`
+	ID          string `json:"id"`
+	UserID      string `json:"userId"`
+	DisplayName string `json:"displayName"`
+	Username    string `json:"username"`
+	Hometown    struct {
+		LocationID     interface{} `json:"locationId"`
+		Location       interface{} `json:"location"`
+		FallbackString interface{} `json:"fallbackString"`
+	} `json:"hometown"`
+	Route struct {
+		URL string `json:"url"`
+	} `json:"route"`
+	Avatar struct {
+		ID         int `json:"id"`
+		PhotoSizes []struct {
+			Width  int    `json:"width"`
+			Height int    `json:"height"`
+			URL    string `json:"url"`
+		} `json:"photoSizes"`
+	} `json:"avatar"`
+}
+
 // Response is a struct that represents the response body from TripAdvisor endpoints
 type Response struct {
 	Data struct {
@@ -72,6 +117,7 @@ type Response struct {
 			ReviewListPage struct {
 				TotalCount int `json:"totalCount"`
 				Reviews    []struct {
+					ID              string `json:"id"`
 					CreatedDate     string `json:"createdDate"`
 					PublishedDate   string `json:"publishedDate"`
 					Rating          int    `json:"rating"`
@@ -80,10 +126,15 @@ type Response struct {
 						StayDate string `json:"stayDate"`
 						TripType string `json:"tripType"`
 					} `json:"tripInfo"`
-					LocationID int      `json:"locationId"`
-					Labels     []string `json:"labels"`
-					Title      string   `json:"title"`
-					Text       string   `json:"text"`
+					PhotoIds    []int       `json:"photoIds"`
+					LocationID  int         `json:"locationId"`
+					Labels      []string    `json:"labels"`
+					Title       string      `json:"title"`
+					Text        string      `json:"text"`
+					Url         string      `json:"url"`
+					Photos      Photos      `json:"photos"`
+					UserProfile UserProfile `json:"userProfile"`
+					Username    string      `json:"username"`
 				} `json:"reviews"`
 			} `json:"reviewListPage"`
 		} `json:"locations"`
