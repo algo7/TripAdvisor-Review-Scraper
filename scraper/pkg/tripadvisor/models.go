@@ -110,32 +110,35 @@ type UserProfile struct {
 	} `json:"avatar"`
 }
 
+// Review is a struct that represents the review object in the response body from TripAdvisor endpoints
+type Review struct {
+	ID              int    `json:"id"`
+	CreatedDate     string `json:"createdDate"`
+	PublishedDate   string `json:"publishedDate"`
+	Rating          int    `json:"rating"`
+	PublishPlatform string `json:"publishPlatform"`
+	TripInfo        struct {
+		StayDate string `json:"stayDate"`
+		TripType string `json:"tripType"`
+	} `json:"tripInfo"`
+	PhotoIds    []int       `json:"photoIds"`
+	LocationID  int         `json:"locationId"`
+	Labels      []string    `json:"labels"`
+	Title       string      `json:"title"`
+	Text        string      `json:"text"`
+	Url         string      `json:"url"`
+	Photos      Photos      `json:"photos"`
+	UserProfile UserProfile `json:"userProfile"`
+	Username    string      `json:"username"`
+}
+
 // Response is a struct that represents the response body from TripAdvisor endpoints
 type Response struct {
 	Data struct {
 		Locations []struct {
 			ReviewListPage struct {
-				TotalCount int `json:"totalCount"`
-				Reviews    []struct {
-					ID              string `json:"id"`
-					CreatedDate     string `json:"createdDate"`
-					PublishedDate   string `json:"publishedDate"`
-					Rating          int    `json:"rating"`
-					PublishPlatform string `json:"publishPlatform"`
-					TripInfo        struct {
-						StayDate string `json:"stayDate"`
-						TripType string `json:"tripType"`
-					} `json:"tripInfo"`
-					PhotoIds    []int       `json:"photoIds"`
-					LocationID  int         `json:"locationId"`
-					Labels      []string    `json:"labels"`
-					Title       string      `json:"title"`
-					Text        string      `json:"text"`
-					Url         string      `json:"url"`
-					Photos      Photos      `json:"photos"`
-					UserProfile UserProfile `json:"userProfile"`
-					Username    string      `json:"username"`
-				} `json:"reviews"`
+				TotalCount int      `json:"totalCount"`
+				Reviews    []Review `json:"reviews"`
 			} `json:"reviewListPage"`
 		} `json:"locations"`
 	} `json:"data,omitempty"`
