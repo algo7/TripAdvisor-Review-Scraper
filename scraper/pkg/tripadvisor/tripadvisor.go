@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -49,13 +50,13 @@ func MakeRequest(client *http.Client, queryID string, language []string, locatio
 	// Marshal the request body into JSON
 	jsonPayload, err := json.Marshal(request)
 	if err != nil {
-		log.Fatal("Error marshalling request body: ", err)
+		log.Fatal("error marshalling request body: ", err)
 	}
 
 	// Create a new request using http.NewRequest, setting the method to POST
 	req, err := http.NewRequest(http.MethodPost, EndPointURL, bytes.NewBuffer(jsonPayload))
 	if err != nil {
-		return nil, fmt.Errorf("Error creating request: %w", err)
+		return nil, fmt.Errorf("error creating request: %w", err)
 	}
 
 	// Set the necessary headers as per the original Axios request
@@ -69,7 +70,7 @@ func MakeRequest(client *http.Client, queryID string, language []string, locatio
 	// Send the request
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("Error sending request: %w", err)
+		return nil, fmt.Errorf("error sending request: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -77,20 +78,24 @@ func MakeRequest(client *http.Client, queryID string, language []string, locatio
 	if resp.StatusCode != http.StatusOK {
 		// Check for rate limiting
 		if resp.StatusCode == http.StatusTooManyRequests {
-			return nil, fmt.Errorf("Rate Limit Detected: %d", resp.StatusCode)
+			return nil, fmt.Errorf("rate Limit Detected: %d", resp.StatusCode)
 		}
-		return nil, fmt.Errorf("Error response status code: %d", resp.StatusCode)
+		return nil, fmt.Errorf("error response status code: %d", resp.StatusCode)
 	}
 
 	// Read the response body
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("Error reading response body: %w", err)
+		return nil, fmt.Errorf("error reading response body: %w", err)
 	}
 
 	// Marshal the response body into the Response struct
 	responseData := Responses{}
 	err = json.Unmarshal(responseBody, &responseData)
+
+	if os.Getenv("DEBUG") == "true" {
+		fmt.Printf("Raw respsone:\n%s\n", string(responseBody))
+	}
 
 	return &responseData, err
 }
@@ -221,7 +226,7 @@ func ParseURL(url string, locationType string) (locationID uint32, locationName 
 		// Trim the d from the location ID
 		locationID, err := strconv.ParseUint(strings.TrimLeft(urlSplit[2], "d"), 10, 32)
 		if err != nil {
-			return 0, "", fmt.Errorf("Error parsing location ID: %w", err)
+			return 0, "", fmt.Errorf("error parsing location ID: %w", err)
 		}
 
 		// Extract the location name from the URL
@@ -234,13 +239,13 @@ func ParseURL(url string, locationType string) (locationID uint32, locationName 
 		urlSplit := strings.Split(url, "-")
 		locationID, err := strconv.ParseUint(strings.TrimLeft(urlSplit[1], "d"), 10, 32)
 		if err != nil {
-			return 0, "", fmt.Errorf("Error parsing location ID: %w", err)
+			return 0, "", fmt.Errorf("error parsing location ID: %w", err)
 		}
 
 		locationName = strings.Join(urlSplit[3:], "_")
 
 		return uint32(locationID), locationName, nil
 	default:
-		return 0, "", fmt.Errorf("Invalid location type: %s", locationType)
+		return 0, "", fmt.Errorf("invalid location type: %s", locationType)
 	}
 }

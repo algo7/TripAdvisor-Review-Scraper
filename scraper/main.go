@@ -22,6 +22,7 @@ var FILETYPE = "csv"
 func main() {
 	// Scraper variables
 	var allReviews []tripadvisor.Review
+	var location tripadvisor.Location
 
 	// Get the location URL from the environment variable
 	locationURL := os.Getenv("LOCATION_URL")
@@ -147,6 +148,9 @@ func main() {
 			// Append the reviews to the allReviews slice
 			allReviews = append(allReviews, reviews...)
 
+			// Store the location data
+			location = response[0].Data.Locations[0].Location
+
 			if fileType == "csv" {
 				// Iterating over the reviews
 				for _, row := range reviews {
@@ -198,10 +202,14 @@ func main() {
 				log.Fatalf("Error parsing time: %v", err)
 			}
 
-			return iTime.Before(jTime)
+			return jTime.After(iTime)
 		})
 
-		data, err := json.Marshal(allReviews)
+		feedback := tripadvisor.Feedback{
+			Location: location,
+			Reviews:  allReviews,
+		}
+		data, err := json.Marshal(feedback)
 		if err != nil {
 			log.Fatalf("Could not marshal data: %v", err)
 		}

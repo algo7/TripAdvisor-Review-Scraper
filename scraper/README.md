@@ -39,7 +39,7 @@ export LANGUAGES="en|fr|de|es|pt"
 
 Run using Docker:
 ```bash
-docker run -e LOCATION_URL=<TripAdvisor_URL> <image_name>:<tag>
+docker run -e LANGUAGES="en|fr|de|es|pt" LOCATION_URL=<TripAdvisor_URL> <image_name>:<tag>
 ```
 # Improvements
 1. Language support is on the way.
