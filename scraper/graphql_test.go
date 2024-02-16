@@ -11,7 +11,7 @@ import (
 
 var testFile = filepath.Join("reviews.json")
 
-func TestCreateSchema(t *testing.T) {
+func TestGraphQLCreateSchema(t *testing.T) {
 	file, err := os.Open(testFile)
 	if err != nil {
 		t.Fatalf("failed to open file: %v", err)
@@ -80,7 +80,7 @@ func TestCreateSchema(t *testing.T) {
 	}
 }
 
-func TestIdQuery(t *testing.T) {
+func TestGraphQLIdQuery(t *testing.T) {
 	file, err := os.Open(testFile)
 	if err != nil {
 		t.Fatalf("failed to open file: %v", err)
@@ -139,7 +139,7 @@ func TestIdQuery(t *testing.T) {
 
 }
 
-func TestRatingMax(t *testing.T) {
+func TestGraphQLRatingMax(t *testing.T) {
 	file, err := os.Open(testFile)
 	if err != nil {
 		t.Fatalf("failed to open file: %v", err)
@@ -182,7 +182,7 @@ func TestRatingMax(t *testing.T) {
 	}
 }
 
-func TestRatingMin(t *testing.T) {
+func TestGraphQLRatingMin(t *testing.T) {
 	file, err := os.Open(testFile)
 	if err != nil {
 		t.Fatalf("failed to open file: %v", err)
@@ -221,6 +221,49 @@ func TestRatingMin(t *testing.T) {
 		t.Errorf("expected data[\"reviews\"] to be a []interface{}")
 	}
 	if 135 < len(reviews) {
-		t.Errorf("expected <135 result, got %d", len(reviews))
+		t.Errorf("expected <135 results, got %d", len(reviews))
+	}
+}
+
+func TestGraphQLRating(t *testing.T) {
+	file, err := os.Open(testFile)
+	if err != nil {
+		t.Fatalf("failed to open file: %v", err)
+	}
+	defer file.Close()
+	schema, err := tripadvisor.CreateSchemaFromFile(file)
+	if err != nil {
+		t.Fatalf("failed to create schema: %v", err)
+	}
+
+	if schema.QueryType() == nil {
+		t.Errorf("CreateSchema() = %v, want non-nil", schema.QueryType())
+	}
+
+	// Test a query against the schema
+	query := `
+        {
+            reviews(rating: 4) {
+                id
+                title
+				text
+            }
+        }
+    `
+	params := graphql.Params{Schema: schema, RequestString: query}
+	result := graphql.Do(params)
+	if len(result.Errors) > 0 {
+		t.Errorf("unexpected errors: %v", result.Errors)
+	}
+	data, ok := result.Data.(map[string]interface{})
+	if !ok {
+		t.Errorf("expected result.Data to be a map[string]interface{}")
+	}
+	reviews, ok := data["reviews"].([]interface{})
+	if !ok {
+		t.Errorf("expected data[\"reviews\"] to be a []interface{}")
+	}
+	if 3 < len(reviews) {
+		t.Errorf("expected <3 results, got %d", len(reviews))
 	}
 }
