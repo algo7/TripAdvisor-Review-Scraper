@@ -42,7 +42,6 @@ func main() {
 	// Scraper variables
 	var allReviews []tripadvisor.Review
 	var location tripadvisor.Location
-	var fileHandle *os.File
 
 	// Get the location URL from the environment variable
 	locationURL := os.Getenv("LOCATION_URL")
@@ -119,16 +118,6 @@ func main() {
 	}
 	log.Printf("Review count: %d", reviewCount)
 
-	// Create a file to save the reviews data
-	if fileType == "csv" || fileType == "json" {
-		fileName := "reviews." + fileType
-		fileHandle, err := os.Create(fileName)
-		if err != nil {
-			log.Fatalf("Error creating file %s: %v", fileName, err)
-		}
-		defer fileHandle.Close()
-	}
-
 	// Calculate the number of iterations required to fetch all reviews
 	iterations := tripadvisor.CalculateIterations(uint32(reviewCount))
 	log.Printf("Total Iterations: %d", iterations)
@@ -196,6 +185,12 @@ func main() {
 	}
 	if fileType == "csv" {
 		// Create a new csv writer. We are using writeAll so defer writer.Flush() is not required
+		fileName := "reviews." + fileType
+		fileHandle, err := os.Create(fileName)
+		if err != nil {
+			log.Fatalf("Error creating file %s: %v", fileName, err)
+		}
+		defer fileHandle.Close()
 		writer := csv.NewWriter(fileHandle)
 
 		// Writing header to the CSV file
@@ -221,6 +216,12 @@ func main() {
 		if err != nil {
 			log.Fatalf("Could not marshal data: %v", err)
 		}
+		fileName := "reviews." + fileType
+		fileHandle, err := os.Create(fileName)
+		if err != nil {
+			log.Fatalf("Error creating file %s: %v", fileName, err)
+		}
+		defer fileHandle.Close()
 		_, err = fileHandle.Write(data)
 		if err != nil {
 			log.Fatalf("Could not write data: %v", err)
