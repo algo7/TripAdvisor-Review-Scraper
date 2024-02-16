@@ -13,16 +13,36 @@ import (
 	"time"
 
 	"github.com/algo7/TripAdvisor-Review-Scraper/scraper/pkg/tripadvisor"
+	"github.com/graphql-go/handler"
 )
 
 // var LANGUAGES = []string{"en", "fr", "pt", "es", "de", "it", "ru", "ja", "zh", "ko", "nl", "sv", "da", "fi", "no", "pl", "hu", "cs", "el", "tr", "th", "ar", "he", "id", "ms", "vi", "tl", "uk", "ro", "bg", "hr", "sr", "sk", "sl", "et", "lv", "lt", "sq", "mk", "hi", "bn", "pa", "gu", "ta", "te", "kn", "ml", "mr", "ur", "fa", "ne", "si", "my", "km", "lo", "am", "ka", "hy", "az", "uz", "tk", "ky", "tg", "mn", "bo", "sd", "ps", "ku", "gl", "eu", "ca", "is", "af", "xh", "zu", "ny", "st", "tn", "sn", "sw", "rw", "so", "mg", "eo", "cy", "gd", "gv", "ga", "mi", "sm", "to", "haw", "id", "jw"}
 var LANGUAGES = []string{"en"}
 var FILETYPE = "csv"
 
+func sortReviewsByDate(reviews []tripadvisor.Review) {
+	const layout = "2006-01-02"
+
+	sort.Slice(reviews, func(i, j int) bool {
+		iTime, err := time.Parse(layout, reviews[i].CreatedDate)
+		if err != nil {
+			log.Fatalf("Error parsing time: %v", err)
+		}
+
+		jTime, err := time.Parse(layout, reviews[j].CreatedDate)
+		if err != nil {
+			log.Fatalf("Error parsing time: %v", err)
+		}
+
+		return jTime.After(iTime)
+	})
+}
+
 func main() {
 	// Scraper variables
 	var allReviews []tripadvisor.Review
 	var location tripadvisor.Location
+	var fileHandle *os.File
 
 	// Get the location URL from the environment variable
 	locationURL := os.Getenv("LOCATION_URL")
@@ -40,8 +60,8 @@ func main() {
 	if os.Getenv("FILETYPE") != "" {
 		fileType = os.Getenv("FILETYPE")
 	}
-	if fileType != "csv" && fileType != "json" {
-		log.Fatal("Invalid file type. Use csv or json")
+	if fileType != "csv" && fileType != "json" && fileType != "graphql" {
+		log.Fatal("Invalid file type. Use csv, json or graphql")
 	}
 	log.Printf("File Type: %s", fileType)
 
@@ -100,12 +120,14 @@ func main() {
 	log.Printf("Review count: %d", reviewCount)
 
 	// Create a file to save the reviews data
-	fileName := "reviews." + fileType
-	fileHandle, err := os.Create(fileName)
-	if err != nil {
-		log.Fatalf("Error creating file %s: %v", fileName, err)
+	if fileType == "csv" || fileType == "json" {
+		fileName := "reviews." + fileType
+		fileHandle, err := os.Create(fileName)
+		if err != nil {
+			log.Fatalf("Error creating file %s: %v", fileName, err)
+		}
+		defer fileHandle.Close()
 	}
-	defer fileHandle.Close()
 
 	// Calculate the number of iterations required to fetch all reviews
 	iterations := tripadvisor.CalculateIterations(uint32(reviewCount))
@@ -187,23 +209,9 @@ func main() {
 		if err != nil {
 			log.Fatalf("Error writing data to csv: %v", err)
 		}
-	} else {
+	} else if fileType == "json" {
 		// Write the data to the JSON file
-		const layout = "2006-01-02"
-
-		sort.Slice(allReviews, func(i, j int) bool {
-			iTime, err := time.Parse(layout, allReviews[i].CreatedDate)
-			if err != nil {
-				log.Fatalf("Error parsing time: %v", err)
-			}
-
-			jTime, err := time.Parse(layout, allReviews[j].CreatedDate)
-			if err != nil {
-				log.Fatalf("Error parsing time: %v", err)
-			}
-
-			return jTime.After(iTime)
-		})
+		sortReviewsByDate(allReviews)
 
 		feedback := tripadvisor.Feedback{
 			Location: location,
@@ -217,7 +225,29 @@ func main() {
 		if err != nil {
 			log.Fatalf("Could not write data: %v", err)
 		}
+	} else if fileType == "graphql" {
+		sortReviewsByDate(allReviews)
+
+		feedback := tripadvisor.Feedback{
+			Location: location,
+			Reviews:  allReviews,
+		}
+		schema, err := tripadvisor.CreateSchemaFromLocalData(feedback.Reviews)
+		if err != nil {
+			log.Fatalf("Error creating schema: %v", err)
+		}
+		h := handler.New(&handler.Config{
+			Schema:   &schema,
+			Pretty:   true,
+			GraphiQL: true,
+		})
+
+		log.Println("Server is starting on port 8080")
+		log.Println("Go to http://localhost:8080/graphql to use the GraphQL endpoint")
+		http.Handle("/graphql", h)
+		http.ListenAndServe(":8080", nil)
 	}
+
 }
 
 func init() {

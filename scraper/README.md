@@ -52,6 +52,16 @@ Run using Docker:
 docker run -e LANGUAGES="en|fr|de|es|pt" LOCATION_URL=<TripAdvisor_URL> <image_name>:<tag>
 ```
 
-## Improvements
+## GraphQL API
 
-1. Language support is on the way.
+An experimental way to expose the result is through a GraphQL API. The API exposes a single endpoint `/graphql` which accepts a single query `reviews`.
+for example:
+
+```bash
+curl -X POST -H "Content-Type: application/json" --data '{ "query": "{ reviews { id rating } }" }' http://localhost:8080/graphql
+curl -X POST -H "Content-Type: application/json" --data '{ "query": "{ reviews(rating:4) { id rating } }" }' http://localhost:8080/graphql
+curl -X POST -H "Content-Type: application/json" --data '{ "query": "{ reviews(ratingMax:4) { id rating title text} }" }' http://localhost:8080/graphql
+curl -X POST -H "Content-Type: application/json" --data '{ "query": "{ reviews(id:564320144) { id rating } }" }' http://localhost:8080/graphql
+curl -X POST -H "Content-Type: application/json" --data '{ "query": "{ reviews(id: 822288866) { id rating title text} }" }' http://localhost:8080/graphql
+```
+
