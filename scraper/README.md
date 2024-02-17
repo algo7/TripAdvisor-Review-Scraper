@@ -65,3 +65,4 @@ curl -X POST -H "Content-Type: application/json" --data '{ "query": "{ reviews(i
 curl -X POST -H "Content-Type: application/json" --data '{ "query": "{ reviews(id: 822288866) { id rating title text} }" }' http://localhost:8080/graphql
 ```
 
+For using this **experimental** feature, you need to set the `FILETYPE` environment variable to `graphql` and the `PORT` environment variable to the port you want the API to listen on. The default port is `8080`.
