@@ -1,0 +1,82 @@
+name: Build and Release
+
+on:
+  # push:
+  #   tags:
+  #     - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.21
+
+      - name: Build binaries
+        run: |
+          cd scraper
+          GOOS=linux GOARCH=amd64 go build -o ../bin/scraper-linux-amd64
+          GOOS=windows GOARCH=amd64 go build -o ../bin/scraper-windows-amd64.exe
+          GOOS=darwin GOARCH=amd64 go build -o ../bin/scraper-macos-amd64
+          GOOS=darwin GOARCH=arm64 go build -o ../bin/scraper-macos-arm64
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        id: upload-release-asset-linux
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./bin/scraper-linux-amd64
+          asset_name: scraper-linux-amd64
+          asset_content_type: application/octet-stream
+
+      - name: Upload Release Asset
+        id: upload-release-asset-windows
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./bin/scraper-windows-amd64.exe
+          asset_name: scraper-windows-amd64.exe
+          asset_content_type: application/octet-stream
+
+      - name: Upload Release Asset
+        id: upload-release-asset-macos-amd64
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./bin/scraper-macos-amd64
+          asset_name: scraper-macos-amd64
+          asset_content_type: application/octet-stream
+
+      - name: Upload Release Asset
+        id: upload-release-asset-macos-arm64
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./bin/scraper-macos-arm64
+          asset_name: scraper-macos-arm64
+          asset_content_type: application/octet-stream
