@@ -7,19 +7,20 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 )
 
 // MakeRequest is a function that sends a POST request to the TripAdvisor GraphQL endpoint
-func MakeRequest(client *http.Client, queryID string, language string, locationID uint32, offset uint32, limit uint32) (responses *Responses, err error) {
+func MakeRequest(client *http.Client, queryID string, language []string, locationID uint32, offset uint32, limit uint32) (responses *Responses, err error) {
 
 	/*
 	* Prepare the request body
 	 */
 	requestFilter := Filter{
 		Axis:       "LANGUAGE",
-		Selections: []string{language},
+		Selections: language,
 	}
 
 	requestVariables := Variables{
@@ -49,13 +50,13 @@ func MakeRequest(client *http.Client, queryID string, language string, locationI
 	// Marshal the request body into JSON
 	jsonPayload, err := json.Marshal(request)
 	if err != nil {
-		log.Fatal("Error marshalling request body: ", err)
+		log.Fatal("error marshalling request body: ", err)
 	}
 
 	// Create a new request using http.NewRequest, setting the method to POST
 	req, err := http.NewRequest(http.MethodPost, EndPointURL, bytes.NewBuffer(jsonPayload))
 	if err != nil {
-		return nil, fmt.Errorf("Error creating request: %w", err)
+		return nil, fmt.Errorf("error creating request: %w", err)
 	}
 
 	// Set the necessary headers as per the original Axios request
@@ -69,7 +70,7 @@ func MakeRequest(client *http.Client, queryID string, language string, locationI
 	// Send the request
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("Error sending request: %w", err)
+		return nil, fmt.Errorf("error sending request: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -77,20 +78,24 @@ func MakeRequest(client *http.Client, queryID string, language string, locationI
 	if resp.StatusCode != http.StatusOK {
 		// Check for rate limiting
 		if resp.StatusCode == http.StatusTooManyRequests {
-			return nil, fmt.Errorf("Rate Limit Detected: %d", resp.StatusCode)
+			return nil, fmt.Errorf("rate Limit Detected: %d", resp.StatusCode)
 		}
-		return nil, fmt.Errorf("Error response status code: %d", resp.StatusCode)
+		return nil, fmt.Errorf("error response status code: %d", resp.StatusCode)
 	}
 
 	// Read the response body
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("Error reading response body: %w", err)
+		return nil, fmt.Errorf("error reading response body: %w", err)
 	}
 
 	// Marshal the response body into the Response struct
 	responseData := Responses{}
 	err = json.Unmarshal(responseBody, &responseData)
+
+	if os.Getenv("DEBUG") == "true" {
+		fmt.Printf("Raw respsone:\n%s\n", string(responseBody))
+	}
 
 	return &responseData, err
 }
@@ -103,19 +108,21 @@ func GetQueryID(queryType string) (queryID string) {
 		return HotelQueryID
 	case "AIRLINE":
 		return AirlineQueryID
+	case "ATTRACTION":
+		return AttractionQueryID
 	default:
 		return HotelQueryID
 	}
 }
 
 // FetchReviewCount is a function that fetches the review count for the given location ID and query type
-func FetchReviewCount(client *http.Client, locationID uint32, queryType string) (reviewCount int, err error) {
+func FetchReviewCount(client *http.Client, locationID uint32, queryType string, languages []string) (reviewCount int, err error) {
 
 	// Get the query ID for the given query type.
 	queryID := GetQueryID(queryType)
 
 	// Make the request to the TripAdvisor GraphQL endpoint.
-	responses, err := MakeRequest(client, queryID, "en", locationID, 0, 1)
+	responses, err := MakeRequest(client, queryID, languages, locationID, 0, 1)
 	if err != nil {
 		return 0, fmt.Errorf("error making request: %w", err)
 	}
@@ -127,6 +134,7 @@ func FetchReviewCount(client *http.Client, locationID uint32, queryType string) 
 
 	// Now it's safe to dereference responses
 	response := *responses
+
 	if len(response) > 0 && len(response[0].Data.Locations) > 0 {
 		reviewCount = response[0].Data.Locations[0].ReviewListPage.TotalCount
 		return reviewCount, nil
@@ -194,6 +202,10 @@ func GetURLType(url string) string {
 		return "AIRLINE"
 	}
 
+	if tripAdvisorAttractionRegexp.MatchString(url) {
+		return "ATTRACTION"
+	}
+
 	return ""
 }
 
@@ -202,10 +214,11 @@ func ParseURL(url string, locationType string) (locationID uint32, locationName 
 	// Sample hotel url: https://www.tripadvisor.com/Hotel_Review-g188107-d231860-Reviews-Beau_Rivage_Palace-Lausanne_Canton_of_Vaud.html
 	// Sample restaurant url: https://www.tripadvisor.com/Restaurant_Review-g187265-d11827759-Reviews-La_Terrasse-Lyon_Rhone_Auvergne_Rhone_Alpes.html
 	// Sample airline url: https://www.tripadvisor.com/Airline_Review-d8728979-Reviews-Pegasus-Airlines
+	// Sample attraction url: https://www.tripadvisor.com/Attraction_Review-g187261-d195616-Reviews-Mont_Blanc-Chamonix_Haute_Savoie_Auvergne_Rhone_Alpes.html
 
 	switch locationType {
 
-	case "HOTEL", "RESTO":
+	case "HOTEL", "RESTO", "ATTRACTION":
 
 		// Split the URL by -
 		urlSplit := strings.Split(url, "-")
@@ -213,7 +226,7 @@ func ParseURL(url string, locationType string) (locationID uint32, locationName 
 		// Trim the d from the location ID
 		locationID, err := strconv.ParseUint(strings.TrimLeft(urlSplit[2], "d"), 10, 32)
 		if err != nil {
-			return 0, "", fmt.Errorf("Error parsing location ID: %w", err)
+			return 0, "", fmt.Errorf("error parsing location ID: %w", err)
 		}
 
 		// Extract the location name from the URL
@@ -226,13 +239,13 @@ func ParseURL(url string, locationType string) (locationID uint32, locationName 
 		urlSplit := strings.Split(url, "-")
 		locationID, err := strconv.ParseUint(strings.TrimLeft(urlSplit[1], "d"), 10, 32)
 		if err != nil {
-			return 0, "", fmt.Errorf("Error parsing location ID: %w", err)
+			return 0, "", fmt.Errorf("error parsing location ID: %w", err)
 		}
 
 		locationName = strings.Join(urlSplit[3:], "_")
 
 		return uint32(locationID), locationName, nil
 	default:
-		return 0, "", fmt.Errorf("Invalid location type: %s", locationType)
+		return 0, "", fmt.Errorf("invalid location type: %s", locationType)
 	}
 }
