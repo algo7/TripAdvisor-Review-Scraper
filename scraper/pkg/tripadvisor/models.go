@@ -126,7 +126,7 @@ type Review struct {
 	Labels      []string    `json:"labels"`
 	Title       string      `json:"title"`
 	Text        string      `json:"text"`
-	Url         string      `json:"url"`
+	URL         string      `json:"url"`
 	Photos      Photos      `json:"photos"`
 	UserProfile UserProfile `json:"userProfile"`
 	Username    string      `json:"username"`
