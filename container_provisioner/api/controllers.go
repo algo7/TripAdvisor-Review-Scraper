@@ -213,7 +213,7 @@ func getDownloads(c *fiber.Ctx) error {
 		err := json.Unmarshal([]byte(cachedObjectsList), &enrichedR2Objs)
 		utils.ErrorHandler(err)
 
-		return c.Render("main", fiber.Map{
+		return c.Render("downloads", fiber.Map{
 			"Title": "Algo7 TripAdvisor Scraper",
 			"Rows":  enrichedR2Objs,
 		})

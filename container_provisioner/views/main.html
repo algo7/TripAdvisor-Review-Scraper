@@ -154,12 +154,6 @@
         align-items: center;
       }
     </style>
-    <script>
-      if (window.performance.navigation.type === 2) {
-        // reload the page if the user navigated back using the "Back" button
-        location.reload();
-      }
-    </script>
   </head>
   <body>
     <div class="flex-container">
@@ -176,6 +170,11 @@
           report broken proxies via the support email. You can find the proxy
           location(s) of your task(s) on the <a href="/tasks">Tasks</a> page.
         </h4>
+
+        <h4 style="text-align: center"
+          >Go to <a href="/downloads">Dwonloads</a> to download the scrapped
+          reviews.</h4
+        >
 
         <form action="/submit" method="post">
           <label for="url"><h3>Enter URL:</h3></label>
