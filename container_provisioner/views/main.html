@@ -233,31 +233,6 @@
           >
         </h2>
       </div>
-
-      <!-- Table -->
-      <div class="table-container">
-        <table>
-          <h2>Files that are currently available:</h2>
-          <thead>
-            <tr>
-              <th>File Name</th>
-              <th>Upload ID</th>
-              <th>Link</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {{range .Rows}}
-            <tr>
-              <td>{{.FileName}}</td>
-              <td>{{.UploadedBy}}</td>
-              <td><a href="{{.Link}}">Link</a></td>
-              <td>{{.Date}}</td>
-            </tr>
-            {{end}}
-          </tbody>
-        </table>
-      </div>
     </div>
   </body>
 </html>

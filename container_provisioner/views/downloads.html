@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>{{.Title}}</title>
+    <script>
+      if (window.performance.navigation.type === 2) {
+        // reload the page if the user navigated back using the "Back" button
+        location.reload();
+      }
+    </script>
+  </head>
+  <body>
+    <div class="top-container">
+      <h1
+        >Download the Scrapped Reviews Here |
+        <a href="/">Return Home</a>
+      </h1>
+    </div>
+    <div class="flex-container">
+      <!-- Table -->
+      <div class="table-container">
+        <table>
+          <h2>Files that are currently available:</h2>
+          <thead>
+            <tr>
+              <th>File Name</th>
+              <th>Upload ID</th>
+              <th>Link</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{range .Rows}}
+            <tr>
+              <td>{{.FileName}}</td>
+              <td>{{.UploadedBy}}</td>
+              <td><a href="{{.Link}}">Link</a></td>
+              <td>{{.Date}}</td>
+            </tr>
+            {{end}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>
