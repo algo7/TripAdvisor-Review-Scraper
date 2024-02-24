@@ -132,17 +132,20 @@ type Review struct {
 	Username    string      `json:"username"`
 }
 
+// ReviewSummary is a struct that represents the review summary object in the response body from TripAdvisor endpoints
 type ReviewSummary struct {
 	Rating int `json:"rating"`
 	Count  int `json:"count"`
 }
 
+// ReviewAggregations is a struct that represents the review aggregations object in the response body from TripAdvisor endpoints
 type ReviewAggregations struct {
 	RatingCounts     []int          `json:"ratingCounts"`
 	LanguageCounts   map[string]int `json:"languageCounts"`
 	AlertStatusCount int            `json:"alertStatusCount"`
 }
 
+// Location is a struct that represents the location object in the response body from TripAdvisor endpoints
 type Location struct {
 	LocationID            int    `json:"locationId"`
 	ParentGeoID           int    `json:"parentGeoId"`
@@ -152,6 +155,7 @@ type Location struct {
 	ReviewAggregations    ReviewAggregations `json:"reviewAggregations"`
 }
 
+// Feedback is a struct that represents the feedback object in the response body from TripAdvisor endpoints
 type Feedback struct {
 	Location `json:"location"`
 	Reviews  []Review `json:"reviews"`
