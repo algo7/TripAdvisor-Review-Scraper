@@ -218,6 +218,9 @@ func main() {
 			log.Fatalf("Could not write data: %v", err)
 		}
 	}
+
+	log.Printf("Data written to %s", fileName)
+	log.Println("Scrapping completed")
 }
 
 func init() {
