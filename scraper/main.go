@@ -15,9 +15,14 @@ import (
 	"github.com/algo7/TripAdvisor-Review-Scraper/scraper/pkg/tripadvisor"
 )
 
-// var LANGUAGES = []string{"en", "fr", "pt", "es", "de", "it", "ru", "ja", "zh", "ko", "nl", "sv", "da", "fi", "no", "pl", "hu", "cs", "el", "tr", "th", "ar", "he", "id", "ms", "vi", "tl", "uk", "ro", "bg", "hr", "sr", "sk", "sl", "et", "lv", "lt", "sq", "mk", "hi", "bn", "pa", "gu", "ta", "te", "kn", "ml", "mr", "ur", "fa", "ne", "si", "my", "km", "lo", "am", "ka", "hy", "az", "uz", "tk", "ky", "tg", "mn", "bo", "sd", "ps", "ku", "gl", "eu", "ca", "is", "af", "xh", "zu", "ny", "st", "tn", "sn", "sw", "rw", "so", "mg", "eo", "cy", "gd", "gv", "ga", "mi", "sm", "to", "haw", "id", "jw"}
-var LANGUAGES = []string{"en"}
-var FILETYPE = "csv"
+var (
+	// LANGUAGES is a slice of languages to be used for scraping, default is English
+	// var LANGUAGES = []string{"en", "fr", "pt", "es", "de", "it", "ru", "ja", "zh", "ko", "nl", "sv", "da", "fi", "no", "pl", "hu", "cs", "el", "tr", "th", "ar", "he", "id", "ms", "vi", "tl", "uk", "ro", "bg", "hr", "sr", "sk", "sl", "et", "lv", "lt", "sq", "mk", "hi", "bn", "pa", "gu", "ta", "te", "kn", "ml", "mr", "ur", "fa", "ne", "si", "my", "km", "lo", "am", "ka", "hy", "az", "uz", "tk", "ky", "tg", "mn", "bo", "sd", "ps", "ku", "gl", "eu", "ca", "is", "af", "xh", "zu", "ny", "st", "tn", "sn", "sw", "rw", "so", "mg", "eo", "cy", "gd", "gv", "ga", "mi", "sm", "to", "haw", "id", "jw"}
+	LANGUAGES = []string{"en"}
+
+	// FILETYPE is the type of file to be saved, default is csv
+	FILETYPE = "csv"
+)
 
 func main() {
 	// Scraper variables
