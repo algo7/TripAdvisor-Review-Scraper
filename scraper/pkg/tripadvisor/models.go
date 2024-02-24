@@ -134,8 +134,8 @@ type Review struct {
 
 // ReviewSummary is a struct that represents the review summary object in the response body from TripAdvisor endpoints
 type ReviewSummary struct {
-	Rating int `json:"rating"`
-	Count  int `json:"count"`
+	Rating float32 `json:"rating"`
+	Count  int     `json:"count"`
 }
 
 // ReviewAggregations is a struct that represents the review aggregations object in the response body from TripAdvisor endpoints
