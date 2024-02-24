@@ -14,6 +14,7 @@ func Router() {
 	app.Get("/logs/:id", getLogs)
 	app.Get("/logs-viewer", getLogsViewer)
 	app.Get("/tasks", getRunningTasks)
+	app.Get("/downloads", getDownloads)
 
 	err := app.Listen(":3000")
 	utils.ErrorHandler(err)

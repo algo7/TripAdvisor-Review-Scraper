@@ -30,53 +30,9 @@ func getMain(c *fiber.Ctx) error {
 	// Get the number of running containers
 	runningContainers := len(containers.ListContainersByType("scraper"))
 
-	// Check if the R2 objects list is cached
-	cachedObjectsList := database.CacheLookUp("r2StorageObjectsList")
-
-	// If the R2 objects list is cached, return the cached value
-	if cachedObjectsList != "" {
-
-		// Decode the JSON encoded byte slice into a slice of EnrichedR2Objs structs
-		var enrichedR2Objs = []enrichedR2Obj{}
-		err := json.Unmarshal([]byte(cachedObjectsList), &enrichedR2Objs)
-		utils.ErrorHandler(err)
-
-		return c.Render("main", fiber.Map{
-			"Title":             "Algo7 TripAdvisor Scraper",
-			"RunningContainers": runningContainers,
-			"Rows":              enrichedR2Objs,
-		})
-
-	}
-
-	// If the value is not cached, get the list of objects from R2 and cache it
-
-	// Get the list of objects from the R2 bucket (without metadata)
-	r2Objs := utils.R2ListObjects()
-
-	// Enrich the R2 objects with metadata
-	R2ObjMetaData := utils.R2EnrichMetaData(r2Objs)
-
-	// Create a slice of Row structs to hold the data for the table
-	enrichedR2Objs := make([]enrichedR2Obj, len(R2ObjMetaData))
-
-	// Populate the slice of Row struct with data from the fileNames array
-	for i, r2Obj := range R2ObjMetaData {
-		enrichedR2Objs[i] = enrichedR2Obj{
-			FileName:   r2Obj.Key,
-			Link:       r2Url + r2Obj.Key,
-			UploadedBy: r2Obj.Metadata,
-			Date:       utils.ParseTime(r2Obj.LastModified),
-		}
-	}
-
-	// Store the encoded byte slice into redis
-	database.SetCache("r2StorageObjectsList", enrichedR2Objs)
-
 	return c.Render("main", fiber.Map{
 		"Title":             "Algo7 TripAdvisor Scraper",
 		"RunningContainers": runningContainers,
-		"Rows":              enrichedR2Objs,
 	})
 }
 
@@ -240,5 +196,56 @@ func getRunningTasks(c *fiber.Ctx) error {
 		"Title":             "Algo7 TripAdvisor Scraper",
 		"RunningTasks":      runningContainers,
 		"CurrentTaskStatus": currentTaskStatus,
+	})
+}
+
+// getDownloads renders the downloads page
+func getDownloads(c *fiber.Ctx) error {
+
+	// Check if the R2 objects list is cached
+	cachedObjectsList := database.CacheLookUp("r2StorageObjectsList")
+
+	// If the R2 objects list is cached, return the cached value
+	if cachedObjectsList != "" {
+
+		// Decode the JSON encoded byte slice into a slice of EnrichedR2Objs structs
+		var enrichedR2Objs = []enrichedR2Obj{}
+		err := json.Unmarshal([]byte(cachedObjectsList), &enrichedR2Objs)
+		utils.ErrorHandler(err)
+
+		return c.Render("downloads", fiber.Map{
+			"Title": "Algo7 TripAdvisor Scraper",
+			"Rows":  enrichedR2Objs,
+		})
+
+	}
+
+	// If the value is not cached, get the list of objects from R2 and cache it
+
+	// Get the list of objects from the R2 bucket (without metadata)
+	r2Objs := utils.R2ListObjects()
+
+	// Enrich the R2 objects with metadata
+	R2ObjMetaData := utils.R2EnrichMetaData(r2Objs)
+
+	// Create a slice of Row structs to hold the data for the table
+	enrichedR2Objs := make([]enrichedR2Obj, len(R2ObjMetaData))
+
+	// Populate the slice of Row struct with data from the fileNames array
+	for i, r2Obj := range R2ObjMetaData {
+		enrichedR2Objs[i] = enrichedR2Obj{
+			FileName:   r2Obj.Key,
+			Link:       r2Url + r2Obj.Key,
+			UploadedBy: r2Obj.Metadata,
+			Date:       utils.ParseTime(r2Obj.LastModified),
+		}
+	}
+
+	// Store the encoded byte slice into redis
+	database.SetCache("r2StorageObjectsList", enrichedR2Objs)
+
+	return c.Render("main", fiber.Map{
+		"Title": "Algo7 TripAdvisor Scraper",
+		"Rows":  enrichedR2Objs,
 	})
 }
