@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/healthcheck"
 	"github.com/gofiber/template/html/v2"
 )
 
@@ -26,6 +27,9 @@ func ServerInstantiate() *fiber.App {
 		AppName:       "Algo7 TripAdvisor Scraper v1.0.0",
 		Views:         engine,
 	})
+
+	// Healthcheck middleware /livez and /readyz routes
+	app.Use(healthcheck.New())
 
 	return app
 }
