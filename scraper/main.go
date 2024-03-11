@@ -91,7 +91,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("Error checking IP: %v", err)
 		}
-		log.Printf("IP: %s", ip)
+		log.Printf("Proxy IP: %s", ip)
 	}
 
 	// Fetch the review count for the given location ID
