@@ -53,7 +53,7 @@ func main() {
 	// Get the query ID for the given query type.
 	queryID := tripadvisor.GetQueryID(queryType)
 	if err != nil {
-		log.Fatal("The location ID must be an positive integer")
+		log.Fatal("The location ID must be a positive integer")
 	}
 
 	// The default HTTP client
