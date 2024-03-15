@@ -209,10 +209,3 @@ func main() {
 	log.Printf("Data written to %s", fileName)
 	log.Println("Scrapping completed")
 }
-
-func init() {
-	// Check if the environment variables are set
-	if os.Getenv("LOCATION_URL") == "" {
-		log.Fatal("LOCATION_URL not set")
-	}
-}
