@@ -15,6 +15,7 @@ type Config struct {
 }
 
 // NewConfig is a function that returns a new Config struct
+// Returns an error if the LOCATION_URL is not set
 func NewConfig() (*Config, error) {
 	// Default languages
 	defaultLanguages := []string{"en"}
