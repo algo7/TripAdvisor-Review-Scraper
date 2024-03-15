@@ -8,8 +8,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // MakeRequest is a function that sends a POST request to the TripAdvisor GraphQL endpoint
@@ -143,30 +145,6 @@ func FetchReviewCount(client *http.Client, locationID uint32, queryType string, 
 	return 0, fmt.Errorf("no reviews found for location ID %d", locationID)
 }
 
-// CheckIP takes in a http client and calls ipinfo.io/ip to check the current IP address
-func CheckIP(client *http.Client) (ip string, err error) {
-
-	// Make the request to ipinfo.io/ip
-	resp, err := client.Get("https://ipinfo.io/ip")
-	if err != nil {
-		return "", fmt.Errorf("error getting IP address: %w", err)
-	}
-	defer resp.Body.Close()
-
-	// Check the response status code
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("error response status code: %d", resp.StatusCode)
-	}
-
-	// Read the response body
-	responseBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", fmt.Errorf("error reading response body: %w", err)
-	}
-
-	return string(responseBody), nil
-}
-
 // CalculateIterations is a function that calculates the number of iterations required to fetch all reviews
 func CalculateIterations(reviewCount uint32) (iterations uint32) {
 
@@ -248,4 +226,30 @@ func ParseURL(url string, locationType string) (locationID uint32, locationName 
 	default:
 		return 0, "", fmt.Errorf("invalid location type: %s", locationType)
 	}
+}
+
+func WriteReviewsToJSONFile(reviews []Review, location Location, fileHandle *os.File) error {
+	feedback := Feedback{
+		Location: location,
+		Reviews:  reviews,
+	}
+	data, err := json.Marshal(feedback)
+	if err != nil {
+		return fmt.Errorf("could not marshal data: %w", err)
+	}
+	if _, err := fileHandle.Write(data); err != nil {
+		return fmt.Errorf("could not write data to file: %w", err)
+	}
+	return nil
+}
+
+// SortReviewsByDate is a function that sorts the reviews by date
+// This function modifies the original slice
+func SortReviewsByDate(reviews []Review) {
+	const layout = "2006-01-02" // Move the layout constant here to keep it scoped to the sorting logic
+	sort.Slice(reviews, func(i, j int) bool {
+		iTime, _ := time.Parse(layout, reviews[i].CreatedDate) // Assume error handling is done elsewhere or errors are unlikely
+		jTime, _ := time.Parse(layout, reviews[j].CreatedDate)
+		return iTime.After(jTime)
+	})
 }

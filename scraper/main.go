@@ -2,26 +2,17 @@ package main
 
 import (
 	"encoding/csv"
-	"encoding/json"
+	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
 	"os"
-	"sort"
 	"strconv"
-	"strings"
 	"time"
 
+	"github.com/algo7/TripAdvisor-Review-Scraper/scraper/internal/config"
 	"github.com/algo7/TripAdvisor-Review-Scraper/scraper/pkg/tripadvisor"
-)
-
-var (
-	// LANGUAGES is a slice of languages to be used for scraping, default is English
-	// var LANGUAGES = []string{"en", "fr", "pt", "es", "de", "it", "ru", "ja", "zh", "ko", "nl", "sv", "da", "fi", "no", "pl", "hu", "cs", "el", "tr", "th", "ar", "he", "id", "ms", "vi", "tl", "uk", "ro", "bg", "hr", "sr", "sk", "sl", "et", "lv", "lt", "sq", "mk", "hi", "bn", "pa", "gu", "ta", "te", "kn", "ml", "mr", "ur", "fa", "ne", "si", "my", "km", "lo", "am", "ka", "hy", "az", "uz", "tk", "ky", "tg", "mn", "bo", "sd", "ps", "ku", "gl", "eu", "ca", "is", "af", "xh", "zu", "ny", "st", "tn", "sn", "sw", "rw", "so", "mg", "eo", "cy", "gd", "gv", "ga", "mi", "sm", "to", "haw", "id", "jw"}
-	LANGUAGES = []string{"en"}
-
-	// FILETYPE is the type of file to be saved, default is csv
-	FILETYPE = "csv"
+	"github.com/algo7/TripAdvisor-Review-Scraper/scraper/pkg/utils"
 )
 
 func main() {
@@ -29,36 +20,20 @@ func main() {
 	var allReviews []tripadvisor.Review
 	var location tripadvisor.Location
 
-	// Get the location URL from the environment variable
-	locationURL := os.Getenv("LOCATION_URL")
-	log.Printf("Location URL: %s", locationURL)
-
-	// Get the languages from the environment variable of use "en" as default
-	languages := LANGUAGES
-	if os.Getenv("LANGUAGES") != "" {
-		languages = strings.Split(os.Getenv("LANGUAGES"), "|")
+	config, err := config.NewConfig()
+	if err != nil {
+		log.Fatalf("Error creating scrape config: %v", err)
 	}
-	log.Printf("Languages: %v", languages)
-
-	// Get the file type from the environment variable or use "csv" as default
-	fileType := FILETYPE
-	if os.Getenv("FILETYPE") != "" {
-		fileType = os.Getenv("FILETYPE")
-	}
-	if fileType != "csv" && fileType != "json" {
-		log.Fatal("Invalid file type. Use csv or json")
-	}
-	log.Printf("File Type: %s", fileType)
 
 	// Get the query type from the URL
-	queryType := tripadvisor.GetURLType(locationURL)
+	queryType := tripadvisor.GetURLType(config.LocationURL)
 	if queryType == "" {
 		log.Fatal("Invalid URL")
 	}
 	log.Printf("Location Type: %s", queryType)
 
 	// Parse the location ID and location name from the URL
-	locationID, locationName, err := tripadvisor.ParseURL(locationURL, queryType)
+	locationID, locationName, err := tripadvisor.ParseURL(config.LocationURL, queryType)
 	if err != nil {
 		log.Fatalf("Error parsing URL: %v", err)
 	}
@@ -68,26 +43,23 @@ func main() {
 	// Get the query ID for the given query type.
 	queryID := tripadvisor.GetQueryID(queryType)
 	if err != nil {
-		log.Fatal("The location ID must be an positive integer")
+		log.Fatal("The location ID must be a positive integer")
 	}
-
-	// Get the proxy host if set
-	proxyHost := os.Getenv("PROXY_HOST")
 
 	// The default HTTP client
 	client := &http.Client{}
 
 	// If the proxy host is set, use the proxy client
-	if proxyHost != "" {
+	if config.ProxyHost != "" {
 
 		// Get the HTTP client with the proxy
-		client, err = tripadvisor.GetHTTPClientWithProxy(proxyHost)
+		client, err = tripadvisor.GetHTTPClientWithProxy(config.ProxyHost)
 		if err != nil {
-			log.Fatalf("Error creating HTTP client with the give proxy %s: %v", proxyHost, err)
+			log.Fatalf("Error creating HTTP client with the give proxy %s: %v", config.ProxyHost, err)
 		}
 
 		// Check IP
-		ip, err := tripadvisor.CheckIP(client)
+		ip, err := utils.CheckIP(client)
 		if err != nil {
 			log.Fatalf("Error checking IP: %v", err)
 		}
@@ -95,7 +67,7 @@ func main() {
 	}
 
 	// Fetch the review count for the given location ID
-	reviewCount, err := tripadvisor.FetchReviewCount(client, locationID, queryType, languages)
+	reviewCount, err := tripadvisor.FetchReviewCount(client, locationID, queryType, config.Languages)
 	if err != nil {
 		log.Fatalf("Error fetching review count: %v", err)
 	}
@@ -105,7 +77,7 @@ func main() {
 	log.Printf("Review count: %d", reviewCount)
 
 	// Create a file to save the reviews data
-	fileName := "reviews." + fileType
+	fileName := fmt.Sprintf("reviews.%s", config.FileType)
 	fileHandle, err := os.Create(fileName)
 	if err != nil {
 		log.Fatalf("Error creating file %s: %v", fileName, err)
@@ -131,7 +103,7 @@ func main() {
 		offset := tripadvisor.CalculateOffset(i)
 
 		// Make the request to the TripAdvisor GraphQL endpoint
-		resp, err := tripadvisor.MakeRequest(client, queryID, languages, locationID, offset, 20)
+		resp, err := tripadvisor.MakeRequest(client, queryID, config.Languages, locationID, offset, 20)
 		if err != nil {
 			log.Fatalf("Error making request at iteration %d: %v", i, err)
 		}
@@ -156,7 +128,7 @@ func main() {
 			// Store the location data
 			location = response[0].Data.Locations[0].Location
 
-			if fileType == "csv" {
+			if config.FileType == "csv" {
 				// Iterating over the reviews
 				for _, row := range reviews {
 					row := []string{
@@ -177,7 +149,8 @@ func main() {
 		}
 
 	}
-	if fileType == "csv" {
+
+	if config.FileType == "csv" {
 		// Create a new csv writer. We are using writeAll so defer writer.Flush() is not required
 		writer := csv.NewWriter(fileHandle)
 
@@ -192,45 +165,19 @@ func main() {
 		if err != nil {
 			log.Fatalf("Error writing data to csv: %v", err)
 		}
-	} else {
-		// Write the data to the JSON file
-		const layout = "2006-01-02"
-
-		sort.Slice(allReviews, func(i, j int) bool {
-			iTime, err := time.Parse(layout, allReviews[i].CreatedDate)
-			if err != nil {
-				log.Fatalf("Error parsing time: %v", err)
-			}
-
-			jTime, err := time.Parse(layout, allReviews[j].CreatedDate)
-			if err != nil {
-				log.Fatalf("Error parsing time: %v", err)
-			}
-
-			return jTime.After(iTime)
-		})
-
-		feedback := tripadvisor.Feedback{
-			Location: location,
-			Reviews:  allReviews,
-		}
-		data, err := json.Marshal(feedback)
-		if err != nil {
-			log.Fatalf("Could not marshal data: %v", err)
-		}
-		_, err = fileHandle.Write(data)
-		if err != nil {
-			log.Fatalf("Could not write data: %v", err)
-		}
 	}
 
+	// If the file type is JSON, write the data to the file
+	if config.FileType == "json" {
+		// Sort the reviews by date
+		tripadvisor.SortReviewsByDate(allReviews)
+
+		// Write the data to the JSON file
+		err := tripadvisor.WriteReviewsToJSONFile(allReviews, location, fileHandle)
+		if err != nil {
+			log.Fatalf("Error writing data to JSON file: %v", err)
+		}
+	}
 	log.Printf("Data written to %s", fileName)
 	log.Println("Scrapping completed")
-}
-
-func init() {
-	// Check if the environment variables are set
-	if os.Getenv("LOCATION_URL") == "" {
-		log.Fatal("LOCATION_URL not set")
-	}
 }
