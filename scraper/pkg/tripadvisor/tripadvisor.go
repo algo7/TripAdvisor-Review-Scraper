@@ -229,22 +229,22 @@ func ParseURL(url string, locationType string) (locationID uint32, locationName 
 }
 
 func WriteReviewsToJSONFile(reviews []Review, location Location, fileHandle *os.File) error {
-    feedback := Feedback{
-        Location: location,
-        Reviews:  reviews,
-    }
-    data, err := json.Marshal(feedback)
-    if err != nil {
-        return fmt.Errorf("could not marshal data: %w", err)
-    }
-    if _, err := fileHandle.Write(data); err != nil {
-        return fmt.Errorf("could not write data to file: %w", err)
-    }
-    return nil
+	feedback := Feedback{
+		Location: location,
+		Reviews:  reviews,
+	}
+	data, err := json.Marshal(feedback)
+	if err != nil {
+		return fmt.Errorf("could not marshal data: %w", err)
+	}
+	if _, err := fileHandle.Write(data); err != nil {
+		return fmt.Errorf("could not write data to file: %w", err)
+	}
+	return nil
 }
 
-
 // SortReviewsByDate is a function that sorts the reviews by date
+// This function modifies the original slice
 func SortReviewsByDate(reviews []Review) {
 	const layout = "2006-01-02" // Move the layout constant here to keep it scoped to the sorting logic
 	sort.Slice(reviews, func(i, j int) bool {
@@ -253,4 +253,3 @@ func SortReviewsByDate(reviews []Review) {
 		return iTime.After(jTime)
 	})
 }
-
