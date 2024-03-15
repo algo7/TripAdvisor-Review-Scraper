@@ -174,7 +174,10 @@ func main() {
 		if err != nil {
 			log.Fatalf("Error writing data to csv: %v", err)
 		}
-	} else {
+	}
+
+	// If the file type is JSON, write the data to the file
+	if config.FileType == "json" {
 		// Write the data to the JSON file
 		const layout = "2006-01-02"
 
@@ -205,7 +208,6 @@ func main() {
 			log.Fatalf("Could not write data: %v", err)
 		}
 	}
-
 	log.Printf("Data written to %s", fileName)
 	log.Println("Scrapping completed")
 }

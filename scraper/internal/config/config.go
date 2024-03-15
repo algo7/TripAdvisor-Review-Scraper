@@ -33,10 +33,12 @@ func NewConfig() (*Config, error) {
 	}
 
 	// Get file type
-	fileType := os.Getenv("FILETYPE")
+	fileType := strings.ToLower(os.Getenv("FILETYPE"))
 	if fileType == "" {
 		fileType = "csv"
-	} else if fileType != "csv" && fileType != "json" {
+	}
+
+	if fileType != "csv" && fileType != "json" {
 		return nil, fmt.Errorf("invalid file type. Use csv or json")
 	}
 
