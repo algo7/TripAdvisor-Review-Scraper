@@ -149,6 +149,7 @@ func main() {
 		}
 
 	}
+
 	if config.FileType == "csv" {
 		// Create a new csv writer. We are using writeAll so defer writer.Flush() is not required
 		writer := csv.NewWriter(fileHandle)
