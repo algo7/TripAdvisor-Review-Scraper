@@ -168,15 +168,14 @@ func main() {
 
 	// If the file type is JSON, write the data to the file
 	if config.FileType == "json" {
-		// Write the data to the JSON file
-
+		// Sort the reviews by date
 		tripadvisor.SortReviewsByDate(allReviews)
 
+		// Write the data to the JSON file
 		err := tripadvisor.WriteReviewsToJSONFile(allReviews, location, fileHandle)
 		if err != nil {
 			log.Fatalf("Error writing data to JSON file: %v", err)
 		}
-
 	}
 	log.Printf("Data written to %s", fileName)
 	log.Println("Scrapping completed")
