@@ -8,8 +8,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // MakeRequest is a function that sends a POST request to the TripAdvisor GraphQL endpoint
@@ -225,3 +227,30 @@ func ParseURL(url string, locationType string) (locationID uint32, locationName 
 		return 0, "", fmt.Errorf("invalid location type: %s", locationType)
 	}
 }
+
+func WriteReviewsToJSONFile(reviews []Review, location Location, fileHandle *os.File) error {
+    feedback := Feedback{
+        Location: location,
+        Reviews:  reviews,
+    }
+    data, err := json.Marshal(feedback)
+    if err != nil {
+        return fmt.Errorf("could not marshal data: %w", err)
+    }
+    if _, err := fileHandle.Write(data); err != nil {
+        return fmt.Errorf("could not write data to file: %w", err)
+    }
+    return nil
+}
+
+
+// SortReviewsByDate is a function that sorts the reviews by date
+func SortReviewsByDate(reviews []Review) {
+	const layout = "2006-01-02" // Move the layout constant here to keep it scoped to the sorting logic
+	sort.Slice(reviews, func(i, j int) bool {
+		iTime, _ := time.Parse(layout, reviews[i].CreatedDate) // Assume error handling is done elsewhere or errors are unlikely
+		jTime, _ := time.Parse(layout, reviews[j].CreatedDate)
+		return iTime.After(jTime)
+	})
+}
+

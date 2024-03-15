@@ -2,13 +2,11 @@ package main
 
 import (
 	"encoding/csv"
-	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
 	"os"
-	"sort"
 	"strconv"
 	"time"
 
@@ -171,34 +169,14 @@ func main() {
 	// If the file type is JSON, write the data to the file
 	if config.FileType == "json" {
 		// Write the data to the JSON file
-		const layout = "2006-01-02"
 
-		sort.Slice(allReviews, func(i, j int) bool {
-			iTime, err := time.Parse(layout, allReviews[i].CreatedDate)
-			if err != nil {
-				log.Fatalf("Error parsing time: %v", err)
-			}
+		tripadvisor.SortReviewsByDate(allReviews)
 
-			jTime, err := time.Parse(layout, allReviews[j].CreatedDate)
-			if err != nil {
-				log.Fatalf("Error parsing time: %v", err)
-			}
-
-			return jTime.After(iTime)
-		})
-
-		feedback := tripadvisor.Feedback{
-			Location: location,
-			Reviews:  allReviews,
-		}
-		data, err := json.Marshal(feedback)
+		err := tripadvisor.WriteReviewsToJSONFile(allReviews, location, fileHandle)
 		if err != nil {
-			log.Fatalf("Could not marshal data: %v", err)
+			log.Fatalf("Error writing data to JSON file: %v", err)
 		}
-		_, err = fileHandle.Write(data)
-		if err != nil {
-			log.Fatalf("Could not write data: %v", err)
-		}
+
 	}
 	log.Printf("Data written to %s", fileName)
 	log.Println("Scrapping completed")
