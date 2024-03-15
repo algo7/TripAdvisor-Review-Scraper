@@ -14,6 +14,7 @@ import (
 
 	"github.com/algo7/TripAdvisor-Review-Scraper/scraper/internal/config"
 	"github.com/algo7/TripAdvisor-Review-Scraper/scraper/pkg/tripadvisor"
+	"github.com/algo7/TripAdvisor-Review-Scraper/scraper/pkg/utils"
 )
 
 var (
@@ -69,7 +70,7 @@ func main() {
 		}
 
 		// Check IP
-		ip, err := tripadvisor.CheckIP(client)
+		ip, err := utils.CheckIP(client)
 		if err != nil {
 			log.Fatalf("Error checking IP: %v", err)
 		}
