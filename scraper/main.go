@@ -3,15 +3,16 @@ package main
 import (
 	"encoding/csv"
 	"encoding/json"
+	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
 	"os"
 	"sort"
 	"strconv"
-	"strings"
 	"time"
 
+	"github.com/algo7/TripAdvisor-Review-Scraper/scraper/internal/config"
 	"github.com/algo7/TripAdvisor-Review-Scraper/scraper/pkg/tripadvisor"
 )
 
@@ -29,36 +30,20 @@ func main() {
 	var allReviews []tripadvisor.Review
 	var location tripadvisor.Location
 
-	// Get the location URL from the environment variable
-	locationURL := os.Getenv("LOCATION_URL")
-	log.Printf("Location URL: %s", locationURL)
-
-	// Get the languages from the environment variable of use "en" as default
-	languages := LANGUAGES
-	if os.Getenv("LANGUAGES") != "" {
-		languages = strings.Split(os.Getenv("LANGUAGES"), "|")
+	config, err := config.NewConfig()
+	if err != nil {
+		log.Fatalf("Error creating scrape config: %v", err)
 	}
-	log.Printf("Languages: %v", languages)
-
-	// Get the file type from the environment variable or use "csv" as default
-	fileType := FILETYPE
-	if os.Getenv("FILETYPE") != "" {
-		fileType = os.Getenv("FILETYPE")
-	}
-	if fileType != "csv" && fileType != "json" {
-		log.Fatal("Invalid file type. Use csv or json")
-	}
-	log.Printf("File Type: %s", fileType)
 
 	// Get the query type from the URL
-	queryType := tripadvisor.GetURLType(locationURL)
+	queryType := tripadvisor.GetURLType(config.LocationURL)
 	if queryType == "" {
 		log.Fatal("Invalid URL")
 	}
 	log.Printf("Location Type: %s", queryType)
 
 	// Parse the location ID and location name from the URL
-	locationID, locationName, err := tripadvisor.ParseURL(locationURL, queryType)
+	locationID, locationName, err := tripadvisor.ParseURL(config.LocationURL, queryType)
 	if err != nil {
 		log.Fatalf("Error parsing URL: %v", err)
 	}
@@ -71,19 +56,16 @@ func main() {
 		log.Fatal("The location ID must be an positive integer")
 	}
 
-	// Get the proxy host if set
-	proxyHost := os.Getenv("PROXY_HOST")
-
 	// The default HTTP client
 	client := &http.Client{}
 
 	// If the proxy host is set, use the proxy client
-	if proxyHost != "" {
+	if config.ProxyHost != "" {
 
 		// Get the HTTP client with the proxy
-		client, err = tripadvisor.GetHTTPClientWithProxy(proxyHost)
+		client, err = tripadvisor.GetHTTPClientWithProxy(config.ProxyHost)
 		if err != nil {
-			log.Fatalf("Error creating HTTP client with the give proxy %s: %v", proxyHost, err)
+			log.Fatalf("Error creating HTTP client with the give proxy %s: %v", config.ProxyHost, err)
 		}
 
 		// Check IP
@@ -95,7 +77,7 @@ func main() {
 	}
 
 	// Fetch the review count for the given location ID
-	reviewCount, err := tripadvisor.FetchReviewCount(client, locationID, queryType, languages)
+	reviewCount, err := tripadvisor.FetchReviewCount(client, locationID, queryType, config.Languages)
 	if err != nil {
 		log.Fatalf("Error fetching review count: %v", err)
 	}
@@ -105,7 +87,7 @@ func main() {
 	log.Printf("Review count: %d", reviewCount)
 
 	// Create a file to save the reviews data
-	fileName := "reviews." + fileType
+	fileName := fmt.Sprintf("reviews.%s", config.FileType)
 	fileHandle, err := os.Create(fileName)
 	if err != nil {
 		log.Fatalf("Error creating file %s: %v", fileName, err)
@@ -131,7 +113,7 @@ func main() {
 		offset := tripadvisor.CalculateOffset(i)
 
 		// Make the request to the TripAdvisor GraphQL endpoint
-		resp, err := tripadvisor.MakeRequest(client, queryID, languages, locationID, offset, 20)
+		resp, err := tripadvisor.MakeRequest(client, queryID, config.Languages, locationID, offset, 20)
 		if err != nil {
 			log.Fatalf("Error making request at iteration %d: %v", i, err)
 		}
@@ -156,7 +138,7 @@ func main() {
 			// Store the location data
 			location = response[0].Data.Locations[0].Location
 
-			if fileType == "csv" {
+			if config.FileType == "csv" {
 				// Iterating over the reviews
 				for _, row := range reviews {
 					row := []string{
@@ -177,7 +159,7 @@ func main() {
 		}
 
 	}
-	if fileType == "csv" {
+	if config.FileType == "csv" {
 		// Create a new csv writer. We are using writeAll so defer writer.Flush() is not required
 		writer := csv.NewWriter(fileHandle)
 
