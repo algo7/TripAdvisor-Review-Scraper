@@ -29,7 +29,7 @@ func SetCache(key string, value any) {
 
 	ctx := context.Background()
 	// Timeout set to 5 minutes
-	err = rdb.Set(ctx, key, string(encodedValue), time.Minute*5).Err()
+	err = rdb.Set(ctx, key, string(encodedValue), time.Minute*1).Err()
 	utils.ErrorHandler(err)
 }
 
