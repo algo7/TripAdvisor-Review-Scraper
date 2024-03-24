@@ -19,6 +19,7 @@ type Container struct {
 	hostConfig    *container.HostConfig
 	networkConfig *network.NetworkingConfig
 	removeOptions *container.RemoveOptions
+	logOptions    *container.LogsOptions
 	ID            string
 }
 
@@ -47,6 +48,13 @@ func New() (*Container, error) {
 		removeOptions: &container.RemoveOptions{
 			RemoveVolumes: true,
 			Force:         true,
+		},
+		logOptions: &container.LogsOptions{
+			ShowStdout: true,
+			Details:    true,
+			ShowStderr: false,
+			Timestamps: false,
+			Follow:     true,
 		},
 	}, nil
 }
@@ -100,4 +108,15 @@ func (c *Container) RemoveContainer() error {
 	log.Printf("Container %s[%s] removed sucessfully.", c.config.Hostname, c.ID)
 
 	return nil
+}
+
+// TailLog returns a reader to the container log
+func (c *Container) TailLog() (io.Reader, error) {
+
+	stream, err := c.cli.ContainerLogs(context.TODO(), c.ID, *c.logOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	return stream, nil
 }
