@@ -12,7 +12,7 @@ import (
 	"github.com/docker/docker/client"
 )
 
-// Container struct repesents a single container
+// Container struct repesents a single generic container
 type Container struct {
 	cli           *client.Client
 	config        *container.Config
