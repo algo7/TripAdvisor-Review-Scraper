@@ -6,11 +6,15 @@ import (
 	"log"
 	"os"
 
+	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 )
+
+
 
 // Container struct repesents a single generic container
 type Container struct {
@@ -32,8 +36,10 @@ func New() (*Container, error) {
 	}
 
 	return &Container{
-		cli:    cli,
-		config: &container.Config{},
+		cli: cli,
+		config: &container.Config{
+			Tty: true,
+		},
 		hostConfig: &container.HostConfig{
 			// Otherwise the container will be removed before we can copy the file
 			AutoRemove: false,
@@ -92,6 +98,9 @@ func (c *Container) CreateContainer() error {
 	// Set the container ID
 	c.ID = resp.ID[:12]
 
+	c.cli.ContainerInspect()
+
+
 	log.Printf("Container %s created successfully.", c.ID)
 
 	return nil
@@ -119,4 +128,39 @@ func (c *Container) TailLog() (io.Reader, error) {
 	}
 
 	return stream, nil
+}
+
+type ContainerHelper struct {
+	cli *client.Client
+}
+
+func NewContainerHelper() (*ContainerHelper, error) {
+
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return nil, err
+	}
+
+	return &ContainerHelper{
+		cli: cli,
+	}, nil
+}
+
+// ListContainersByType returns a list of containers by type
+func (c *ContainerHelper) ListContainersByType(containerType string) ([]types.Container, error) {
+
+	containerFilters := filters.NewArgs()
+
+	containerFilters.Add("TaskOwner", containerType)
+
+	containers, err := c.cli.ContainerList(context.TODO(), container.ListOptions{
+		All:     false,
+		Filters: containerFilters,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return containers, nil
 }
