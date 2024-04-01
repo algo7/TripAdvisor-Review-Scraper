@@ -3,7 +3,7 @@ module github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner
 go 1.21.1
 
 require (
-	github.com/aws/aws-sdk-go-v2 v1.26.0
+	github.com/aws/aws-sdk-go-v2 v1.26.1
 	github.com/aws/aws-sdk-go-v2/config v1.27.9
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.9
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.53.0
@@ -30,7 +30,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sso v1.20.3 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.23.3 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.28.5 // indirect
-	github.com/aws/smithy-go v1.20.1 // indirect
+	github.com/aws/smithy-go v1.20.2 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
