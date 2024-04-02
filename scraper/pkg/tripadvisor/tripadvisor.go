@@ -95,6 +95,11 @@ func MakeRequest(client *http.Client, queryID string, language []string, locatio
 	responseData := Responses{}
 	err = json.Unmarshal(responseBody, &responseData)
 
+	// Check for errors
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshalling response body: %w", err)
+	}
+
 	if os.Getenv("DEBUG") == "true" {
 		fmt.Printf("Raw respsone:\n%s\n", string(responseBody))
 	}
