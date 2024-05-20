@@ -5,7 +5,6 @@ import (
 
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/utils"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 )
@@ -18,7 +17,7 @@ func Scrape(uploadIdentifier string, targetName string, containerID string) {
 	defer cli.Close()
 
 	// Start the container
-	err = cli.ContainerStart(context.Background(), containerID, types.ContainerStartOptions{})
+	err = cli.ContainerStart(context.Background(), containerID, container.StartOptions{})
 	utils.ErrorHandler(err)
 
 	// Wait for the container to exit

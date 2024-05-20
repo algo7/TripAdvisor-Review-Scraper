@@ -9,9 +9,8 @@ import (
 
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/database"
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/utils"
-
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 )
@@ -29,12 +28,12 @@ func initializeDockerClient() *client.Client {
 }
 
 // PullImage pulls the given image from a registry
-func PullImage(image string) {
+func PullImage(imageName string) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	utils.ErrorHandler(err)
 	defer cli.Close()
 
-	reader, err := cli.ImagePull(context.Background(), image, types.ImagePullOptions{})
+	reader, err := cli.ImagePull(context.Background(), imageName, image.PullOptions{})
 	utils.ErrorHandler(err)
 	defer reader.Close()
 
@@ -50,7 +49,7 @@ func RemoveContainer(containerID string) {
 	defer cli.Close()
 
 	// Remove the container
-	err = cli.ContainerRemove(context.Background(), containerID, types.ContainerRemoveOptions{
+	err = cli.ContainerRemove(context.Background(), containerID, container.RemoveOptions{
 		RemoveVolumes: true,
 		Force:         true,
 	})
@@ -116,7 +115,7 @@ func TailLog(containerID string) io.Reader {
 	defer cli.Close()
 
 	// Print the logs of the container
-	out, err := cli.ContainerLogs(context.Background(), containerID, types.ContainerLogsOptions{
+	out, err := cli.ContainerLogs(context.Background(), containerID, container.LogsOptions{
 		ShowStdout: true,
 		Details:    true,
 		ShowStderr: false,
@@ -160,7 +159,7 @@ func ListContainersByType(containerType string) []Container {
 	defer cli.Close()
 
 	// List all containers
-	containersInfo, err := cli.ContainerList(context.Background(), types.ContainerListOptions{All: false})
+	containersInfo, err := cli.ContainerList(context.Background(), container.ListOptions{All: false})
 	utils.ErrorHandler(err)
 
 	// Create a slice of Container structs
