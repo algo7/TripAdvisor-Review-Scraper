@@ -21,6 +21,8 @@ updates:
         patterns:
           - 'github.com*'
           - 'golang.org*'
+    assignees:
+      - 'algo7'
 
   - package-ecosystem: 'npm'
     directory: '/scraper'
@@ -31,3 +33,5 @@ updates:
         patterns:
           - 'github.com*'
           - 'golang.org*'
+    assignees:
+      - 'algo7'
