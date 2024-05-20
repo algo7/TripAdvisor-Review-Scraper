@@ -16,8 +16,18 @@ updates:
     directory: '/container_provisioner'
     schedule:
       interval: 'daily'
+    groups:
+      container_provisioner:
+        patterns:
+          - 'github.com*'
+          - 'golang.org*'
 
   - package-ecosystem: 'npm'
     directory: '/scraper'
     schedule:
       interval: 'daily'
+    groups:
+      scraper:
+        patterns:
+          - 'github.com*'
+          - 'golang.org*'
