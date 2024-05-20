@@ -24,7 +24,7 @@ updates:
     assignees:
       - 'algo7'
 
-  - package-ecosystem: 'npm'
+  - package-ecosystem: 'gomod'
     directory: '/scraper'
     schedule:
       interval: 'daily'
