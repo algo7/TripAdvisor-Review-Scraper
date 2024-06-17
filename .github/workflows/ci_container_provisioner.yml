@@ -56,7 +56,7 @@ jobs:
           logout: true
 
       - name: Build and push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./container_provisioner
           platforms: linux/amd64
