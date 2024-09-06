@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-// MakeRequest is a function that sends a POST request to the TripAdvisor GraphQL endpoint
+// MakeRequest sends a POST request to the TripAdvisor GraphQL endpoint
 func MakeRequest(client *http.Client, queryID string, language []string, locationID uint32, offset uint32, limit uint32) (responses *Responses, err error) {
 
 	/*
@@ -107,7 +107,7 @@ func MakeRequest(client *http.Client, queryID string, language []string, locatio
 	return &responseData, err
 }
 
-// GetQueryID is a function that returns the query ID for the given query type
+// GetQueryID returns the query ID for the given query type
 func GetQueryID(queryType string) (queryID string) {
 
 	switch queryType {
@@ -122,7 +122,7 @@ func GetQueryID(queryType string) (queryID string) {
 	}
 }
 
-// FetchReviewCount is a function that fetches the review count for the given location ID and query type
+// FetchReviewCount fetches the review count for the given location ID and query type
 func FetchReviewCount(client *http.Client, locationID uint32, queryType string, languages []string) (reviewCount int, err error) {
 
 	// Get the query ID for the given query type.
@@ -150,7 +150,7 @@ func FetchReviewCount(client *http.Client, locationID uint32, queryType string, 
 	return 0, fmt.Errorf("no reviews found for location ID %d", locationID)
 }
 
-// CalculateIterations is a function that calculates the number of iterations required to fetch all reviews
+// CalculateIterations calculates the number of iterations required to fetch all reviews
 func CalculateIterations(reviewCount uint32) (iterations uint32) {
 
 	// Calculate the number of iterations required to fetch all reviews
@@ -164,14 +164,14 @@ func CalculateIterations(reviewCount uint32) (iterations uint32) {
 	return iterations
 }
 
-// CalculateOffset is a function that calculates the offset for the given iteration
+// CalculateOffset calculates the offset for the given iteration
 func CalculateOffset(iteration uint32) (offset uint32) {
 	// Calculate the offset for the given iteration
 	offset = iteration * ReviewLimit
 	return offset
 }
 
-// GetURLType is a function that validates the URL and returns the type of URL
+// GetURLType validates the URL and returns the type of URL
 func GetURLType(url string) string {
 	if tripAdvisorHotelURLRegexp.MatchString(url) {
 		return "HOTEL"
@@ -192,7 +192,7 @@ func GetURLType(url string) string {
 	return ""
 }
 
-// ParseURL is a function that parses the URL and returns the location ID and the location name
+// ParseURL parses the URL and returns the location ID and the location name
 func ParseURL(url string, locationType string) (locationID uint32, locationName string, error error) {
 	// Sample hotel url: https://www.tripadvisor.com/Hotel_Review-g188107-d231860-Reviews-Beau_Rivage_Palace-Lausanne_Canton_of_Vaud.html
 	// Sample restaurant url: https://www.tripadvisor.com/Restaurant_Review-g187265-d11827759-Reviews-La_Terrasse-Lyon_Rhone_Auvergne_Rhone_Alpes.html
@@ -233,7 +233,7 @@ func ParseURL(url string, locationType string) (locationID uint32, locationName 
 	}
 }
 
-// Puts the current reviews into a JSON file
+// WriteReviewsToJSONFile writes the reviews to a JSON file
 func WriteReviewsToJSONFile(reviews []Review, location Location, fileHandle *os.File) error {
 	feedback := Feedback{
 		Location: location,
@@ -249,7 +249,7 @@ func WriteReviewsToJSONFile(reviews []Review, location Location, fileHandle *os.
 	return nil
 }
 
-// SortReviewsByDate is a function that sorts the reviews by date
+// SortReviewsByDate sorts the reviews by date
 // This function modifies the original slice
 func SortReviewsByDate(reviews []Review) {
 	const layout = "2006-01-02" // Move the layout constant here to keep it scoped to the sorting logic
@@ -258,5 +258,4 @@ func SortReviewsByDate(reviews []Review) {
 		jTime, _ := time.Parse(layout, reviews[j].CreatedDate)
 		return iTime.After(jTime)
 	})
-
 }
