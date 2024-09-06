@@ -233,6 +233,7 @@ func ParseURL(url string, locationType string) (locationID uint32, locationName 
 	}
 }
 
+// Puts the current reviews into a JSON file
 func WriteReviewsToJSONFile(reviews []Review, location Location, fileHandle *os.File) error {
 	feedback := Feedback{
 		Location: location,
@@ -257,4 +258,5 @@ func SortReviewsByDate(reviews []Review) {
 		jTime, _ := time.Parse(layout, reviews[j].CreatedDate)
 		return iTime.After(jTime)
 	})
+
 }
