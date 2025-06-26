@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/containers"
@@ -33,7 +32,7 @@ func getMain(c *fiber.Ctx) error {
 	return c.Render("main", fiber.Map{
 		"Title":             "Algo7 TripAdvisor Scraper",
 		"RunningContainers": runningContainers,
-	})
+	}, "layouts/base")
 }
 
 // postProvision is the handler for the form submission
@@ -185,18 +184,10 @@ func getRunningTasks(c *fiber.Ctx) error {
 	// Get ids of all running containers
 	runningContainers := containers.ListContainersByType("scraper")
 
-	// The page status message
-	currentTaskStatus := "There are no running tasks"
-
-	if len(runningContainers) != 0 {
-		currentTaskStatus = fmt.Sprintf("%s task(s) running", strconv.Itoa(len(runningContainers)))
-	}
-
 	return c.Render("tasks", fiber.Map{
-		"Title":             "Algo7 TripAdvisor Scraper",
-		"RunningTasks":      runningContainers,
-		"CurrentTaskStatus": currentTaskStatus,
-	})
+		"Title":        "Algo7 TripAdvisor Scraper",
+		"RunningTasks": runningContainers,
+	}, "layouts/base")
 }
 
 // getDownloads renders the downloads page
@@ -244,7 +235,7 @@ func getDownloads(c *fiber.Ctx) error {
 	// Store the encoded byte slice into redis
 	database.SetCache("r2StorageObjectsList", enrichedR2Objs)
 
-	return c.Render("main", fiber.Map{
+	return c.Render("downloads", fiber.Map{
 		"Title": "Algo7 TripAdvisor Scraper",
 		"Rows":  enrichedR2Objs,
 	})
