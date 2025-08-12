@@ -27,7 +27,7 @@ jobs:
     steps:
       # Clone the repo
       - name: Check Out Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Go
         uses: actions/setup-go@v5
