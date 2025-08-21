@@ -12,6 +12,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/algo7/TripAdvisor-Review-Scraper/scraper/pkg/utils"
 )
 
 // MakeRequest is a function that sends a POST request to the TripAdvisor GraphQL endpoint
@@ -61,13 +63,21 @@ func MakeRequest(client *http.Client, queryID string, language []string, locatio
 		return nil, fmt.Errorf("error creating request: %w", err)
 	}
 
+	requestedById, err := utils.GenerateRequestedByID()
+	if err != nil {
+		return nil, fmt.Errorf("error generating X-Requested-By ID: %w", err)
+	}
+
 	// Set the necessary headers as per the original Axios request
 	req.Header.Set("Origin", "https://www.tripadvisor.com")
+	req.Header.Set("Referer", "https://www.tripadvisor.com/Hotels")
 	req.Header.Set("Pragma", "no-cache")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.101 Safari/537.36")
-	req.Header.Set("X-Requested-By", "someone-special")
+	req.Header.Set("X-Requested-By", requestedById)
 	req.Header.Set("Cookie", `TAUnique=xxxx`)
 	req.Header.Set("Content-Type", "application/json;charset=utf-8")
+	req.Header.Set("Accepted-Encoding", "gzip, deflate, br")
+	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
 
 	// Send the request
 	resp, err := client.Do(req)

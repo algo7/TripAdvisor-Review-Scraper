@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"crypto/rand"
 	"fmt"
 	"io"
 	"net/http"
@@ -28,4 +29,26 @@ func CheckIP(client *http.Client) (ip string, err error) {
 	}
 
 	return string(responseBody), nil
+}
+
+// GenerateRequestedByID generates a random X-Requested-By ID which is 180 bytes long in ASCII
+func GenerateRequestedByID() (requestedByID string, err error) {
+	// Define the safe printable ASCII set
+	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+	// Allocate space for 180 characters
+	b := make([]byte, 180)
+
+	// Fill with crypto-random values
+	_, err = io.ReadFull(rand.Reader, b)
+	if err != nil {
+		return "", fmt.Errorf("error generating X-Requested-By ID: %w", err)
+	}
+
+	// Map each random byte into the printable set
+	for i := range b {
+		b[i] = letters[int(b[i])%len(letters)]
+	}
+
+	return string(b), nil // exactly 180 printable ASCII chars
 }

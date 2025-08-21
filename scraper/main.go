@@ -47,7 +47,9 @@ func main() {
 	}
 
 	// The default HTTP client
-	client := &http.Client{}
+	client := &http.Client{
+		Transport: http.DefaultTransport,
+	}
 
 	// If the proxy host is set, use the proxy client
 	if config.ProxyHost != "" {
