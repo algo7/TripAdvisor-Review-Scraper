@@ -66,7 +66,7 @@ func MakeRequest(client *http.Client, queryID string, language []string, locatio
 	req.Header.Set("Pragma", "no-cache")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.101 Safari/537.36")
 	req.Header.Set("X-Requested-By", "someone-special")
-	req.Header.Set("Cookie", "asdasdsa")
+	req.Header.Set("Cookie", `TAUnique=xxxx`)
 	req.Header.Set("Content-Type", "application/json;charset=utf-8")
 
 	// Send the request
