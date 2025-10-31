@@ -39,7 +39,7 @@ A simple scraper for TripAdvisor (Hotel, Restaurant, Airline) reviews.
 ### Scraper 
 There are 2 scrapers available:
 1. [Scraper](https://github.com/algo7/TripAdvisor-Review-Scraper/tree/main/scraper) written in Go
-2. [Scraper](https://github.com/algo7/TripAdvisor-Review-Scraper/tree/main/scraperjs) written in Node.js [Deprecated]
+2. ~~[Scraper](https://github.com/algo7/TripAdvisor-Review-Scraper/tree/2.0.0-archived/scraperjs) written in Node.js [Deprecated]~~
 
 The scraper written in Go is preferred because it calls the API directly and is much faster than the scraper written in Node.js which goes the traditional way of parsing HTML. The instructions of how to use them are located in their separate folders.
 
