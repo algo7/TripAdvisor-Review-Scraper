@@ -171,7 +171,7 @@ type Response struct {
 				Reviews    []Review `json:"reviews"`
 			} `json:"reviewListPage"`
 		} `json:"locations"`
-	} `json:"data,omitempty"`
+	} `json:"data"`
 }
 
 // Responses is a slice of Response structs
