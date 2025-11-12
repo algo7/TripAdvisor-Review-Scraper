@@ -1,127 +1,40 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>{{.Title}}</title>
-    <style>
-      /* Center everything on the page */
-      html,
-      body {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        height: 100%;
-      }
+<h1 class="font-bold text-xl leading-none text-center my-8">
+  {{if gt (len .RunningTasks) 1}}
+    {{len .RunningTasks}} tasks running
+  {{else if eq (len .RunningTasks) 1}}
+    1 task running
+  {{else}}
+    No tasks running
+  {{end}}
+</h1>
 
-      body {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-      }
-
-      /* Style the table*/
-      table {
-        border-collapse: collapse;
-        table-layout: fixed;
-        width: 100%;
-      }
-
-      td,
-      th {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: center;
-        word-wrap: break-word;
-        white-space: pre-wrap;
-      }
-
-      tr:nth-child(even) {
-        background-color: #fcf3f3;
-        word-wrap: break-word;
-        white-space: pre-wrap;
-      }
-
-      tr:hover {
-        background-color: grey;
-        word-wrap: break-word;
-        white-space: pre-wrap;
-      }
-
-      th {
-        padding-top: 12px;
-        padding-bottom: 12px;
-        background-color: #04aa6d;
-        color: white;
-      }
-
-      /* Flex box */
-      .top-container {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        padding-top: 1px;
-      }
-
-      .table-container {
-        flex: 1;
-        padding: 0px;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        box-sizing: border-box;
-        background-color: #fff;
-        word-wrap: break-word;
-        white-space: pre-wrap;
-        margin: -300px auto 0; /* Updated margin-top value */
-      }
-      .flex-container {
-        display: flex;
-        height: 100%;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        max-width: 1200px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="top-container">
-      <h1
-        >{{.CurrentTaskStatus}} |
-        <a href="/">Return Home</a>
-      </h1>
-    </div>
-
-    <div class="flex-container">
-      <!-- Table -->
-      <div class="table-container">
-        <table>
-          <thead>
+{{if gt (len .RunningTasks) 0}}
+  <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+    <table class="w-full text-sm text-left rtl:text-right text-gray-500">
+        <thead class="text-xs text-gray-700 uppercase bg-white">
             <tr>
-              <th>Running Tasks</th>
-              <th>Target Name</th>
-              <th>Task Owner</th>
-              <th>VPN Location</th>
-              <th>Link</th>
+              <th scope="col" class="px-6 py-3">Running Tasks</th>
+              <th scope="col" class="px-6 py-3">Target Name</th>
+              <th scope="col" class="px-6 py-3">Task Owner</th>
+              <th scope="col" class="px-6 py-3">VPN Location</th>
+              <th scope="col" class="px-6 py-3">
+                  <span class="sr-only">Link</span>
+              </th>
             </tr>
-          </thead>
-          <tbody>
+        </thead>
+        <tbody class="bg-white">
             {{range .RunningTasks}}
             <tr>
-              <td>{{.ContainerID}}</td>
-              <td>{{.TargetName}}</td>
-              <td>{{.TaskOwner}}</td>
-              <td>{{.VPNRegion}}</td>
-              <td><a href="{{.URL}}">View Logs</a></td>
+              <th  scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{{.ContainerID}}</th>
+              <td class="px-6 py-4">{{.TargetName}}</td>
+              <td class="px-6 py-4">{{.TaskOwner}}</td>
+              <td class="px-6 py-4">{{.VPNRegion}}</td>
+              <td class="px-6 py-4 text-right">
+                <a href="{{.URL}}" class="font-medium text-blue-600 hover:underline">View Logs</a>
+              </td>
             </tr>
             {{end}}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </body>
-</html>
+        </tbody>
+    </table>
+  </div>
+{{end}}

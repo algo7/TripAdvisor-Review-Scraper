@@ -1,237 +1,76 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>{{.Title}}</title>
-    <style>
-      /* CSS Style for input field */
-      input[type='text'] {
-        border: 2px solid #ccc;
-        border-radius: 4px;
-        padding: 10px;
-        font-size: 16px;
-        width: 100%;
-        box-sizing: border-box;
-      }
+<h1 class="font-bold text-6xl leading-none text-center my-8">TripAdvisor Review Scraper</h1>
+<p class="text-center mb-12">
+  {{if gt .RunningContainers 1}}
+    There are currently <a href="/tasks">{{.RunningContainers}}</a>/5 tasks in the queue.
+  {{else if eq .RunningContainers 1}}
+    There are no tasks in the queue.
+  {{else}}
+    There is currently <a href="/tasks">{{.RunningContainers}}</a>/5 task in the queue.
+  {{end}}
+</p>
 
-      /* CSS Style for submit button */
-      input[type='submit'] {
-        background-color: #4caf50;
-        color: white;
-        padding: 12px 20px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        display: block;
-        margin: 0 auto;
-        width: 100%;
-        max-width: 200px;
-      }
+<form action="/submit" method="post" class="grid grid-cols-1 gap-y-6">
+  <div class="col-span-full">
+    <label for="url" class="block text-sm leading-6 font-bold">URL</label>
+    <div class="mt-2">
+      <input
+        id="url"
+        name="url"
+        type="text"
+        class="block w-full rounded-md border-0 px-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-inset focus:ring-blue-600 text-sm leading-6"
+        placeholder="https://www.tripadvisor.com/Hotel_Review-g188107-d11761198-Reviews-Hotel_des_Patients-Lausanne_Canton_of_Vaud.html"
+        required>
+    </div>
+    <p class="text-sm leading-6">It must be tripadvisor.com, not .fr or or others</p>
+  </div>
 
-      /* Center everything on the page */
-      html,
-      body {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        height: 100%;
-      }
+  <div class="col-span-full">
+    <label for="upload_identifier" class="block text-sm leading-6 font-bold">Upload identifier</label>
+    <div class="mt-2">
+      <input
+        type="text"
+        id="upload_identifier"
+        name="upload_identifier"
+        class="block w-full rounded-md border-0 px-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-inset focus:ring-blue-600 text-sm leading-6"
+        placeholder="rocket_fox"
+        required
+      />
+    </div>
+    <p class="text-sm leading-6">For you to find the file later</p>
+  </div>
 
-      body {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-      }
+  <div class="col-span-full">
+    <label for="upload_identifier" class="block text-sm leading-6 font-bold">Upload identifier</label>
+    <select
+      id="choice"
+      name="scrape_option"
+      class="block w-full rounded-md bg-white shadow-sm ring-1 ring-inset ring-gray-300 text-gray-900 text-sm p-2.5 focus:ring-2 focus:ring-inset focus:ring-blue-600">
+      <option value="HOTEL">HOTEL</option>
+      <option value="RESTO">RESTAURANT</option>
+      <option value="AIRLINE">AIRLINE</option>
+    </select>
+  </div>
 
-      /* Style the table*/
-      table {
-        border-collapse: collapse;
-        table-layout: auto;
-        width: 100%;
-      }
+  <input
+    type="submit"
+    value="Start scraping"
+    class="flex w-full mb-8 justify-center rounded-md bg-blue-600 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+  />
+</form>
 
-      td,
-      th {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: center;
-        word-wrap: break-word;
-        white-space: pre-wrap;
-      }
-
-      /* First column */
-      td:nth-child(1) {
-        min-width: 230px;
-        max-width: 230px;
-      }
-
-      th:nth-child(1) {
-        min-width: 230px;
-        max-width: 230px;
-      }
-
-      th:nth-child(3) {
-        width: 50px;
-      }
-      td:nth-child(3) {
-        width: 50px;
-      }
-
-      tr:nth-child(even) {
-        background-color: #fcf3f3;
-        word-wrap: break-word;
-        white-space: pre-wrap;
-      }
-
-      tr:hover {
-        background-color: grey;
-        word-wrap: break-word;
-        white-space: pre-wrap;
-      }
-
-      th {
-        padding-top: 12px;
-        padding-bottom: 12px;
-        background-color: #04aa6d;
-        color: white;
-      }
-
-      /* Flex box */
-
-      .flex-container {
-        display: flex;
-        height: 100%;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        max-width: 1200px;
-      }
-
-      .form-container {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        box-sizing: border-box;
-        background-color: #eee;
-        margin-right: 50px;
-      }
-
-      .table-container {
-        flex: 1;
-        padding: 0px;
-        flex-direction: column;
-        box-sizing: border-box;
-        background-color: #fff;
-        word-wrap: break-word;
-        white-space: pre-wrap;
-        max-height: 80%;
-        overflow-y: auto;
-      }
-
-      /* ... Other CSS ... */
-
-      .centered-select {
-        display: block; /* Ensure it takes the full width available to it */
-        margin-left: auto; /* Automatically margin left */
-        margin-right: auto; /* Automatically margin right */
-        margin-bottom: 20px;
-        border: 2px solid #ccc;
-        border-radius: 4px;
-        padding: 10px;
-        font-size: 16px;
-        width: 100%; /* Or you might set a max-width if you want it to be less than full width */
-        max-width: 200px;
-        box-sizing: border-box;
-      }
-
-      form {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="flex-container">
-      <!-- Form -->
-      <div class="form-container">
-        <h2 style="text-align: center"
-          >There is (are) currently
-          <a href="/tasks">{{.RunningContainers}}</a> task(s) in the queue. Max
-          5.</h2
-        >
-        <h4 style="text-align: center"
-          >If the property / airline has too many pages, even with proxies, the
-          scraper could get IP banned and your task(s) will disppear. Please
-          report broken proxies via the support email. You can find the proxy
-          location(s) of your task(s) on the <a href="/tasks">Tasks</a> page.
-        </h4>
-
-        <h4 style="text-align: center"
-          >Go to <a href="/downloads">Downloads</a> to download the scrapped
-          reviews.</h4
-        >
-
-        <form action="/submit" method="post">
-          <label for="url"><h3>Enter URL:</h3></label>
-
-          <h4>*must be tripadvisor.com, not .fr or or others.*</h4>
-          <input
-            type="text"
-            id="url"
-            name="url"
-            placeholder="https://www.tripadvisor.com/Hotel_Review-g188107-d11761198-Reviews-Hotel_des_Patients-Lausanne_Canton_of_Vaud.html"
-            size="60"
-            required
-          />
-          <br />
-          <label for="upload_identifier"
-            ><h3>Enter You Upload Identifier:</h3>
-            <h5>*It's for you to find the file later</h5></label
-          >
-          <input
-            type="text"
-            id="upload_identifier"
-            name="upload_identifier"
-            placeholder="rocket_fox"
-            size="60"
-            maxlength="20"
-            required
-          />
-          <br />
-          <br />
-
-          <!-- Adding dropdown menu -->
-          <label for="choice"><h3>Select Target:</h3></label>
-          <select id="choice" name="scrape_option" class="centered-select">
-            <option value="HOTEL">HOTEL</option>
-            <option value="RESTO">RESTAURANT</option>
-            <option value="AIRLINE">AIRLINE</option>
-          </select>
-          <br />
-          <br />
-
-          <input type="submit" value="Submit" />
-        </form>
-        <br />
-
-        <h2 style="text-align: center">
-          For any bugs or issues, please contact me at:
-          <a
-            href="mailto:support@algo7.tools?subject=Scraper Bugs&body=Example Body"
-            >support@algo7.tools</a
-          >
-        </h2>
-        <h2 style="text-align: center">
-          <a href="https://github.com/algo7/TripAdvisor-Review-Scraper"
-            >Source Code</a
-          >
-        </h2>
+<div class="bg-red-50 rounded-lg px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+  <div class="sm:flex sm:items-start">
+    <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+      {{template "warning-icon"}}
+    </div>
+    <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+      <h3 class="text-base font-semibold leading-6 text-gray-900" id="modal-title">Attention!</h3>
+      <div class="mt-2">
+        <p class="text-sm text-gray-500">If the property / airline has too many pages, even with proxies, the
+          scraper could get IP banned and your task will disppear. Please
+          report broken proxies via the <a class="underline hover:text-gray-600" href="mailto:support@algo7.tools?subject=Scraper Bugs&body=Example Body">support email</a>. You can find the proxy
+          location of your task on the "<a class="underline hover:text-gray-600" href="/tasks">tasks</a>" page.</p>
       </div>
     </div>
-  </body>
-</html>
+  </div>
+</div>
