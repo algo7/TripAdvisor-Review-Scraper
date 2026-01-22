@@ -24,7 +24,11 @@ func init() {
 	}
 
 	// Check if the redis server is up and running
-	database.RedisConnectionCheck()
+	resp, err := database.RedisConnectionCheck()
+	if err != nil {
+		log.Fatalf("Redis connection failed: %v", err)
+	}
+	fmt.Println("Redis connection established:", resp)
 
 	// Try to pull the scraper image
 	lockSuccess := database.SetLock(imageLockKey)

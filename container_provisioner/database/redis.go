@@ -3,7 +3,7 @@ package database
 import (
 	"context"
 	"encoding/json"
-	"log"
+	"fmt"
 	"os"
 	"time"
 
@@ -55,15 +55,18 @@ func CacheLookUp(key string) string {
 }
 
 // RedisConnectionCheck checks if the redis server is up and running
-func RedisConnectionCheck() {
+func RedisConnectionCheck() (string, error) {
 
 	ctx := context.Background()
 
 	// Ping the redis server to check if it is up
 	resp, err := rdb.Ping(ctx).Result()
-	utils.ErrorHandler(err)
+	if err != nil {
+		return "", fmt.Errorf("failed to ping redis server: %w", err)
+	}
 
-	log.Println("Redis connection established", resp)
+	return resp, nil
+
 }
 
 // SetLock sets a lock on the given key
