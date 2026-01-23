@@ -74,6 +74,28 @@ func (c *ContainerManager) RemoveContainer(containerID string) error {
 	return nil
 }
 
+// TailLog tails the log of the container with the given ID
+func (c *ContainerManager) TailLog(containerID string) (io.Reader, error) {
+
+	// Print the logs of the container
+	out, err := c.client.ContainerLogs(context.Background(), containerID, container.LogsOptions{
+		ShowStdout: true,
+		Details:    true,
+		ShowStderr: false,
+		Timestamps: false,
+		Follow:     true})
+
+	if err != nil {
+		return nil, fmt.Errorf("fail to tail container execution log: %w", err)
+	}
+
+	// // Docker log uses multiplexed streams to send stdout and stderr in the connection. This function separates them
+	// _, err = stdcopy.StdCopy(os.Stdout, os.Stderr, out)
+	// utils.ErrorHandler(err)
+
+	return out, nil
+}
+
 // ContainerConfigGenerator generates the container config depending on the scrape target
 func ContainerConfigGenerator(
 	locationURL string, locationName string, uploadIdentifier string,
@@ -124,28 +146,6 @@ func CreateContainer(containerConfig *container.Config) string {
 	utils.ErrorHandler(err)
 
 	return Container.ID[:12]
-}
-
-// TailLog tails the log of the container with the given ID
-func TailLog(containerID string) io.Reader {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	utils.ErrorHandler(err)
-	defer cli.Close()
-
-	// Print the logs of the container
-	out, err := cli.ContainerLogs(context.Background(), containerID, container.LogsOptions{
-		ShowStdout: true,
-		Details:    true,
-		ShowStderr: false,
-		Timestamps: false,
-		Follow:     true})
-	utils.ErrorHandler(err)
-
-	// // Docker log uses multiplexed streams to send stdout and stderr in the connection. This function separates them
-	// _, err = stdcopy.StdCopy(os.Stdout, os.Stderr, out)
-	// utils.ErrorHandler(err)
-
-	return out
 }
 
 // Container information
