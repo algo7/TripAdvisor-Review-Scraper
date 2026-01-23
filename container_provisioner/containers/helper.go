@@ -20,40 +20,58 @@ const (
 	// containerImage = "scraper:latest"
 )
 
-// initializeDockerClient initialize a new docker api client
-func initializeDockerClient() *client.Client {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	utils.ErrorHandler(err)
-	return cli
+type ContainerManager struct {
+	client *client.Client
+	image  string
+}
+
+func NewContainerManager(image string) (*ContainerManager, error) {
+	// Create a new Docker API Client
+	apiClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return nil, fmt.Errorf("fail to create new container manager due to client initialization issues %w", err)
+	}
+	defer apiClient.Close()
+
+	return &ContainerManager{
+		client: apiClient,
+		image:  image,
+	}, nil
+
 }
 
 // PullImage pulls the given image from a registry
-func PullImage(imageName string) {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	utils.ErrorHandler(err)
-	defer cli.Close()
+func (c *ContainerManager) PullImage() error {
 
-	reader, err := cli.ImagePull(context.Background(), imageName, image.PullOptions{})
-	utils.ErrorHandler(err)
+	reader, err := c.client.ImagePull(context.Background(), c.image, image.PullOptions{})
+	if err != nil {
+		return fmt.Errorf("fail to pull the scraper image: %w", err)
+	}
 	defer reader.Close()
 
 	// Print the progress of the image pull
 	_, err = io.Copy(os.Stdout, reader)
-	utils.ErrorHandler(err)
+	if err != nil {
+		return fmt.Errorf("fail to log image pull progress: %w", err)
+	}
+
+	return nil
 }
 
 // RemoveContainer removes the container with the given ID
-func RemoveContainer(containerID string) {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	utils.ErrorHandler(err)
-	defer cli.Close()
+func (c *ContainerManager) RemoveContainer(containerID string) error {
 
 	// Remove the container
-	err = cli.ContainerRemove(context.Background(), containerID, container.RemoveOptions{
+	err := c.client.ContainerRemove(context.Background(), containerID, container.RemoveOptions{
 		RemoveVolumes: true,
 		Force:         true,
 	})
-	utils.ErrorHandler(err)
+
+	if err != nil {
+		return fmt.Errorf("fail to remove finished container: %w", err)
+	}
+
+	return nil
 }
 
 // ContainerConfigGenerator generates the container config depending on the scrape target
