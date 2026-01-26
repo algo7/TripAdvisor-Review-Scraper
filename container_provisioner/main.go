@@ -16,27 +16,6 @@ const containerImage = "ghcr.io/algo7/tripadvisor-review-scraper/scraper:latest"
 
 var imageLockKey = fmt.Sprintf("image-pull:%s", containerImage)
 
-// func init() {
-
-// 	// Check if the redis server is up and running
-// 	resp, err := database.RedisConnectionCheck()
-// 	if err != nil {
-// 		log.Fatalf("Redis connection failed: %v", err)
-// 	}
-// 	fmt.Println("Redis connection established:", resp)
-
-// 	// Try to pull the scraper image
-// 	lockSuccess := database.SetLock(imageLockKey)
-
-// 	if !lockSuccess {
-// 		// If the lock is not acquired, another instance is already pulling the image
-// 		return
-// 	}
-
-// 	// Pull the scraper image
-// 	containers.PullImage(containerImage)
-// }
-
 func main() {
 
 	// Check if the R2_URL environment variable is set
@@ -53,15 +32,24 @@ func main() {
 	}
 	fmt.Println("Redis connection established:", resp)
 
-	// Try to pull the scraper image
-	lockSuccess := r.SetLock(imageLockKey)
+	//  Initialize container manager
+	cm, err := containers.NewContainerManager(containerImage)
+	if err != nil {
+		log.Fatalf("fail to initialize container manager: %w", err)
+	}
 
+	// Try to acquire the lock for pullig container image
+	lockSuccess := r.SetLock(imageLockKey)
 	if !lockSuccess {
 		// If the lock is not acquired, another instance is already pulling the image
 		return
 	}
 
 	// Pull the scraper image
+	err = cm.PullImage()
+	if err != nil {
+		log.Fatalf("fail to pull the scraper image: %w", err)
+	}
 
 	// Set up signal handling to catch SIGINT and SIGTERM
 	sigCh := make(chan os.Signal, 1)

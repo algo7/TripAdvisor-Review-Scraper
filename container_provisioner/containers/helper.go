@@ -25,6 +25,7 @@ type ContainerManager struct {
 	image  string
 }
 
+// NewContainerManager creates a new instance of ContainerManager
 func NewContainerManager(image string) (*ContainerManager, error) {
 	// Create a new Docker API Client
 	apiClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -37,10 +38,9 @@ func NewContainerManager(image string) (*ContainerManager, error) {
 		client: apiClient,
 		image:  image,
 	}, nil
-
 }
 
-// PullImage pulls the given image from a registry
+// PullImage pulls the scraper container image
 func (c *ContainerManager) PullImage() error {
 
 	reader, err := c.client.ImagePull(context.Background(), c.image, image.PullOptions{})
