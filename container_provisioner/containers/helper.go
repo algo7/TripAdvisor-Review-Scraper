@@ -65,6 +65,7 @@ func (c *ContainerManager) RemoveContainer(containerID string) error {
 	// Remove the container
 	err := c.client.ContainerRemove(context.Background(), containerID, container.RemoveOptions{
 		RemoveVolumes: true,
+		RemoveLinks:   true,
 		Force:         true,
 	})
 
@@ -82,7 +83,7 @@ func (c *ContainerManager) TailLog(containerID string) (io.Reader, error) {
 	out, err := c.client.ContainerLogs(context.Background(), containerID, container.LogsOptions{
 		ShowStdout: true,
 		Details:    true,
-		ShowStderr: false,
+		ShowStderr: true,
 		Timestamps: false,
 		Follow:     true})
 
@@ -110,7 +111,7 @@ func (c *ContainerManager) ContainerConfigGenerator(
 			"vpn.region": vpnRegion,
 			"TargetName": locationName,
 		},
-		// Env vars required by the js scraper containers
+		// Env vars required by the scraper containers
 		Env: []string{
 			fmt.Sprintf("LOCATION_URL=%s", locationURL),
 			fmt.Sprintf("PROXY_HOST=%s", proxyAddress),
@@ -120,14 +121,10 @@ func (c *ContainerManager) ContainerConfigGenerator(
 }
 
 // CreateContainer creates a container then returns the container ID
-func (c *ContainerManager) CreateContainer(containerConfig *container.Config) string {
-
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	utils.ErrorHandler(err)
-	defer cli.Close()
+func (c *ContainerManager) CreateContainer(containerConfig *container.Config) (string, error) {
 
 	// Create the container. Container.ID contains the ID of the container
-	Container, err := cli.ContainerCreate(context.Background(),
+	ct, err := c.client.ContainerCreate(context.Background(),
 		containerConfig,
 		&container.HostConfig{
 			AutoRemove: false, // Cant set to true otherwise the container got deleted before copying the file
@@ -144,9 +141,11 @@ func (c *ContainerManager) CreateContainer(containerConfig *container.Config) st
 		"",  // Container name
 	)
 
-	utils.ErrorHandler(err)
+	if err != nil {
+		return "", fmt.Errorf("fail to create container: %w", err)
+	}
 
-	return Container.ID[:12]
+	return ct.ID[:12], nil
 }
 
 // Container information
@@ -170,15 +169,10 @@ type Container struct {
 //
 //	scraperContainers := ListContainersByType("scraper")
 //	proxyContainers := ListContainersByType("proxy")
-func ListContainersByType(containerType string) []Container {
-
-	// Initialize a new docker client
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	utils.ErrorHandler(err)
-	defer cli.Close()
+func (c *ContainerManager) ListContainersByType(containerType string) []Container {
 
 	// List all containers
-	containersInfo, err := cli.ContainerList(context.Background(), container.ListOptions{All: false})
+	containersInfo, err := c.client.ContainerList(context.Background(), container.ListOptions{All: false})
 	utils.ErrorHandler(err)
 
 	// Create a slice of Container structs
