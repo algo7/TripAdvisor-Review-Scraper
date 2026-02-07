@@ -58,8 +58,13 @@ func main() {
 	// Launch a goroutine that will perform cleanup when a signal is received
 	go func() {
 		sig := <-sigCh
-		cleanupScraperContainers(r)
-		r.ReleaseLock(imageLockKey)
+		cleanupScraperContainers(r, cm)
+		err := r.ReleaseLock(imageLockKey)
+		if err != nil {
+			log.Printf("fail to release lock after cleanup for image %s: %v", containerImage, err)
+		} else {
+			log.Printf("successfully released lock after cleanup for image %s", containerImage)
+		}
 		os.Exit(int(sig.(syscall.Signal)))
 	}()
 
@@ -68,7 +73,7 @@ func main() {
 }
 
 // cleanupScraperContainers removes all the running scraper containers
-func cleanupScraperContainers(r *database.RedisClient) {
+func cleanupScraperContainers(r *database.RedisClient, c *containers.ContainerManager) {
 
 	runningScrapers := containers.ListContainersByType("scraper")
 
@@ -80,7 +85,20 @@ func cleanupScraperContainers(r *database.RedisClient) {
 			continue // skip to the next iteration of the loop
 		}
 		// If lockSuccess is true, we have the lock, so we can proceed with the cleanup
-		containers.RemoveContainer(*container.ContainerID)
-		r.ReleaseLock(lockKey)
+		err := c.RemoveContainer(*container.ContainerID)
+		if err != nil {
+			log.Printf("fail to remove container %s: %v", *container.ContainerID, err)
+		} else {
+			log.Printf("successfully removed container %s", *container.ContainerID)
+		}
+
+		// Release the lock after cleanup
+		err = r.ReleaseLock(lockKey)
+		if err != nil {
+			log.Printf("fail to release lock for container %s: %v", *container.ContainerID, err)
+		} else {
+			log.Printf("successfully released lock for container %s", *container.ContainerID)
+		}
+
 	}
 }

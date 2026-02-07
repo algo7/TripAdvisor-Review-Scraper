@@ -23,6 +23,7 @@ const (
 type ContainerManager struct {
 	client *client.Client
 	image  string
+	config *container.Config
 }
 
 // NewContainerManager creates a new instance of ContainerManager
@@ -97,7 +98,7 @@ func (c *ContainerManager) TailLog(containerID string) (io.Reader, error) {
 }
 
 // ContainerConfigGenerator generates the container config depending on the scrape target
-func ContainerConfigGenerator(
+func (c *ContainerManager) ContainerConfigGenerator(
 	locationURL string, locationName string, uploadIdentifier string,
 	proxyAddress string, vpnRegion string) *container.Config {
 
@@ -119,7 +120,7 @@ func ContainerConfigGenerator(
 }
 
 // CreateContainer creates a container then returns the container ID
-func CreateContainer(containerConfig *container.Config) string {
+func (c *ContainerManager) CreateContainer(containerConfig *container.Config) string {
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	utils.ErrorHandler(err)
