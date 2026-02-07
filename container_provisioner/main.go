@@ -58,7 +58,7 @@ func main() {
 	// Launch a goroutine that will perform cleanup when a signal is received
 	go func() {
 		sig := <-sigCh
-		cleanupScraperContainers()
+		cleanupScraperContainers(r)
 		r.ReleaseLock(imageLockKey)
 		os.Exit(int(sig.(syscall.Signal)))
 	}()
@@ -68,19 +68,19 @@ func main() {
 }
 
 // cleanupScraperContainers removes all the running scraper containers
-func cleanupScraperContainers() {
+func cleanupScraperContainers(r *database.RedisClient) {
 
 	runningScrapers := containers.ListContainersByType("scraper")
 
 	for _, container := range runningScrapers {
 
 		lockKey := "container-cleanup:" + *container.ContainerID
-		lockSuccess := database.SetLock(lockKey)
+		lockSuccess := r.SetLock(lockKey)
 		if !lockSuccess {
 			continue // skip to the next iteration of the loop
 		}
 		// If lockSuccess is true, we have the lock, so we can proceed with the cleanup
 		containers.RemoveContainer(*container.ContainerID)
-		database.ReleaseLock(lockKey)
+		r.ReleaseLock(lockKey)
 	}
 }

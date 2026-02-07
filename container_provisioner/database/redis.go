@@ -102,10 +102,14 @@ func (r *RedisClient) SetLock(key string) bool {
 }
 
 // ReleaseLock releases the lock on the given key
-func (r *RedisClient) ReleaseLock(key string) {
+func (r *RedisClient) ReleaseLock(key string) error {
 
 	ctx := context.Background()
 
 	err := r.Client.Del(ctx, key).Err()
-	utils.ErrorHandler(err)
+	if err != nil {
+		return fmt.Errorf("failed to release lock: %w", err)
+	}
+
+	return nil
 }
