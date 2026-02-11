@@ -182,26 +182,45 @@ func (c *ContainerManager) Scrape(uploadIdentifier string, targetName string, co
 	filePathInContainer := "reviews.csv"
 
 	// Get the file size in the container
-	getResultCSVSizeInContainer(containerID, filePathInContainer)
+	err = c.getResultCSVSizeInContainer(containerID, filePathInContainer)
+	if err != nil {
+		return fmt.Errorf("fail to get csv size in container %s: %w", containerID, err)
+	}
 
 	// Read the file from the container as a reader interface of a tar stream
-	fileReader, _, err := cli.CopyFromContainer(context.Background(), containerID, filePathInContainer)
-	utils.ErrorHandler(err)
+	fileReader, _, err := c.client.CopyFromContainer(context.Background(), containerID, filePathInContainer)
+	if err != nil {
+		return fmt.Errorf("fail to copy file from container %s: %w", containerID, err)
+	}
 
 	// Generate a random file prefix
 	fileSuffix := utils.GenerateUUID()
 
 	// Write the file to the host
-	exportedFileName := utils.WriteToFileFromTarStream(targetName, fileSuffix, fileReader)
+	exportedFileName, err := utils.WriteToFileFromTarStream(targetName, fileSuffix, fileReader)
+	if err != nil {
+		return fmt.Errorf("fail to write file to host: %w", err)
+	}
 
 	// Read the exported csv file
-	file := utils.ReadFromFile(exportedFileName)
+	file, err := utils.ReadFromFile(exportedFileName)
+	if err != nil {
+		return fmt.Errorf("fail to read exported file %s: %w", exportedFileName, err)
+	}
 
 	// Upload the file to R2
-	utils.R2UploadObject(exportedFileName, uploadIdentifier, file)
+	err = utils.R2UploadObject(exportedFileName, uploadIdentifier, file)
+	if err != nil {
+		return fmt.Errorf("fail to upload file %s to R2: %w", exportedFileName, err)
+	}
 
 	// Remove the container
-	RemoveContainer(containerID)
+	err = c.RemoveContainer(containerID)
+	if err != nil {
+		return fmt.Errorf("fail to remove container %s after finishing uploading file: %w", containerID, err)
+	}
+
+	return nil
 }
 
 // Container information
@@ -321,16 +340,15 @@ func ReleaseProxyContainer(containerID string) {
 }
 
 // getResultCSVSizeInContainer gets the size of the result csv file in the container
-func getResultCSVSizeInContainer(containerID, filePathInContainer string) {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	utils.ErrorHandler(err)
-	defer cli.Close()
+func (c *ContainerManager) getResultCSVSizeInContainer(containerID, filePathInContainer string) error {
 
 	// Log the file size in the container
-	containerFileInfo, err := cli.ContainerStatPath(context.Background(), containerID, filePathInContainer)
-	if err == nil {
-		log.Printf("File size in container: %d bytes", containerFileInfo.Size)
+	containerFileInfo, err := c.client.ContainerStatPath(context.Background(), containerID, filePathInContainer)
+	if err != nil {
+		return fmt.Errorf("error getting file size in container: %w", err)
 	} else {
-		log.Printf("Error getting file size in container: %v", err)
+		log.Printf("file size in container: %d bytes", containerFileInfo.Size)
 	}
+
+	return nil
 }

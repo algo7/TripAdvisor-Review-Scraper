@@ -39,7 +39,7 @@ func ErrorHandler(err error) {
 }
 
 // WriteToFileFromTarStream writes a file to disk
-func WriteToFileFromTarStream(fileName string, fileSuffix string, tarF io.ReadCloser) string {
+func WriteToFileFromTarStream(fileName string, fileSuffix string, tarF io.ReadCloser) (string, error) {
 
 	// Untar the file
 	// Note: This is not a generic untar function. It only works for a single file
@@ -67,30 +67,37 @@ func WriteToFileFromTarStream(fileName string, fileSuffix string, tarF io.ReadCl
 
 	// Get the tar header and go to the next entry in the tar file
 	_, err := tarReader.Next()
-	ErrorHandler(err)
+	if err != nil {
+		return "", fmt.Errorf("fail to read the tar file: %w", err)
+	}
 
 	fileNameToWrite := fileName + "-" + fileSuffix + ".csv"
 
 	// Create the file
 	out, err := os.Create(fileNameToWrite)
-	ErrorHandler(err)
+	if err != nil {
+		return "", fmt.Errorf("fail to create file to hold the extracted data: %w", err)
+	}
 	defer out.Close()
 
 	// Write the file to disk
 	_, err = io.Copy(out, tarReader)
-	ErrorHandler(err)
+	if err != nil {
+		return "", fmt.Errorf("fail to write the extracted file to disk: %w", err)
+	}
 
 	// Return the file name
-	return fileNameToWrite
+	return fileNameToWrite, nil
 }
 
 // ReadFromFile reads a file from disk
-func ReadFromFile(fileName string) *os.File {
+func ReadFromFile(fileName string) (*os.File, error) {
 	file, err := os.Open(fileName)
+	if err != nil {
+		return nil, fmt.Errorf("fail to read extracted csv file: %w", err)
+	}
 
-	ErrorHandler(err)
-
-	return file
+	return file, nil
 }
 
 // ParseCredsFromJSON parses the credentials from a JSON file
