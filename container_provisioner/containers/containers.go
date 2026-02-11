@@ -2,6 +2,7 @@ package containers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -18,6 +19,10 @@ import (
 const (
 	containerImage = "ghcr.io/algo7/tripadvisor-review-scraper/scraper:latest"
 	// containerImage = "scraper:latest"
+)
+
+var (
+	ErrInvalidContainerType = errors.New("invalid container type")
 )
 
 type ContainerManager struct {
@@ -244,11 +249,13 @@ type Container struct {
 //
 //	scraperContainers := ListContainersByType("scraper")
 //	proxyContainers := ListContainersByType("proxy")
-func (c *ContainerManager) ListContainersByType(containerType string) []Container {
+func (c *ContainerManager) ListContainersByType(containerType string) ([]Container, error) {
 
 	// List all containers
 	containersInfo, err := c.client.ContainerList(context.Background(), container.ListOptions{All: false})
-	utils.ErrorHandler(err)
+	if err != nil {
+		return nil, fmt.Errorf("fail to list %s containers: %w", containerType, err)
+	}
 
 	// Create a slice of Container structs
 	containers := []Container{}
@@ -296,11 +303,11 @@ func (c *ContainerManager) ListContainersByType(containerType string) []Containe
 			}
 
 		default:
-			utils.ErrorHandler(fmt.Errorf("Invalid container type"))
+			return nil, ErrInvalidContainerType
 		}
 	}
 
-	return containers
+	return containers, nil
 }
 
 // ProxyContainer information
