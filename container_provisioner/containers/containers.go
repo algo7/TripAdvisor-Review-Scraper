@@ -148,6 +148,62 @@ func (c *ContainerManager) CreateContainer(containerConfig *container.Config) (s
 	return ct.ID[:12], nil
 }
 
+// Scrape creates a container, runs it, tails the log and wait for it to exit, and export the file name
+func (c *ContainerManager) Scrape(uploadIdentifier string, targetName string, containerID string) error {
+
+	// Start the container
+	err := c.client.ContainerStart(context.Background(), containerID, container.StartOptions{})
+	if err != nil {
+		return fmt.Errorf("fail to start container %s: %w", containerID, err)
+	}
+
+	// Wait for the container to exit
+	statusCh, errCh := c.client.ContainerWait(context.Background(), containerID, container.WaitConditionNotRunning)
+
+	// ContainerWait returns 2 channels. One for the status and one for the wait error (not execution error)
+	select {
+	case err := <-errCh:
+		if err != nil {
+			return fmt.Errorf("container exited due to %w", err)
+		}
+
+	case status := <-statusCh:
+		// If the container exited with non-zero status code, remove the container and return an error
+		if status.StatusCode != 0 {
+			err := c.RemoveContainer(containerID)
+			if err != nil {
+				return fmt.Errorf("fail to container %s: %w", containerID, err)
+			}
+			return nil
+		}
+	}
+
+	// The file path in the container
+	filePathInContainer := "reviews.csv"
+
+	// Get the file size in the container
+	getResultCSVSizeInContainer(containerID, filePathInContainer)
+
+	// Read the file from the container as a reader interface of a tar stream
+	fileReader, _, err := cli.CopyFromContainer(context.Background(), containerID, filePathInContainer)
+	utils.ErrorHandler(err)
+
+	// Generate a random file prefix
+	fileSuffix := utils.GenerateUUID()
+
+	// Write the file to the host
+	exportedFileName := utils.WriteToFileFromTarStream(targetName, fileSuffix, fileReader)
+
+	// Read the exported csv file
+	file := utils.ReadFromFile(exportedFileName)
+
+	// Upload the file to R2
+	utils.R2UploadObject(exportedFileName, uploadIdentifier, file)
+
+	// Remove the container
+	RemoveContainer(containerID)
+}
+
 // Container information
 type Container struct {
 	ContainerID    *string
