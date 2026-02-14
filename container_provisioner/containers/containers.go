@@ -14,6 +14,7 @@ import (
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 const (
@@ -25,14 +26,25 @@ var (
 	ErrInvalidContainerType = errors.New("invalid container type")
 )
 
+type ContainerClient interface {
+	ImagePull(ctx context.Context, refStr string, options image.PullOptions) (io.ReadCloser, error)
+	ContainerRemove(ctx context.Context, containerID string, options container.RemoveOptions) error
+	ContainerLogs(ctx context.Context, containerID string, options container.LogsOptions) (io.ReadCloser, error)
+	ContainerCreate(ctx context.Context, config *container.Config, hostConfig *container.HostConfig, networkingConfig *network.NetworkingConfig, platform *v1.Platform, containerName string) (container.CreateResponse, error)
+	ContainerStart(ctx context.Context, containerID string, options container.StartOptions) error
+	CopyFromContainer(ctx context.Context, containerID string, srcPath string) (io.ReadCloser, container.PathStat, error)
+	ContainerList(ctx context.Context, options container.ListOptions) ([]container.Summary, error)
+	ContainerStatPath(ctx context.Context, containerID string, path string) (container.PathStat, error)
+	Close() error
+}
+
 type ContainerManager struct {
-	client *client.Client
+	client ContainerClient
 	image  string
-	config *container.Config
 }
 
 // NewContainerManager creates a new instance of ContainerManager
-func NewContainerManager(image string) (*ContainerManager, error) {
+func NewContainerManager(apiClient ContainerClient, image string) (*ContainerManager, error) {
 	// Create a new Docker API Client
 	apiClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -103,30 +115,8 @@ func (c *ContainerManager) TailLog(containerID string) (io.Reader, error) {
 	return out, nil
 }
 
-// ContainerConfigGenerator generates the container config depending on the scrape target
-func (c *ContainerManager) ContainerConfigGenerator(
-	locationURL string, locationName string, uploadIdentifier string,
-	proxyAddress string, vpnRegion string) *container.Config {
-
-	return &container.Config{
-		Image: containerImage,
-		Labels: map[string]string{
-			"TaskOwner":  uploadIdentifier,
-			"Target":     locationName,
-			"vpn.region": vpnRegion,
-			"TargetName": locationName,
-		},
-		// Env vars required by the scraper containers
-		Env: []string{
-			fmt.Sprintf("LOCATION_URL=%s", locationURL),
-			fmt.Sprintf("PROXY_HOST=%s", proxyAddress),
-		},
-		Tty: true,
-	}
-}
-
 // CreateContainer creates a container then returns the container ID
-func (c *ContainerManager) CreateContainer(containerConfig *container.Config) (string, error) {
+func (c *ContainerManager) CreateContainer(containerConfig *container.Config, networkConfig *network.NetworkingConfig) (string, error) {
 
 	// Create the container. Container.ID contains the ID of the container
 	ct, err := c.client.ContainerCreate(context.Background(),
