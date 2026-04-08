@@ -92,8 +92,8 @@ func main() {
 	// Scrape the reviews
 	for i := range iterations {
 
-		// Introduce random delay to avoid getting blocked. The delay is between 1 and 5 seconds
-		delay := rand.Intn(5) + 1
+		// Introduce random delay to avoid getting blocked. The delay is between 1 and 3 seconds
+		delay := rand.Intn(3) + 1
 		log.Printf("Iteration: %d. Delaying for %d seconds", i, delay)
 		time.Sleep(time.Duration(delay) * time.Second)
 
