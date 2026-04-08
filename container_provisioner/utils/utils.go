@@ -2,13 +2,10 @@ package utils
 
 import (
 	"archive/tar"
-	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"regexp"
-	"sort"
 	"strings"
 	"time"
 
@@ -22,24 +19,8 @@ var (
 	tripAdvisorAirlineRegexp    = regexp.MustCompile(`^https:\/\/www\.tripadvisor\.com\/Airline_Review-d\d{6,10}-Reviews-[\w-]{1,255}$`)
 )
 
-// Creds is the Credentials of the R2 bucket
-type Creds struct {
-	AccessKeyID     string `json:"accessKeyId"`
-	AccessKeySecret string `json:"accessKeySecret"`
-	AccountID       string `json:"accountId"`
-	BucketName      string `json:"bucketName"`
-}
-
-// ErrorHandler is a generic error handler
-func ErrorHandler(err error) {
-	if err != nil {
-		formattedError := fmt.Errorf("Error: %w", err)
-		log.Fatalln(formattedError)
-	}
-}
-
 // WriteToFileFromTarStream writes a file to disk
-func WriteToFileFromTarStream(fileName string, fileSuffix string, tarF io.ReadCloser) string {
+func WriteToFileFromTarStream(fileName string, fileSuffix string, tarF io.ReadCloser) (string, error) {
 
 	// Untar the file
 	// Note: This is not a generic untar function. It only works for a single file
@@ -67,45 +48,37 @@ func WriteToFileFromTarStream(fileName string, fileSuffix string, tarF io.ReadCl
 
 	// Get the tar header and go to the next entry in the tar file
 	_, err := tarReader.Next()
-	ErrorHandler(err)
+	if err != nil {
+		return "", fmt.Errorf("fail to read the tar file: %w", err)
+	}
 
 	fileNameToWrite := fileName + "-" + fileSuffix + ".csv"
 
 	// Create the file
 	out, err := os.Create(fileNameToWrite)
-	ErrorHandler(err)
+	if err != nil {
+		return "", fmt.Errorf("fail to create file to hold the extracted data: %w", err)
+	}
 	defer out.Close()
 
 	// Write the file to disk
 	_, err = io.Copy(out, tarReader)
-	ErrorHandler(err)
+	if err != nil {
+		return "", fmt.Errorf("fail to write the extracted file to disk: %w", err)
+	}
 
 	// Return the file name
-	return fileNameToWrite
+	return fileNameToWrite, nil
 }
 
 // ReadFromFile reads a file from disk
-func ReadFromFile(fileName string) *os.File {
+func ReadFromFile(fileName string) (*os.File, error) {
 	file, err := os.Open(fileName)
+	if err != nil {
+		return nil, fmt.Errorf("fail to read extracted csv file: %w", err)
+	}
 
-	ErrorHandler(err)
-
-	return file
-}
-
-// ParseCredsFromJSON parses the credentials from a JSON file
-func ParseCredsFromJSON(fileName string) Creds {
-	// Read file
-	file := ReadFromFile(fileName)
-	defer file.Close()
-
-	// Parse the JSON file
-	decoder := json.NewDecoder(file)
-	var creds Creds
-	err := decoder.Decode(&creds)
-	ErrorHandler(err)
-
-	return creds
+	return file, nil
 }
 
 // GetLocationNameFromURL get the scrape target name from the given URL
@@ -152,37 +125,15 @@ func GenerateUUID() string {
 }
 
 // ParseTime converts ISO 8601 time to a more readable format
-func ParseTime(timeToParse string) string {
+func ParseTime(timeToParse string) (string, error) {
 	// Parse the time string
 	t, err := time.Parse(time.RFC3339Nano, timeToParse)
-	ErrorHandler(err)
+	if err != nil {
+		return "", fmt.Errorf("fail to parse time string: %w", err)
+	}
 
 	// Format the time string in a more readable way
 	formattedTime := t.Format("01/02/2006 15:04:05 MST")
 
-	return formattedTime
-}
-
-// sortStructByTime sorts R2Obj struct by time (newest first)
-func sortStructByTime(R2Obj []R2Obj) []R2Obj {
-
-	// Define the comparator function
-	less := func(i, j int) bool {
-
-		t1, err := time.Parse(time.RFC3339Nano, R2Obj[i].LastModified)
-		if err != nil {
-			return false // error handling
-		}
-
-		t2, err := time.Parse(time.RFC3339Nano, R2Obj[j].LastModified)
-		if err != nil {
-			return false // error handling
-		}
-		return t2.Before(t1)
-	}
-
-	// Sort the logs using the comparator function
-	sort.Slice(R2Obj, less)
-
-	return R2Obj
+	return formattedTime, nil
 }
