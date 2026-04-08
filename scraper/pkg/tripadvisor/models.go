@@ -8,10 +8,10 @@ const (
 	EndPointURL string = "https://www.tripadvisor.com/data/graphql/ids"
 
 	// HotelQueryID is the pre-registered query ID for hotel reviews
-	HotelQueryID string = "b83d781ada1db6f2"
+	HotelQueryID string = "ef1a9f94012220d3"
 
 	// AirlineQueryID is the pre-registered query ID for airline reviews
-	AirlineQueryID string = "83003f8d5a7b1762"
+	AirlineQueryID string = "e1ca245af416c316"
 
 	// AttractionQueryID is the pre-registered query ID for attraction reviews
 	AttractionQueryID string = "ef1a9f94012220d3"
@@ -80,6 +80,13 @@ type Request struct {
 	Variables  Variables  `json:"variables"`
 	Extensions Extensions `json:"extensions"`
 }
+
+type BatchRequest struct {
+	Variables  any        `json:"variables"`
+	Extensions Extensions `json:"extensions"`
+}
+
+type BatchRequests []BatchRequest
 
 // Review is a struct that represents the review object in the response body from TripAdvisor endpoints
 type Review struct {

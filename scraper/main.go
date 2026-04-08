@@ -101,7 +101,7 @@ func main() {
 		offset := tripadvisor.CalculateOffset(i)
 
 		// Make the request to the TripAdvisor GraphQL endpoint
-		resp, err := tripadvisor.MakeRequest(client, queryID, config.Languages, locationID, geoID, offset, 20)
+		resp, err := tripadvisor.MakeRequest(client, queryID, queryType, config.Languages, locationID, geoID, offset, 20)
 		if err != nil {
 			log.Fatalf("Error making request at iteration %d: %v", i, err)
 		}

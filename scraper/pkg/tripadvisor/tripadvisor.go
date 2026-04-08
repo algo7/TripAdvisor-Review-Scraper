@@ -17,7 +17,7 @@ import (
 )
 
 // MakeRequest is a function that sends a POST request to the TripAdvisor GraphQL endpoint
-func MakeRequest(client *http.Client, queryID string, language []string, locationID uint32, geoId uint32, offset uint32, limit uint32) (responses *Responses, err error) {
+func MakeRequest(client *http.Client, queryID string, queryType string, language []string, locationID uint32, geoId uint32, offset uint32, limit uint32) (responses *Responses, err error) {
 
 	/*
 	* Prepare the request body
@@ -43,20 +43,28 @@ func MakeRequest(client *http.Client, queryID string, language []string, locatio
 		PreRegisteredQueryID: queryID,
 	}
 
-	requestPayload := Request{
-		Variables:  requestVariables,
-		Extensions: requestExtensions,
-	}
 	routeOffsets := []any{0} // first: number 0
 	for i := uint32(1); i <= 7; i++ {
 		routeOffsets = append(routeOffsets, fmt.Sprintf("r%d", i*ReviewLimit)) // rest: "r10", "r20"...
+	}
+
+	var pageName string
+	switch queryType {
+	case "HOTEL":
+		pageName = "Hotel_Review"
+	case "ATTRACTION":
+		pageName = "Attraction_Review"
+	case "RESTO":
+		pageName = "Restaurant_Review"
+	case "AIRLINE":
+		pageName = "Airline_Review"
 	}
 
 	var routes []RouteRequest
 	for _, off := range routeOffsets {
 		routes = append(routes, RouteRequest{
 			Fragment: "",
-			Page:     "Attraction_Review", // adjust based on queryType
+			Page:     pageName, // adjust based on queryType
 			Params: RouteParams{
 				GeoID:    geoId, // you'll need geoId passed in or parsed from URL
 				DetailID: locationID,
@@ -65,15 +73,17 @@ func MakeRequest(client *http.Client, queryID string, language []string, locatio
 		})
 	}
 
-	routesPayload := RoutesPayload{
-		Variables:  RoutesVariables{RoutesRequest: routes},
-		Extensions: Extensions{PreRegisteredQueryID: "3f2df7139a71a643"},
-	}
-
 	// Batch both into a single request array
-	request := []any{requestPayload, routesPayload}
-	// request := Requests{requestPayload}
-
+	request := BatchRequests{
+		{
+			Variables:  requestVariables,
+			Extensions: requestExtensions,
+		},
+		{
+			Variables:  RoutesVariables{RoutesRequest: routes},
+			Extensions: Extensions{PreRegisteredQueryID: queryID},
+		},
+	}
 	// Marshal the request body into JSON
 	jsonPayload, err := json.Marshal(request)
 	if err != nil {
@@ -92,6 +102,7 @@ func MakeRequest(client *http.Client, queryID string, language []string, locatio
 	}
 
 	// Set the necessary headers as per the original Axios request
+	req.Header.Set("Host", "www.tripadvisor.com")
 	req.Header.Set("Origin", "https://www.tripadvisor.com")
 	req.Header.Set("Referer", "https://www.tripadvisor.com/Hotels")
 	req.Header.Set("Pragma", "no-cache")
@@ -163,7 +174,7 @@ func FetchReviewCount(client *http.Client, locationID uint32, geoID uint32, quer
 	queryID := GetQueryID(queryType)
 
 	// Make the request to the TripAdvisor GraphQL endpoint.
-	responses, err := MakeRequest(client, queryID, languages, locationID, geoID, 0, 1)
+	responses, err := MakeRequest(client, queryID, queryType, languages, locationID, geoID, 0, 1)
 	if err != nil {
 		return 0, fmt.Errorf("error making request: %w", err)
 	}
