@@ -12,6 +12,13 @@ import (
 	"github.com/docker/docker/api/types/container"
 )
 
+// ProxyContainer information
+type ProxyContainer struct {
+	ContainerID  string
+	ProxyAddress string
+	VPNRegion    string
+}
+
 type Scraper struct {
 	cm    containers.ContainerManager
 	r2    storage.R2Service
@@ -103,4 +110,36 @@ func (s *Scraper) Scrape(uploadIdentifier string, targetName string, containerID
 	}
 
 	return nil
+}
+
+// AcquireProxyContainer acquires a lock on a proxy container and returns its ID
+func AcquireProxyContainer(s *Scraper) (ProxyContainer, error) {
+	availableProxies, err := s.cm.ListContainersByType("proxy")
+	if err != nil {
+		return ProxyContainer{}, fmt.Errorf("failed to list proxy containers: %w", err)
+	}
+
+	for _, proxy := range availableProxies {
+		lockKey := "proxy-usage:" + *proxy.ContainerID
+		lockSuccess := s.redis.SetLock(lockKey)
+
+		if lockSuccess && proxy.ProxySOCKSPort != nil && proxy.IPAddress != nil {
+			return ProxyContainer{
+				ContainerID:  *proxy.ContainerID,
+				VPNRegion:    *proxy.VPNRegion,
+				ProxyAddress: fmt.Sprintf("socks5://%s:%s", *proxy.IPAddress, *proxy.ProxySOCKSPort),
+			}, nil
+		}
+		// If the lock is not successful, try the next proxy container
+	}
+
+	// If no proxy container could be locked, return an empty string
+	return ProxyContainer{}, fmt.Errorf("no available proxy container")
+}
+
+// ReleaseProxyContainer releases the lock on a proxy container
+func ReleaseProxyContainer(s *Scraper, containerID string) {
+	lockKey := "proxy-usage:" + containerID
+	log.Printf("Releasing lock on proxy container %s", lockKey)
+	s.redis.ReleaseLock(lockKey)
 }

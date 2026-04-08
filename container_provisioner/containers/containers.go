@@ -5,10 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"os"
 
-	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/database"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/network"
@@ -223,42 +221,6 @@ func (c *ContainerManager) ListContainersByType(containerType string) ([]Contain
 	}
 
 	return containers, nil
-}
-
-// ProxyContainer information
-type ProxyContainer struct {
-	ContainerID  string
-	ProxyAddress string
-	VPNRegion    string
-}
-
-// AcquireProxyContainer acquires a lock on a proxy container and returns its ID
-func AcquireProxyContainer() ProxyContainer {
-	availableProxies := ListContainersByType("proxy")
-
-	for _, proxy := range availableProxies {
-		lockKey := "proxy-usage:" + *proxy.ContainerID
-		lockSuccess := database.SetLock(lockKey)
-
-		if lockSuccess && proxy.ProxySOCKSPort != nil && proxy.IPAddress != nil {
-			return ProxyContainer{
-				ContainerID:  *proxy.ContainerID,
-				VPNRegion:    *proxy.VPNRegion,
-				ProxyAddress: fmt.Sprintf("socks5://%s:%s", *proxy.IPAddress, *proxy.ProxySOCKSPort),
-			}
-		}
-		// If the lock is not successful, try the next proxy container
-	}
-
-	// If no proxy container could be locked, return an empty string
-	return ProxyContainer{}
-}
-
-// ReleaseProxyContainer releases the lock on a proxy container
-func ReleaseProxyContainer(containerID string) {
-	lockKey := "proxy-usage:" + containerID
-	log.Printf("Releasing lock on proxy container %s", lockKey)
-	database.ReleaseLock(lockKey)
 }
 
 // // getResultCSVSizeInContainer gets the size of the result csv file in the container
