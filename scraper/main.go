@@ -18,7 +18,6 @@ import (
 func main() {
 	// Scraper variables
 	var allReviews []tripadvisor.Review
-	var location tripadvisor.Location
 
 	config, err := config.NewConfig()
 	if err != nil {
@@ -33,7 +32,7 @@ func main() {
 	log.Printf("Location Type: %s", queryType)
 
 	// Parse the location ID and location name from the URL
-	locationID, locationName, err := tripadvisor.ParseURL(config.LocationURL, queryType)
+	locationID, geoID, locationName, err := tripadvisor.ParseURL(config.LocationURL, queryType)
 	if err != nil {
 		log.Fatalf("Error parsing URL: %v", err)
 	}
@@ -42,9 +41,6 @@ func main() {
 
 	// Get the query ID for the given query type.
 	queryID := tripadvisor.GetQueryID(queryType)
-	if err != nil {
-		log.Fatal("The location ID must be a positive integer")
-	}
 
 	// The default HTTP client
 	client := &http.Client{
@@ -69,7 +65,7 @@ func main() {
 	}
 
 	// Fetch the review count for the given location ID
-	reviewCount, err := tripadvisor.FetchReviewCount(client, locationID, queryType, config.Languages)
+	reviewCount, err := tripadvisor.FetchReviewCount(client, locationID, geoID, queryType, config.Languages)
 	if err != nil {
 		log.Fatalf("Error fetching review count: %v", err)
 	}
@@ -94,7 +90,7 @@ func main() {
 	dataToWrite := make([][]string, 0, reviewCount)
 
 	// Scrape the reviews
-	for i := uint32(0); i < iterations; i++ {
+	for i := range iterations {
 
 		// Introduce random delay to avoid getting blocked. The delay is between 1 and 5 seconds
 		delay := rand.Intn(5) + 1
@@ -105,7 +101,7 @@ func main() {
 		offset := tripadvisor.CalculateOffset(i)
 
 		// Make the request to the TripAdvisor GraphQL endpoint
-		resp, err := tripadvisor.MakeRequest(client, queryID, config.Languages, locationID, offset, 20)
+		resp, err := tripadvisor.MakeRequest(client, queryID, queryType, config.Languages, locationID, geoID, offset, 20)
 		if err != nil {
 			log.Fatalf("Error making request at iteration %d: %v", i, err)
 		}
@@ -119,16 +115,21 @@ func main() {
 		response := *resp
 
 		// Check if the response is not empty and if the response contains reviews
-		if len(response) > 0 && len(response[0].Data.Locations) > 0 {
+
+		var reviews []tripadvisor.Review
+		if len(response) > 0 && len(response[0].Data.ReviewsProxy) > 0 {
+			reviews = response[0].Data.ReviewsProxy[0].Reviews
+		} else if len(response) > 0 && len(response[0].Data.Locations) > 0 {
+			reviews = response[0].Data.Locations[0].ReviewListPage.Reviews
+		}
+
+		if len(reviews) == 0 {
 
 			// Get the reviews from the response
-			reviews := response[0].Data.Locations[0].ReviewListPage.Reviews
+			reviews := response[0].Data.ReviewsProxy[0].Reviews
 
 			// Append the reviews to the allReviews slice
 			allReviews = append(allReviews, reviews...)
-
-			// Store the location data
-			location = response[0].Data.Locations[0].Location
 
 			if config.FileType == "csv" {
 				// Iterating over the reviews
@@ -171,11 +172,8 @@ func main() {
 
 	// If the file type is JSON, write the data to the file
 	if config.FileType == "json" {
-		// Sort the reviews by date
 		tripadvisor.SortReviewsByDate(allReviews)
-
-		// Write the data to the JSON file
-		err := tripadvisor.WriteReviewsToJSONFile(allReviews, location, fileHandle)
+		err := tripadvisor.WriteReviewsToJSONFile(allReviews, fileHandle)
 		if err != nil {
 			log.Fatalf("Error writing data to JSON file: %v", err)
 		}
