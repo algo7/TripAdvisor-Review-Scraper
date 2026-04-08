@@ -51,6 +51,7 @@ func main() {
 
 		// Pull the scraper image
 		err = cm.PullImage()
+		r.ReleaseLock(imageLockKey)
 		if err != nil {
 			log.Fatalf("fail to pull the scraper image: %s", err)
 		}
