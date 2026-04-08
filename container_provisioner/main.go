@@ -44,15 +44,14 @@ func main() {
 	if !fiber.IsChild() {
 		// Try to acquire the lock for pullig container image
 		lockSuccess := r.SetLock(imageLockKey)
-		if !lockSuccess {
-			// If the lock is not acquired, another instance is already pulling the image
-			return
-		}
-
-		// Pull the scraper image
-		err = cm.PullImage()
-		if err != nil {
-			log.Fatalf("fail to pull the scraper image: %s", err)
+		if lockSuccess {
+			err = cm.PullImage()
+			r.ReleaseLock(imageLockKey)
+			if err != nil {
+				log.Fatalf("fail to pull the scraper image: %s", err)
+			}
+		} else {
+			log.Println("image pull lock not acquired, skipping pull")
 		}
 
 		// Set up signal handling to catch SIGINT and SIGTERM
@@ -67,7 +66,6 @@ func main() {
 				log.Printf("cleanup failed: %v", err)
 			}
 			cm.Close()
-			err = r.ReleaseLock(imageLockKey)
 			if err != nil {
 				log.Printf("fail to release lock after cleanup for image %s: %v", containerImage, err)
 			} else {
