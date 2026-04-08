@@ -292,7 +292,7 @@ func (h *Handler) getDownloads(c *fiber.Ctx) error {
 	// Store the encoded byte slice into redis
 	h.Scraper.Redis.SetCache("r2StorageObjectsList", enrichedR2Objs)
 
-	return c.Render("main", fiber.Map{
+	return c.Render("downloads", fiber.Map{
 		"Title": "Algo7 TripAdvisor Scraper",
 		"Rows":  enrichedR2Objs,
 	})

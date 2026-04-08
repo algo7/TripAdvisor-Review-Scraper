@@ -37,7 +37,7 @@ func main() {
 	//  Initialize container manager
 	cm, err := containers.NewContainerManager(containerImage)
 	if err != nil {
-		log.Fatalf("fail to initialize container manager: %w", err)
+		log.Fatalf("fail to initialize container manager: %s", err)
 	}
 
 	// Try to acquire the lock for pullig container image
@@ -50,7 +50,7 @@ func main() {
 	// Pull the scraper image
 	err = cm.PullImage()
 	if err != nil {
-		log.Fatalf("fail to pull the scraper image: %w", err)
+		log.Fatalf("fail to pull the scraper image: %s", err)
 	}
 
 	// Set up signal handling to catch SIGINT and SIGTERM
