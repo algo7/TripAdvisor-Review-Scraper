@@ -14,14 +14,6 @@ import (
 	r2 "github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-var (
-	// Read the creds from the JSON file
-	data = ParseCredsFromJSON("./credentials/creds.json")
-	// Create a new R2 client
-	r2Client = CreateR2Client(data.AccessKeyID, data.AccessKeySecret, data.AccountID)
-	ctx      = context.TODO()
-)
-
 // R2Obj is an object struct for R2 bucket objects
 type R2Obj struct {
 	ChecksumAlgorithm string `json:"checksumAlgorithm"`
@@ -33,12 +25,36 @@ type R2Obj struct {
 	Metadata          string
 }
 
-// R2UploadObject upload an object to R2
-func R2UploadObject(fileName string, uploadIdentifier string, fileData io.Reader) error {
+// R2Service wraps the R2 client and bucket configuration
+type R2Service struct {
+	client *r2.Client
+	bucket string
+	ctx    context.Context
+}
 
-	// Upload an object to R2
-	_, err := r2Client.PutObject(ctx, &r2.PutObjectInput{
-		Bucket: &data.BucketName,
+// NewR2Service creates a new R2Service from a credentials JSON file
+func NewR2Service(credsPath string) (*R2Service, error) {
+	data, err := ParseCredsFromJSON(credsPath)
+	if err != nil {
+		return nil, fmt.Errorf("fail to parse creds from %s: %w", credsPath, err)
+	}
+
+	client, err := createR2Client(data.AccessKeyID, data.AccessKeySecret, data.AccountID)
+	if err != nil {
+		return nil, fmt.Errorf("fail to create R2 client: %w", err)
+	}
+
+	return &R2Service{
+		client: client,
+		bucket: data.BucketName,
+		ctx:    context.Background(),
+	}, nil
+}
+
+// UploadObject uploads an object to R2 and removes the local file
+func (s *R2Service) UploadObject(fileName string, uploadIdentifier string, fileData io.Reader) error {
+	_, err := s.client.PutObject(s.ctx, &r2.PutObjectInput{
+		Bucket: &s.bucket,
 		Key:    aws.String(fileName),
 		Body:   fileData,
 		Metadata: map[string]string{
@@ -51,7 +67,6 @@ func R2UploadObject(fileName string, uploadIdentifier string, fileData io.Reader
 
 	log.Printf("File: %s uploaded", fileName)
 
-	// Remove the file from the local filesystem
 	err = os.Remove(fileName)
 	if err != nil {
 		return fmt.Errorf("fail to remove the uploaded file %s from local filesystem: %w", fileName, err)
@@ -60,92 +75,76 @@ func R2UploadObject(fileName string, uploadIdentifier string, fileData io.Reader
 	return nil
 }
 
-// R2ListObjects List objects in R2 and return a string slice of the file names
-func R2ListObjects() []R2Obj {
-
-	// List objects in R2
-	listObjectsOutput, err := r2Client.ListObjectsV2(ctx, &r2.ListObjectsV2Input{
-		Bucket:     &data.BucketName,
+// ListObjects lists objects in the R2 bucket
+func (s *R2Service) ListObjects() ([]R2Obj, error) {
+	listObjectsOutput, err := s.client.ListObjectsV2(s.ctx, &r2.ListObjectsV2Input{
+		Bucket:     &s.bucket,
 		FetchOwner: aws.Bool(true),
 	})
-	ErrorHandler(err)
+	if err != nil {
+		return nil, fmt.Errorf("fail to list objects in R2: %w", err)
+	}
 
-	// String slice to hold the r2 object information
 	files := []R2Obj{}
 
-	// The logic below maps the JSON to the R2Obj struct and then appends the struct to the slice of the same type
-	// _ required to ignore the error
 	for _, object := range listObjectsOutput.Contents {
-
-		// Marshal the object to JSON in a pretty format
 		obj, err := json.MarshalIndent(object, "", "\t")
-		ErrorHandler(err)
+		if err != nil {
+			return nil, fmt.Errorf("fail to marshal R2 object: %w", err)
+		}
 
-		// Create a new R2 object
 		r2Obj := R2Obj{}
+		err = json.Unmarshal(obj, &r2Obj)
+		if err != nil {
+			return nil, fmt.Errorf("fail to unmarshal R2 object: %w", err)
+		}
 
-		// Unmarshal the JSON into the R2Obj struct
-		err = json.Unmarshal([]byte(obj), &r2Obj)
-		ErrorHandler(err)
-
-		// Append the object to the files slice
 		files = append(files, r2Obj)
 	}
 
-	return files
+	return files, nil
 }
 
-// CreateR2Client creates a new R2 client
-func CreateR2Client(accessKeyID string, accessKeySecret string, accountID string) *r2.Client {
-
-	// Logic from the documentation
-	r2Resolver := aws.EndpointResolverWithOptionsFunc(func(service string, region string, options ...interface{}) (aws.Endpoint, error) {
-
-		// Logic from the documentation
-		return aws.Endpoint{
-			URL: fmt.Sprintf("https://%s.r2.cloudflarestorage.com", accountID),
-		}, nil
-	})
-
-	// Load the default configuration
-	cfg, err := config.LoadDefaultConfig(ctx,
-		config.WithEndpointResolverWithOptions(r2Resolver),
-		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKeyID, accessKeySecret, "")),
-		config.WithRegion("auto"),
-	)
-	ErrorHandler(err)
-
-	client := r2.NewFromConfig(cfg)
-
-	return client
-}
-
-// R2EnrichMetaData enriches the R2 object in the list with the metadata
-func R2EnrichMetaData(r2ObjectList []R2Obj) []R2Obj {
-
-	// A slice of map of string key-value pairs to hold the metadata
+// EnrichMetaData enriches the R2 object list with metadata from HeadObject calls
+func (s *R2Service) EnrichMetaData(r2ObjectList []R2Obj) ([]R2Obj, error) {
 	metaDataMap := []map[string]string{}
 
-	// Loop through the the R2 object list and get the metadata for each object
 	for _, r2Obj := range r2ObjectList {
-
-		// Call HeadObject to retrieve metadata for the object
-		metaResp, err := r2Client.HeadObject(ctx, &r2.HeadObjectInput{
-			Bucket: &data.BucketName,
+		metaResp, err := s.client.HeadObject(s.ctx, &r2.HeadObjectInput{
+			Bucket: &s.bucket,
 			Key:    aws.String(r2Obj.Key),
 		})
-		ErrorHandler(err)
+		if err != nil {
+			return nil, fmt.Errorf("fail to get metadata for object %s: %w", r2Obj.Key, err)
+		}
 
-		// Append the metadata to the metaDataMap slice
 		metaDataMap = append(metaDataMap, metaResp.Metadata)
 	}
 
-	// Enrich the R2 object list with the metadata
 	for k, v := range metaDataMap {
 		r2ObjectList[k].Metadata = v["uploadedby"]
 	}
 
 	sorted := sortStructByTime(r2ObjectList)
 
-	return sorted
+	return sorted, nil
+}
+
+// createR2Client creates a new R2 client (unexported, used only by NewR2Service)
+func createR2Client(accessKeyID string, accessKeySecret string, accountID string) (*r2.Client, error) {
+	ctx := context.Background()
+
+	cfg, err := config.LoadDefaultConfig(ctx,
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKeyID, accessKeySecret, "")),
+		config.WithRegion("auto"),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("fail to load AWS config: %w", err)
+	}
+
+	client := r2.NewFromConfig(cfg, func(o *r2.Options) {
+		o.BaseEndpoint = aws.String(fmt.Sprintf("https://%s.r2.cloudflarestorage.com", accountID))
+	})
+
+	return client, nil
 }

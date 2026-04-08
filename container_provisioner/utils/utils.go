@@ -101,18 +101,23 @@ func ReadFromFile(fileName string) (*os.File, error) {
 }
 
 // ParseCredsFromJSON parses the credentials from a JSON file
-func ParseCredsFromJSON(fileName string) Creds {
+func ParseCredsFromJSON(fileName string) (Creds, error) {
 	// Read file
-	file := ReadFromFile(fileName)
+	file, err := ReadFromFile(fileName)
+	if err != nil {
+		return Creds{}, fmt.Errorf("fail to read credentials file: %w", err)
+	}
 	defer file.Close()
 
 	// Parse the JSON file
 	decoder := json.NewDecoder(file)
 	var creds Creds
-	err := decoder.Decode(&creds)
-	ErrorHandler(err)
+	err = decoder.Decode(&creds)
+	if err != nil {
+		return Creds{}, fmt.Errorf("fail to parse credentials file: %w", err)
+	}
 
-	return creds
+	return creds, nil
 }
 
 // GetLocationNameFromURL get the scrape target name from the given URL
