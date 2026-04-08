@@ -114,7 +114,7 @@ func (c *ContainerManager) TailLog(containerID string) (io.Reader, error) {
 }
 
 // CreateContainer creates a container then returns the container ID
-func (c *ContainerManager) CreateContainer(containerConfig *container.Config, networkConfig *network.NetworkingConfig) (string, error) {
+func (c *ContainerManager) CreateContainer(containerConfig *container.Config) (string, error) {
 
 	// Create the container. Container.ID contains the ID of the container
 	ct, err := c.Client.ContainerCreate(context.Background(),

@@ -7,8 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/containers"
-	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/database"
+	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/scrape"
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/utils"
 
 	"github.com/gofiber/fiber/v2"
@@ -24,20 +23,21 @@ type enrichedR2Obj struct {
 	Date       string
 }
 
+type Handler struct {
+	*scrape.Scraper
+}
+
 // getMain renders the main page
-func getMain(c *fiber.Ctx) error {
-
-	// Get the number of running containers
-	runningContainers := len(containers.ListContainersByType("scraper"))
-
+func (h *Handler) getMain(c *fiber.Ctx) error {
+	runningContainers, _ := h.Scraper.CM.ListContainersByType("scraper")
 	return c.Render("main", fiber.Map{
 		"Title":             "Algo7 TripAdvisor Scraper",
-		"RunningContainers": runningContainers,
+		"RunningContainers": len(runningContainers),
 	})
 }
 
 // postProvision is the handler for the form submission
-func postProvision(c *fiber.Ctx) error {
+func (h *Handler) postProvision(c *fiber.Ctx) error {
 
 	// Get the URL from the form
 	url := c.FormValue("url")
@@ -85,7 +85,16 @@ func postProvision(c *fiber.Ctx) error {
 	}
 
 	// Get the number of running containers
-	runningContainers := len(containers.ListContainersByType("scraper"))
+	scraperContainers, err := h.Scraper.CM.ListContainersByType("scraper")
+	if err != nil {
+		return c.Render("submission", fiber.Map{
+			"Title":      "Algo7 TripAdvisor Scraper",
+			"Message1":   "Error checking running containers",
+			"ReturnHome": true,
+		})
+	}
+
+	runningContainers := len(scraperContainers)
 
 	if runningContainers >= 5 {
 		return c.Render("submission", fiber.Map{
@@ -106,10 +115,17 @@ func postProvision(c *fiber.Ctx) error {
 	}
 
 	// Get the proxy container info
-	proxyContainers := containers.AcquireProxyContainer()
+	proxyContainers, err := h.Scraper.AcquireProxyContainer()
+	if err != nil {
+		return c.Render("submission", fiber.Map{
+			"Title":      "Algo7 TripAdvisor Scraper",
+			"Message1":   "Sorry, we are currently busy. Please try again later",
+			"ReturnHome": true,
+		})
+	}
 
 	// Generate the container config
-	scrapeConfig := containers.ContainerConfigGenerator(
+	scrapeConfig := h.Scraper.CM.ContainerConfigGenerator(
 		url,
 		locationName,
 		uploadIdentifier,
@@ -117,12 +133,20 @@ func postProvision(c *fiber.Ctx) error {
 		proxyContainers.VPNRegion)
 
 	// Create the container
-	containerID := containers.CreateContainer(scrapeConfig)
+	containerID, err := h.Scraper.CM.CreateContainer(scrapeConfig)
+	if err != nil {
+
+		return c.Render("submission", fiber.Map{
+			"Title":      "Algo7 TripAdvisor Scraper",
+			"Message1":   "Error creating scrape task",
+			"ReturnHome": true,
+		})
+	}
 
 	// Start the scraping container via goroutine
 	go func() {
-		containers.Scrape(uploadIdentifier, locationName, containerID)
-		containers.ReleaseProxyContainer(proxyContainers.ContainerID)
+		h.Scraper.Scrape(uploadIdentifier, locationName, containerID)
+		h.Scraper.ReleaseProxyContainer(proxyContainers.ContainerID)
 	}()
 
 	return c.Render("submission", fiber.Map{
@@ -140,19 +164,22 @@ func postProvision(c *fiber.Ctx) error {
 }
 
 // getLogsViewer renders the logs viewer page
-func getLogsViewer(c *fiber.Ctx) error {
+func (h *Handler) getLogsViewer(c *fiber.Ctx) error {
 	return c.SendFile("./views/logs.html")
 }
 
 // getLogs returns the logs for a given container
-func getLogs(c *fiber.Ctx) error {
+func (h *Handler) getLogs(c *fiber.Ctx) error {
 	containerID := c.Params("id")
 	if containerID == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Container ID is required"})
 	}
 
 	// Get ids of all running containers
-	existingContainers := containers.ListContainersByType("scraper")
+	existingContainers, err := h.Scraper.CM.ListContainersByType("scraper")
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Error checking running containers"})
+	}
 
 	// If there are no running containers
 	if len(existingContainers) == 0 {
@@ -173,17 +200,23 @@ func getLogs(c *fiber.Ctx) error {
 	}
 
 	// Get the logs for the container
-	logsReader := containers.TailLog(containerID)
+	logsReader, err := h.Scraper.CM.TailLog(containerID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Error getting logs for container"})
+	}
 
 	// Send the stream to the client
 	return c.SendStream(logsReader)
 }
 
 // getRunningJobs renders a table of running containers
-func getRunningTasks(c *fiber.Ctx) error {
+func (h *Handler) getRunningTasks(c *fiber.Ctx) error {
 
 	// Get ids of all running containers
-	runningContainers := containers.ListContainersByType("scraper")
+	runningContainers, err := h.Scraper.CM.ListContainersByType("scraper")
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Error checking running containers"})
+	}
 
 	// The page status message
 	currentTaskStatus := "There are no running tasks"
@@ -200,10 +233,13 @@ func getRunningTasks(c *fiber.Ctx) error {
 }
 
 // getDownloads renders the downloads page
-func getDownloads(c *fiber.Ctx) error {
+func (h *Handler) getDownloads(c *fiber.Ctx) error {
 
 	// Check if the R2 objects list is cached
-	cachedObjectsList := database.CacheLookUp("r2StorageObjectsList")
+	cachedObjectsList, err := h.Scraper.Redis.CacheLookUp("r2StorageObjectsList")
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Error checking results cache"})
+	}
 
 	// If the R2 objects list is cached, return the cached value
 	if cachedObjectsList != "" {
@@ -211,7 +247,9 @@ func getDownloads(c *fiber.Ctx) error {
 		// Decode the JSON encoded byte slice into a slice of EnrichedR2Objs structs
 		var enrichedR2Objs = []enrichedR2Obj{}
 		err := json.Unmarshal([]byte(cachedObjectsList), &enrichedR2Objs)
-		utils.ErrorHandler(err)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Error checking results cache"})
+		}
 
 		return c.Render("downloads", fiber.Map{
 			"Title": "Algo7 TripAdvisor Scraper",
@@ -223,26 +261,36 @@ func getDownloads(c *fiber.Ctx) error {
 	// If the value is not cached, get the list of objects from R2 and cache it
 
 	// Get the list of objects from the R2 bucket (without metadata)
-	r2Objs := utils.R2ListObjects()
+	r2Objs, err := h.Scraper.R2.ListObjects()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Error listing results from storage"})
+	}
 
 	// Enrich the R2 objects with metadata
-	R2ObjMetaData := utils.R2EnrichMetaData(r2Objs)
+	R2ObjMetaData, err := h.Scraper.R2.EnrichMetaData(r2Objs)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Error getting results metadata from storage"})
+	}
 
 	// Create a slice of Row structs to hold the data for the table
 	enrichedR2Objs := make([]enrichedR2Obj, len(R2ObjMetaData))
 
 	// Populate the slice of Row struct with data from the fileNames array
 	for i, r2Obj := range R2ObjMetaData {
+		uploadDate, err := utils.ParseTime(r2Obj.LastModified)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Error parsing upload date from storage metadata"})
+		}
 		enrichedR2Objs[i] = enrichedR2Obj{
 			FileName:   r2Obj.Key,
 			Link:       r2Url + r2Obj.Key,
 			UploadedBy: r2Obj.Metadata,
-			Date:       utils.ParseTime(r2Obj.LastModified),
+			Date:       uploadDate,
 		}
 	}
 
 	// Store the encoded byte slice into redis
-	database.SetCache("r2StorageObjectsList", enrichedR2Objs)
+	h.Scraper.Redis.SetCache("r2StorageObjectsList", enrichedR2Objs)
 
 	return c.Render("main", fiber.Map{
 		"Title": "Algo7 TripAdvisor Scraper",
