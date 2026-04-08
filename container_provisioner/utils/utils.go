@@ -2,13 +2,10 @@ package utils
 
 import (
 	"archive/tar"
-	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"regexp"
-	"sort"
 	"strings"
 	"time"
 
@@ -21,22 +18,6 @@ var (
 	tripAdvisorRestaurantRegexp = regexp.MustCompile(`^https:\/\/www\.tripadvisor\.com\/Restaurant_Review-g\d{6,10}-d\d{1,10}-Reviews-[\w-]{1,255}\.html$`)
 	tripAdvisorAirlineRegexp    = regexp.MustCompile(`^https:\/\/www\.tripadvisor\.com\/Airline_Review-d\d{6,10}-Reviews-[\w-]{1,255}$`)
 )
-
-// Creds is the Credentials of the R2 bucket
-type Creds struct {
-	AccessKeyID     string `json:"accessKeyId"`
-	AccessKeySecret string `json:"accessKeySecret"`
-	AccountID       string `json:"accountId"`
-	BucketName      string `json:"bucketName"`
-}
-
-// ErrorHandler is a generic error handler
-func ErrorHandler(err error) {
-	if err != nil {
-		formattedError := fmt.Errorf("Error: %w", err)
-		log.Fatalln(formattedError)
-	}
-}
 
 // WriteToFileFromTarStream writes a file to disk
 func WriteToFileFromTarStream(fileName string, fileSuffix string, tarF io.ReadCloser) (string, error) {
@@ -100,26 +81,6 @@ func ReadFromFile(fileName string) (*os.File, error) {
 	return file, nil
 }
 
-// ParseCredsFromJSON parses the credentials from a JSON file
-func ParseCredsFromJSON(fileName string) (Creds, error) {
-	// Read file
-	file, err := ReadFromFile(fileName)
-	if err != nil {
-		return Creds{}, fmt.Errorf("fail to read credentials file: %w", err)
-	}
-	defer file.Close()
-
-	// Parse the JSON file
-	decoder := json.NewDecoder(file)
-	var creds Creds
-	err = decoder.Decode(&creds)
-	if err != nil {
-		return Creds{}, fmt.Errorf("fail to parse credentials file: %w", err)
-	}
-
-	return creds, nil
-}
-
 // GetLocationNameFromURL get the scrape target name from the given URL
 func GetLocationNameFromURL(url string, scrapOption string) string {
 
@@ -164,37 +125,15 @@ func GenerateUUID() string {
 }
 
 // ParseTime converts ISO 8601 time to a more readable format
-func ParseTime(timeToParse string) string {
+func ParseTime(timeToParse string) (string, error) {
 	// Parse the time string
 	t, err := time.Parse(time.RFC3339Nano, timeToParse)
-	ErrorHandler(err)
+	if err != nil {
+		return "", fmt.Errorf("fail to parse time string: %w", err)
+	}
 
 	// Format the time string in a more readable way
 	formattedTime := t.Format("01/02/2006 15:04:05 MST")
 
-	return formattedTime
-}
-
-// sortStructByTime sorts R2Obj struct by time (newest first)
-func sortStructByTime(R2Obj []R2Obj) []R2Obj {
-
-	// Define the comparator function
-	less := func(i, j int) bool {
-
-		t1, err := time.Parse(time.RFC3339Nano, R2Obj[i].LastModified)
-		if err != nil {
-			return false // error handling
-		}
-
-		t2, err := time.Parse(time.RFC3339Nano, R2Obj[j].LastModified)
-		if err != nil {
-			return false // error handling
-		}
-		return t2.Before(t1)
-	}
-
-	// Sort the logs using the comparator function
-	sort.Slice(R2Obj, less)
-
-	return R2Obj
+	return formattedTime, nil
 }

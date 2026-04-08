@@ -9,7 +9,6 @@ import (
 	"os"
 
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/database"
-	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/utils"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/network"
@@ -40,8 +39,8 @@ type ContainerClient interface {
 }
 
 type ContainerManager struct {
-	client ContainerClient
-	image  string
+	Client ContainerClient
+	Image  string
 }
 
 // NewContainerManager creates a new instance of ContainerManager
@@ -144,81 +143,6 @@ func (c *ContainerManager) CreateContainer(containerConfig *container.Config, ne
 	return ct.ID[:12], nil
 }
 
-// Scrape creates a container, runs it, tails the log and wait for it to exit, and export the file name
-func (c *ContainerManager) Scrape(uploadIdentifier string, targetName string, containerID string) error {
-
-	// Start the container
-	err := c.client.ContainerStart(context.Background(), containerID, container.StartOptions{})
-	if err != nil {
-		return fmt.Errorf("fail to start container %s: %w", containerID, err)
-	}
-
-	// Wait for the container to exit
-	statusCh, errCh := c.client.ContainerWait(context.Background(), containerID, container.WaitConditionNotRunning)
-
-	// ContainerWait returns 2 channels. One for the status and one for the wait error (not execution error)
-	select {
-	case err := <-errCh:
-		if err != nil {
-			return fmt.Errorf("container exited due to %w", err)
-		}
-
-	case status := <-statusCh:
-		// If the container exited with non-zero status code, remove the container and return an error
-		if status.StatusCode != 0 {
-			err := c.RemoveContainer(containerID)
-			if err != nil {
-				return fmt.Errorf("fail to container %s: %w", containerID, err)
-			}
-			return nil
-		}
-	}
-
-	// The file path in the container
-	filePathInContainer := "reviews.csv"
-
-	// Get the file size in the container
-	err = c.getResultCSVSizeInContainer(containerID, filePathInContainer)
-	if err != nil {
-		return fmt.Errorf("fail to get csv size in container %s: %w", containerID, err)
-	}
-
-	// Read the file from the container as a reader interface of a tar stream
-	fileReader, _, err := c.client.CopyFromContainer(context.Background(), containerID, filePathInContainer)
-	if err != nil {
-		return fmt.Errorf("fail to copy file from container %s: %w", containerID, err)
-	}
-
-	// Generate a random file prefix
-	fileSuffix := utils.GenerateUUID()
-
-	// Write the file to the host
-	exportedFileName, err := utils.WriteToFileFromTarStream(targetName, fileSuffix, fileReader)
-	if err != nil {
-		return fmt.Errorf("fail to write file to host: %w", err)
-	}
-
-	// Read the exported csv file
-	file, err := utils.ReadFromFile(exportedFileName)
-	if err != nil {
-		return fmt.Errorf("fail to read exported file %s: %w", exportedFileName, err)
-	}
-
-	// Upload the file to R2
-	err = utils.R2UploadObject(exportedFileName, uploadIdentifier, file)
-	if err != nil {
-		return fmt.Errorf("fail to upload file %s to R2: %w", exportedFileName, err)
-	}
-
-	// Remove the container
-	err = c.RemoveContainer(containerID)
-	if err != nil {
-		return fmt.Errorf("fail to remove container %s after finishing uploading file: %w", containerID, err)
-	}
-
-	return nil
-}
-
 // Container information
 type Container struct {
 	ContainerID    *string
@@ -243,7 +167,7 @@ type Container struct {
 func (c *ContainerManager) ListContainersByType(containerType string) ([]Container, error) {
 
 	// List all containers
-	containersInfo, err := c.client.ContainerList(context.Background(), container.ListOptions{All: false})
+	containersInfo, err := c.Client.ContainerList(context.Background(), container.ListOptions{All: false})
 	if err != nil {
 		return nil, fmt.Errorf("fail to list %s containers: %w", containerType, err)
 	}
@@ -337,16 +261,91 @@ func ReleaseProxyContainer(containerID string) {
 	database.ReleaseLock(lockKey)
 }
 
-// getResultCSVSizeInContainer gets the size of the result csv file in the container
-func (c *ContainerManager) getResultCSVSizeInContainer(containerID, filePathInContainer string) error {
+// // getResultCSVSizeInContainer gets the size of the result csv file in the container
+// func (c *ContainerManager) getResultCSVSizeInContainer(containerID, filePathInContainer string) error {
 
-	// Log the file size in the container
-	containerFileInfo, err := c.client.ContainerStatPath(context.Background(), containerID, filePathInContainer)
-	if err != nil {
-		return fmt.Errorf("error getting file size in container: %w", err)
-	} else {
-		log.Printf("file size in container: %d bytes", containerFileInfo.Size)
-	}
+// 	// Log the file size in the container
+// 	containerFileInfo, err := c.Client.ContainerStatPath(context.Background(), containerID, filePathInContainer)
+// 	if err != nil {
+// 		return fmt.Errorf("error getting file size in container: %w", err)
+// 	} else {
+// 		log.Printf("file size in container: %d bytes", containerFileInfo.Size)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
+
+// // Scrape creates a container, runs it, tails the log and wait for it to exit, and export the file name
+// func (c *ContainerManager) Scrape(uploadIdentifier string, targetName string, containerID string) error {
+
+// 	// Start the container
+// 	err := c.client.ContainerStart(context.Background(), containerID, container.StartOptions{})
+// 	if err != nil {
+// 		return fmt.Errorf("fail to start container %s: %w", containerID, err)
+// 	}
+
+// 	// Wait for the container to exit
+// 	statusCh, errCh := c.client.ContainerWait(context.Background(), containerID, container.WaitConditionNotRunning)
+
+// 	// ContainerWait returns 2 channels. One for the status and one for the wait error (not execution error)
+// 	select {
+// 	case err := <-errCh:
+// 		if err != nil {
+// 			return fmt.Errorf("container exited due to %w", err)
+// 		}
+
+// 	case status := <-statusCh:
+// 		// If the container exited with non-zero status code, remove the container and return an error
+// 		if status.StatusCode != 0 {
+// 			err := c.RemoveContainer(containerID)
+// 			if err != nil {
+// 				return fmt.Errorf("fail to container %s: %w", containerID, err)
+// 			}
+// 			return nil
+// 		}
+// 	}
+
+// 	// The file path in the container
+// 	filePathInContainer := "reviews.csv"
+
+// 	// Get the file size in the container
+// 	err = c.getResultCSVSizeInContainer(containerID, filePathInContainer)
+// 	if err != nil {
+// 		return fmt.Errorf("fail to get csv size in container %s: %w", containerID, err)
+// 	}
+
+// 	// Read the file from the container as a reader interface of a tar stream
+// 	fileReader, _, err := c.client.CopyFromContainer(context.Background(), containerID, filePathInContainer)
+// 	if err != nil {
+// 		return fmt.Errorf("fail to copy file from container %s: %w", containerID, err)
+// 	}
+
+// 	// Generate a random file prefix
+// 	fileSuffix := utils.GenerateUUID()
+
+// 	// Write the file to the host
+// 	exportedFileName, err := utils.WriteToFileFromTarStream(targetName, fileSuffix, fileReader)
+// 	if err != nil {
+// 		return fmt.Errorf("fail to write file to host: %w", err)
+// 	}
+
+// 	// Read the exported csv file
+// 	file, err := utils.ReadFromFile(exportedFileName)
+// 	if err != nil {
+// 		return fmt.Errorf("fail to read exported file %s: %w", exportedFileName, err)
+// 	}
+
+// 	// Upload the file to R2
+// 	err = utils.R2UploadObject(exportedFileName, uploadIdentifier, file)
+// 	if err != nil {
+// 		return fmt.Errorf("fail to upload file %s to R2: %w", exportedFileName, err)
+// 	}
+
+// 	// Remove the container
+// 	err = c.RemoveContainer(containerID)
+// 	if err != nil {
+// 		return fmt.Errorf("fail to remove container %s after finishing uploading file: %w", containerID, err)
+// 	}
+
+// 	return nil
+// }

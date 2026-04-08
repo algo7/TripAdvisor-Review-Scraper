@@ -1,4 +1,4 @@
-package utils
+package storage
 
 import (
 	"context"
@@ -7,12 +7,23 @@ import (
 	"io"
 	"log"
 	"os"
+	"sort"
+	"time"
 
+	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/utils"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	r2 "github.com/aws/aws-sdk-go-v2/service/s3"
 )
+
+// Creds is the Credentials of the R2 bucket
+type creds struct {
+	AccessKeyID     string `json:"accessKeyId"`
+	AccessKeySecret string `json:"accessKeySecret"`
+	AccountID       string `json:"accountId"`
+	BucketName      string `json:"bucketName"`
+}
 
 // R2Obj is an object struct for R2 bucket objects
 type R2Obj struct {
@@ -34,19 +45,30 @@ type R2Service struct {
 
 // NewR2Service creates a new R2Service from a credentials JSON file
 func NewR2Service(credsPath string) (*R2Service, error) {
-	data, err := ParseCredsFromJSON(credsPath)
+
+	// Read file
+	file, err := utils.ReadFromFile(credsPath)
 	if err != nil {
-		return nil, fmt.Errorf("fail to parse creds from %s: %w", credsPath, err)
+		return nil, fmt.Errorf("fail to read credentials file: %w", err)
+	}
+	defer file.Close()
+
+	// Parse the JSON file
+	decoder := json.NewDecoder(file)
+	creds := creds{}
+	err = decoder.Decode(&creds)
+	if err != nil {
+		return nil, fmt.Errorf("fail to parse credentials file: %w", err)
 	}
 
-	client, err := createR2Client(data.AccessKeyID, data.AccessKeySecret, data.AccountID)
+	client, err := createR2Client(creds.AccessKeyID, creds.AccessKeySecret, creds.AccountID)
 	if err != nil {
 		return nil, fmt.Errorf("fail to create R2 client: %w", err)
 	}
 
 	return &R2Service{
 		client: client,
-		bucket: data.BucketName,
+		bucket: creds.BucketName,
 		ctx:    context.Background(),
 	}, nil
 }
@@ -147,4 +169,28 @@ func createR2Client(accessKeyID string, accessKeySecret string, accountID string
 	})
 
 	return client, nil
+}
+
+// sortStructByTime sorts R2Obj struct by time (newest first)
+func sortStructByTime(R2Obj []R2Obj) []R2Obj {
+
+	// Define the comparator function
+	less := func(i, j int) bool {
+
+		t1, err := time.Parse(time.RFC3339Nano, R2Obj[i].LastModified)
+		if err != nil {
+			return false // error handling
+		}
+
+		t2, err := time.Parse(time.RFC3339Nano, R2Obj[j].LastModified)
+		if err != nil {
+			return false // error handling
+		}
+		return t2.Before(t1)
+	}
+
+	// Sort the logs using the comparator function
+	sort.Slice(R2Obj, less)
+
+	return R2Obj
 }

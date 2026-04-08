@@ -7,8 +7,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/utils"
-
 	"github.com/redis/go-redis/v9"
 )
 
@@ -39,20 +37,26 @@ func NewRedisClient() *RedisClient {
 }
 
 // SetCache store the given value in redis
-func (r *RedisClient) SetCache(key string, value any) {
+func (r *RedisClient) SetCache(key string, value any) error {
 
 	// Encode the slice of Row structs into a byte slice
 	encodedValue, err := json.Marshal(value)
-	utils.ErrorHandler(err)
+	if err != nil {
+		return fmt.Errorf("failed to encode value: %w", err)
+	}
 
 	ctx := context.Background()
 	// Timeout set to 5 minutes
 	err = r.Client.Set(ctx, key, string(encodedValue), time.Minute*1).Err()
-	utils.ErrorHandler(err)
+	if err != nil {
+		return fmt.Errorf("failed to set value in redis: %w", err)
+	}
+
+	return nil
 }
 
 // CacheLookUp checks if the given value exists in the cache, returns the value if it exists
-func (r *RedisClient) CacheLookUp(key string) string {
+func (r *RedisClient) CacheLookUp(key string) (string, error) {
 
 	ctx := context.Background()
 
@@ -60,16 +64,16 @@ func (r *RedisClient) CacheLookUp(key string) string {
 
 	// If the key does not exist, return an empty string
 	if err == redis.Nil {
-		return ""
+		return "", nil
 	}
 
 	// If actual error
 	if err != nil {
-		utils.ErrorHandler(err)
+		return "", fmt.Errorf("failed to get value from redis: %w", err)
 	}
 
 	// If the key exists, return the value
-	return cachedObjectsList
+	return cachedObjectsList, nil
 }
 
 // RedisConnectionCheck checks if the redis server is up and running
