@@ -94,7 +94,7 @@ func main() {
 	dataToWrite := make([][]string, 0, reviewCount)
 
 	// Scrape the reviews
-	for i := uint32(0); i < iterations; i++ {
+	for i := range iterations {
 
 		// Introduce random delay to avoid getting blocked. The delay is between 1 and 5 seconds
 		delay := rand.Intn(5) + 1

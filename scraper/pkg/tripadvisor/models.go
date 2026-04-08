@@ -93,9 +93,9 @@ type UserProfile struct {
 	DisplayName string `json:"displayName"`
 	Username    string `json:"username"`
 	Hometown    struct {
-		LocationID     interface{} `json:"locationId"`
-		Location       interface{} `json:"location"`
-		FallbackString interface{} `json:"fallbackString"`
+		LocationID     any `json:"locationId"`
+		Location       any `json:"location"`
+		FallbackString any `json:"fallbackString"`
 	} `json:"hometown"`
 	Route struct {
 		URL string `json:"url"`
@@ -171,7 +171,7 @@ type Response struct {
 				Reviews    []Review `json:"reviews"`
 			} `json:"reviewListPage"`
 		} `json:"locations"`
-	} `json:"data,omitempty"`
+	} `json:"data"`
 }
 
 // Responses is a slice of Response structs
