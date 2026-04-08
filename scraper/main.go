@@ -92,8 +92,8 @@ func main() {
 	// Scrape the reviews
 	for i := range iterations {
 
-		// Introduce random delay to avoid getting blocked. The delay is between 1 and 5 seconds
-		delay := rand.Intn(5) + 1
+		// Introduce random delay to avoid getting blocked. The delay is between 1 and 3 seconds
+		delay := rand.Intn(3) + 1
 		log.Printf("Iteration: %d. Delaying for %d seconds", i, delay)
 		time.Sleep(time.Duration(delay) * time.Second)
 
@@ -123,32 +123,23 @@ func main() {
 			reviews = response[0].Data.Locations[0].ReviewListPage.Reviews
 		}
 
-		if len(reviews) == 0 {
+		// Append the reviews to the allReviews slice
+		allReviews = append(allReviews, reviews...)
 
-			// Get the reviews from the response
-			reviews := response[0].Data.ReviewsProxy[0].Reviews
-
-			// Append the reviews to the allReviews slice
-			allReviews = append(allReviews, reviews...)
-
-			if config.FileType == "csv" {
-				// Iterating over the reviews
-				for _, row := range reviews {
-					row := []string{
-						locationName,
-						row.Title,
-						row.Text,
-						strconv.Itoa(row.Rating),
-						row.CreatedDate[0:4],
-						row.CreatedDate[5:7],
-						row.CreatedDate[8:10],
-					}
-
-					// Append the row to the dataToWrite slice
-					dataToWrite = append(dataToWrite, row)
+		if config.FileType == "csv" {
+			// Iterating over the reviews
+			for _, r := range reviews {
+				row := []string{
+					locationName,
+					r.Title,
+					r.Text,
+					strconv.Itoa(r.Rating),
+					r.CreatedDate[0:4],
+					r.CreatedDate[5:7],
+					r.CreatedDate[8:10],
 				}
+				dataToWrite = append(dataToWrite, row)
 			}
-
 		}
 
 	}
