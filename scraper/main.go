@@ -116,7 +116,14 @@ func main() {
 
 		// Check if the response is not empty and if the response contains reviews
 
+		var reviews []tripadvisor.Review
 		if len(response) > 0 && len(response[0].Data.ReviewsProxy) > 0 {
+			reviews = response[0].Data.ReviewsProxy[0].Reviews
+		} else if len(response) > 0 && len(response[0].Data.Locations) > 0 {
+			reviews = response[0].Data.Locations[0].ReviewListPage.Reviews
+		}
+
+		if len(reviews) == 0 {
 
 			// Get the reviews from the response
 			reviews := response[0].Data.ReviewsProxy[0].Reviews

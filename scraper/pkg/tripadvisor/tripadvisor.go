@@ -27,62 +27,83 @@ func MakeRequest(client *http.Client, queryID string, queryType string, language
 		Selections: language,
 	}
 
-	requestVariables := Variables{
-		LocationID:           locationID,
-		Offset:               offset,
-		Filters:              Filters{requestFilter},
-		Limit:                limit,
-		SortType:             nil,
-		SortBy:               "SERVER_DETERMINED",
-		Language:             language[0],
-		DoMachineTranslation: true,
-		PhotosPerReviewLimit: 7,
-	}
-
 	requestExtensions := Extensions{
 		PreRegisteredQueryID: queryID,
 	}
 
-	routeOffsets := []any{0} // first: number 0
-	for i := uint32(1); i <= 7; i++ {
-		routeOffsets = append(routeOffsets, fmt.Sprintf("r%d", i*ReviewLimit)) // rest: "r10", "r20"...
-	}
+	var request any
 
-	var pageName string
-	switch queryType {
-	case "HOTEL":
-		pageName = "Hotel_Review"
-	case "ATTRACTION":
-		pageName = "Attraction_Review"
-	case "RESTO":
-		pageName = "Restaurant_Review"
-	case "AIRLINE":
-		pageName = "Airline_Review"
-	}
-
-	var routes []RouteRequest
-	for _, off := range routeOffsets {
-		routes = append(routes, RouteRequest{
-			Fragment: "",
-			Page:     pageName, // adjust based on queryType
-			Params: RouteParams{
-				GeoID:    geoId, // you'll need geoId passed in or parsed from URL
-				DetailID: locationID,
-				Offset:   off,
+	if queryType == "AIRLINE" {
+		request = BatchRequests{{
+			Variables: AirlineVariables{
+				LocationID:     locationID,
+				Offset:         offset,
+				Filters:        Filters{requestFilter},
+				Limit:          limit,
+				NeedKeywords:   true,
+				PrefsCacheKey:  fmt.Sprintf("locationReviewPrefs_%d", locationID),
+				KeywordVariant: "location_keywords_v2_llr_order_30_en",
+				InitialPrefs:   struct{}{},
+				FilterCacheKey: nil,
+				Prefs:          nil,
 			},
-		})
-	}
-
-	// Batch both into a single request array
-	request := BatchRequests{
-		{
-			Variables:  requestVariables,
 			Extensions: requestExtensions,
-		},
-		{
-			Variables:  RoutesVariables{RoutesRequest: routes},
-			Extensions: Extensions{PreRegisteredQueryID: queryID},
-		},
+		}}
+
+	} else {
+		requestVariables := Variables{
+			LocationID:           locationID,
+			Offset:               offset,
+			Filters:              Filters{requestFilter},
+			Limit:                limit,
+			SortType:             nil,
+			SortBy:               "SERVER_DETERMINED",
+			Language:             language[0],
+			DoMachineTranslation: true,
+			PhotosPerReviewLimit: 7,
+		}
+
+		routeOffsets := []any{0} // first: number 0
+		for i := uint32(1); i <= 7; i++ {
+			routeOffsets = append(routeOffsets, fmt.Sprintf("r%d", i*ReviewLimit)) // rest: "r10", "r20"...
+		}
+
+		var pageName string
+		switch queryType {
+		case "HOTEL":
+			pageName = "Hotel_Review"
+		case "ATTRACTION":
+			pageName = "Attraction_Review"
+		case "RESTO":
+			pageName = "Restaurant_Review"
+		case "AIRLINE":
+			pageName = "Airline_Review"
+		}
+
+		var routes []RouteRequest
+		for _, off := range routeOffsets {
+			routes = append(routes, RouteRequest{
+				Fragment: "",
+				Page:     pageName, // adjust based on queryType
+				Params: RouteParams{
+					GeoID:    geoId, // you'll need geoId passed in or parsed from URL
+					DetailID: locationID,
+					Offset:   off,
+				},
+			})
+		}
+
+		// Batch both into a single request array
+		request = BatchRequests{
+			{
+				Variables:  requestVariables,
+				Extensions: requestExtensions,
+			},
+			{
+				Variables:  RoutesVariables{RoutesRequest: routes},
+				Extensions: Extensions{PreRegisteredQueryID: queryID},
+			},
+		}
 	}
 	// Marshal the request body into JSON
 	jsonPayload, err := json.Marshal(request)
@@ -187,8 +208,9 @@ func FetchReviewCount(client *http.Client, locationID uint32, geoID uint32, quer
 	// Now it's safe to dereference responses
 	response := *responses
 	if len(response) > 0 && len(response[0].Data.ReviewsProxy) > 0 {
-		reviewCount = response[0].Data.ReviewsProxy[0].TotalCount
-		return reviewCount, nil
+		return response[0].Data.ReviewsProxy[0].TotalCount, nil
+	} else if len(response) > 0 && len(response[0].Data.Locations) > 0 {
+		return response[0].Data.Locations[0].ReviewListPage.TotalCount, nil
 	}
 
 	return 0, fmt.Errorf("no reviews found for location ID %d", locationID)

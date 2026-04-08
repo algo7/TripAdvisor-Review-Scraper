@@ -36,6 +36,19 @@ type Filter struct {
 // Filters is a slice of Filter structs.
 type Filters []Filter
 
+type AirlineVariables struct {
+	LocationID     uint32   `json:"locationId"`
+	Offset         uint32   `json:"offset"`
+	Prefs          any      `json:"prefs"`
+	Filters        Filters  `json:"filters"`
+	InitialPrefs   struct{} `json:"initialPrefs"`
+	Limit          uint32   `json:"limit"`
+	FilterCacheKey any      `json:"filterCacheKey"`
+	PrefsCacheKey  string   `json:"prefsCacheKey"`
+	NeedKeywords   bool     `json:"needKeywords"`
+	KeywordVariant string   `json:"keywordVariant"`
+}
+
 // Variables is a struct that represents the variables object in the request body to TripAdvisor endpoints
 type Variables struct {
 	LocationID           uint32  `json:"locationId"`
@@ -165,6 +178,14 @@ type Response struct {
 				SortBy   string `json:"sortBy"`
 			} `json:"reviewListOptions"`
 		} `json:"ReviewsProxy_getReviewListPageForLocation"`
+
+		Locations []struct {
+			LocationID     int `json:"locationId"`
+			ReviewListPage struct {
+				TotalCount int      `json:"totalCount"`
+				Reviews    []Review `json:"reviews"`
+			} `json:"reviewListPage"`
+		} `json:"locations"`
 	} `json:"data"`
 }
 
