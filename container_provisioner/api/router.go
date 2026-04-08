@@ -1,13 +1,12 @@
 package api
 
 import (
-	"log"
-
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/scrape"
+	"github.com/gofiber/fiber/v2"
 )
 
 // Router is the main router for the API
-func Router(s *scrape.Scraper) {
+func Router(s *scrape.Scraper) *fiber.App {
 	h := &Handler{s}
 	app := ServerInstantiate()
 
@@ -18,9 +17,5 @@ func Router(s *scrape.Scraper) {
 	app.Get("/tasks", h.getRunningTasks)
 	app.Get("/downloads", h.getDownloads)
 
-	err := app.Listen(":3000")
-	if err != nil {
-		log.Fatalf("unable to start the router: %v", err)
-	}
-
+	return app
 }
