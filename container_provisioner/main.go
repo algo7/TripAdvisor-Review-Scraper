@@ -41,6 +41,18 @@ func main() {
 		log.Fatalf("fail to initialize container manager: %s", err)
 	}
 
+	// Initialize the storage client
+	r2, err := storage.NewR2Service("./credentials/creds.json")
+	if err != nil {
+		log.Fatalf("fail to initialize R2 service: %v", err)
+	}
+
+	// Initialize the scraper
+	scraper := scrape.NewScraper(cm, r2, r)
+
+	// Load the API routes
+	app := api.Router(scraper)
+
 	if !fiber.IsChild() {
 		// Try to acquire the lock for pullig container image
 		lockSuccess := r.SetLock(imageLockKey)
@@ -60,32 +72,22 @@ func main() {
 
 		// Launch a goroutine that will perform cleanup when a signal is received
 		go func() {
-			sig := <-sigCh
+			// sig := <-sigCh
+			<-sigCh
 			err := cleanupScraperContainers(r, cm)
 			if err != nil {
 				log.Printf("cleanup failed: %v", err)
 			}
 			cm.Close()
-			if err != nil {
-				log.Printf("fail to release lock after cleanup for image %s: %v", containerImage, err)
-			} else {
-				log.Printf("successfully released lock after cleanup for image %s", containerImage)
-			}
-			os.Exit(int(sig.(syscall.Signal)))
+			app.Shutdown() // gracefully stops the listener
+			// os.Exit(int(sig.(syscall.Signal)))
 		}()
 	}
 
-	// Initialize the storage client
-	r2, err := storage.NewR2Service("./credentials/creds.json")
+	err = app.Listen(":3000")
 	if err != nil {
-		log.Fatalf("fail to initialize R2 service: %v", err)
+		log.Printf("server stopped: %v", err)
 	}
-
-	// Initialize the scraper
-	scraper := scrape.NewScraper(cm, r2, r)
-
-	// Load the API routes
-	api.Router(scraper)
 }
 
 // cleanupScraperContainers removes all the running scraper containers
