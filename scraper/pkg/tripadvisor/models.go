@@ -14,7 +14,7 @@ const (
 	AirlineQueryID string = "83003f8d5a7b1762"
 
 	// AttractionQueryID is the pre-registered query ID for attraction reviews
-	AttractionQueryID string = "b83d781ada1db6f2"
+	AttractionQueryID string = "ef1a9f94012220d3"
 
 	// ReviewLimit is the maximum number of reviews that can be fetched in a single request
 	ReviewLimit uint32 = 20
@@ -38,17 +38,36 @@ type Filters []Filter
 
 // Variables is a struct that represents the variables object in the request body to TripAdvisor endpoints
 type Variables struct {
-	LocationID   uint32  `json:"locationId"`
-	Offset       uint32  `json:"offset"`
-	Prefs        any     `json:"prefs"` // null
-	Filters      Filters `json:"filters"`
-	InitialPrefs struct {
-	} `json:"initialPrefs"` // empty struct
-	Limit          uint32 `json:"limit"`
-	FilterCacheKey any    `json:"filterCacheKey"` // null
-	PrefsCacheKey  string `json:"prefsCacheKey"`  // format "locationReviewPrefs_<localtionID>"
-	NeedKeywords   bool   `json:"needKeywords"`   // false
-	KeywordVariant string `json:"keywordVariant"`
+	LocationID           uint32  `json:"locationId"`
+	Offset               uint32  `json:"offset"`
+	Filters              Filters `json:"filters"`
+	Limit                uint32  `json:"limit"`
+	SortType             any     `json:"sortType"`
+	SortBy               string  `json:"sortBy"`
+	Language             string  `json:"language"`
+	DoMachineTranslation bool    `json:"doMachineTranslation"`
+	PhotosPerReviewLimit uint32  `json:"photosPerReviewLimit"`
+}
+
+type RouteParams struct {
+	GeoID    uint32 `json:"geoId"`
+	DetailID uint32 `json:"detailId"`
+	Offset   any    `json:"offset"`
+}
+
+type RouteRequest struct {
+	Fragment string      `json:"fragment"`
+	Page     string      `json:"page"`
+	Params   RouteParams `json:"params"`
+}
+
+type RoutesVariables struct {
+	RoutesRequest []RouteRequest `json:"routesRequest"`
+}
+
+type RoutesPayload struct {
+	Variables  RoutesVariables `json:"variables"`
+	Extensions Extensions      `json:"extensions"`
 }
 
 // Extensions is a struct that represents the extensions object in the request body to TripAdvisor endpoints.
@@ -112,24 +131,63 @@ type UserProfile struct {
 
 // Review is a struct that represents the review object in the response body from TripAdvisor endpoints
 type Review struct {
-	ID              int    `json:"id"`
-	CreatedDate     string `json:"createdDate"`
-	PublishedDate   string `json:"publishedDate"`
-	Rating          int    `json:"rating"`
-	PublishPlatform string `json:"publishPlatform"`
+	ID              int      `json:"id"`
+	Status          string   `json:"status"`
+	CreatedDate     string   `json:"createdDate"`
+	PublishedDate   string   `json:"publishedDate"`
+	Rating          int      `json:"rating"`
+	PublishPlatform string   `json:"publishPlatform"`
+	Title           string   `json:"title"`
+	Language        string   `json:"language"`
+	Text            string   `json:"text"`
+	Username        string   `json:"username"`
+	LocationID      int      `json:"locationId"`
+	HelpfulVotes    int      `json:"helpfulVotes"`
+	Labels          []string `json:"labels"`
+	PhotoIds        []int    `json:"photoIds"`
 	TripInfo        struct {
 		StayDate string `json:"stayDate"`
 		TripType string `json:"tripType"`
 	} `json:"tripInfo"`
-	PhotoIds    []int       `json:"photoIds"`
-	LocationID  int         `json:"locationId"`
-	Labels      []string    `json:"labels"`
-	Title       string      `json:"title"`
-	Text        string      `json:"text"`
-	URL         string      `json:"url"`
-	Photos      Photos      `json:"photos"`
-	UserProfile UserProfile `json:"userProfile"`
-	Username    string      `json:"username"`
+	Location    ReviewLocation    `json:"location"`
+	UserProfile ReviewUserProfile `json:"userProfile"`
+}
+
+type ReviewLocation struct {
+	LocationID            int    `json:"locationId"`
+	Name                  string `json:"name"`
+	URL                   string `json:"url"`
+	PlaceType             string `json:"placeType"`
+	AccommodationCategory string `json:"accommodationCategory"`
+}
+
+type ReviewUserProfile struct {
+	ID          string `json:"id"`
+	IsVerified  bool   `json:"isVerified"`
+	DisplayName string `json:"displayName"`
+	Username    string `json:"username"`
+	Hometown    struct {
+		LocationID     any `json:"locationId"`
+		Location       any `json:"location"`
+		FallbackString any `json:"fallbackString"`
+	} `json:"hometown"`
+	Route struct {
+		URL string `json:"url"`
+	} `json:"route"`
+	Avatar struct {
+		Typename string `json:"__typename"`
+		Data     struct {
+			ID               int `json:"id"`
+			PhotoSizeDynamic struct {
+				URLTemplate string `json:"urlTemplate"`
+				MaxHeight   int    `json:"maxHeight"`
+				MaxWidth    int    `json:"maxWidth"`
+			} `json:"photoSizeDynamic"`
+		} `json:"data"`
+	} `json:"avatar"`
+	ContributionCounts struct {
+		SumAllUgc int `json:"sumAllUgc"`
+	} `json:"contributionCounts"`
 }
 
 // ReviewSummary is a struct that represents the review summary object in the response body from TripAdvisor endpoints
@@ -157,20 +215,20 @@ type Location struct {
 
 // Feedback is a struct that represents the feedback object in the response body from TripAdvisor endpoints
 type Feedback struct {
-	Location `json:"location"`
-	Reviews  []Review `json:"reviews"`
+	Reviews []Review `json:"reviews"`
 }
 
 // Response is a struct that represents the response body from TripAdvisor endpoints
 type Response struct {
 	Data struct {
-		Locations []struct {
-			Location
-			ReviewListPage struct {
-				TotalCount int      `json:"totalCount"`
-				Reviews    []Review `json:"reviews"`
-			} `json:"reviewListPage"`
-		} `json:"locations"`
+		ReviewsProxy []struct {
+			TotalCount        int      `json:"totalCount"`
+			Reviews           []Review `json:"reviews"`
+			ReviewListOptions struct {
+				SortType string `json:"sortType"`
+				SortBy   string `json:"sortBy"`
+			} `json:"reviewListOptions"`
+		} `json:"ReviewsProxy_getReviewListPageForLocation"`
 	} `json:"data"`
 }
 
