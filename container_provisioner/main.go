@@ -66,7 +66,6 @@ func main() {
 				log.Printf("cleanup failed: %v", err)
 			}
 			cm.Close()
-			err = r.ReleaseLock(imageLockKey)
 			if err != nil {
 				log.Printf("fail to release lock after cleanup for image %s: %v", containerImage, err)
 			} else {
