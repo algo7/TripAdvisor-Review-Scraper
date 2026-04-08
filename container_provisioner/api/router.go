@@ -1,8 +1,6 @@
 package api
 
-import (
-	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/utils"
-)
+import "log"
 
 // Router is the main router for the API
 func Router() {
@@ -17,5 +15,8 @@ func Router() {
 	app.Get("/downloads", getDownloads)
 
 	err := app.Listen(":3000")
-	utils.ErrorHandler(err)
+	if err != nil {
+		log.Fatalf("unable to start the router: %v", err)
+	}
+
 }

@@ -38,7 +38,7 @@ type ContainerClient interface {
 
 type ContainerManager struct {
 	Client ContainerClient
-	Image  string
+	image  string
 }
 
 // NewContainerManager creates a new instance of ContainerManager
@@ -51,7 +51,7 @@ func NewContainerManager(image string) (*ContainerManager, error) {
 	defer apiClient.Close()
 
 	return &ContainerManager{
-		client: apiClient,
+		Client: apiClient,
 		image:  image,
 	}, nil
 }
@@ -59,7 +59,7 @@ func NewContainerManager(image string) (*ContainerManager, error) {
 // PullImage pulls the scraper container image
 func (c *ContainerManager) PullImage() error {
 
-	reader, err := c.client.ImagePull(context.Background(), c.image, image.PullOptions{})
+	reader, err := c.Client.ImagePull(context.Background(), c.image, image.PullOptions{})
 	if err != nil {
 		return fmt.Errorf("fail to pull the scraper image: %w", err)
 	}
@@ -78,7 +78,7 @@ func (c *ContainerManager) PullImage() error {
 func (c *ContainerManager) RemoveContainer(containerID string) error {
 
 	// Remove the container
-	err := c.client.ContainerRemove(context.Background(), containerID, container.RemoveOptions{
+	err := c.Client.ContainerRemove(context.Background(), containerID, container.RemoveOptions{
 		RemoveVolumes: true,
 		RemoveLinks:   true,
 		Force:         true,
@@ -95,7 +95,7 @@ func (c *ContainerManager) RemoveContainer(containerID string) error {
 func (c *ContainerManager) TailLog(containerID string) (io.Reader, error) {
 
 	// Print the logs of the container
-	out, err := c.client.ContainerLogs(context.Background(), containerID, container.LogsOptions{
+	out, err := c.Client.ContainerLogs(context.Background(), containerID, container.LogsOptions{
 		ShowStdout: true,
 		Details:    true,
 		ShowStderr: true,
@@ -117,7 +117,7 @@ func (c *ContainerManager) TailLog(containerID string) (io.Reader, error) {
 func (c *ContainerManager) CreateContainer(containerConfig *container.Config, networkConfig *network.NetworkingConfig) (string, error) {
 
 	// Create the container. Container.ID contains the ID of the container
-	ct, err := c.client.ContainerCreate(context.Background(),
+	ct, err := c.Client.ContainerCreate(context.Background(),
 		containerConfig,
 		&container.HostConfig{
 			AutoRemove: false, // Cant set to true otherwise the container got deleted before copying the file
@@ -241,13 +241,13 @@ func (c *ContainerManager) ListContainersByType(containerType string) ([]Contain
 // func (c *ContainerManager) Scrape(uploadIdentifier string, targetName string, containerID string) error {
 
 // 	// Start the container
-// 	err := c.client.ContainerStart(context.Background(), containerID, container.StartOptions{})
+// 	err := c.Client.ContainerStart(context.Background(), containerID, container.StartOptions{})
 // 	if err != nil {
 // 		return fmt.Errorf("fail to start container %s: %w", containerID, err)
 // 	}
 
 // 	// Wait for the container to exit
-// 	statusCh, errCh := c.client.ContainerWait(context.Background(), containerID, container.WaitConditionNotRunning)
+// 	statusCh, errCh := c.Client.ContainerWait(context.Background(), containerID, container.WaitConditionNotRunning)
 
 // 	// ContainerWait returns 2 channels. One for the status and one for the wait error (not execution error)
 // 	select {
@@ -277,7 +277,7 @@ func (c *ContainerManager) ListContainersByType(containerType string) ([]Contain
 // 	}
 
 // 	// Read the file from the container as a reader interface of a tar stream
-// 	fileReader, _, err := c.client.CopyFromContainer(context.Background(), containerID, filePathInContainer)
+// 	fileReader, _, err := c.Client.CopyFromContainer(context.Background(), containerID, filePathInContainer)
 // 	if err != nil {
 // 		return fmt.Errorf("fail to copy file from container %s: %w", containerID, err)
 // 	}
