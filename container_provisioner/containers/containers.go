@@ -44,7 +44,7 @@ type ContainerManager struct {
 }
 
 // NewContainerManager creates a new instance of ContainerManager
-func NewContainerManager(apiClient ContainerClient, image string) (*ContainerManager, error) {
+func NewContainerManager(image string) (*ContainerManager, error) {
 	// Create a new Docker API Client
 	apiClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
