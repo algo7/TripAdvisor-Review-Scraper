@@ -92,13 +92,15 @@ func (r *RedisClient) SetLock(key string) bool {
 
 	ctx := context.Background()
 
-	lockSuccess, err := r.Client.SetNX(ctx, key, "1", 0).Result()
+	result, err := r.Client.SetArgs(ctx, key, "1", redis.SetArgs{
+		Mode: "NX",
+	}).Result()
 
 	if err != nil {
 		return false
 	}
 
-	return lockSuccess
+	return result == "OK"
 }
 
 // ReleaseLock releases the lock on the given key
