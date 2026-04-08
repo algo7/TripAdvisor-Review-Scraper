@@ -27,19 +27,6 @@ func MakeRequest(client *http.Client, queryID string, language []string, locatio
 		Selections: language,
 	}
 
-	// requestVariables := Variables{
-	// 	LocationID:     locationID,
-	// 	Offset:         offset,
-	// 	Filters:        Filters{requestFilter},
-	// 	Limit:          limit,
-	// 	NeedKeywords:   false,
-	// 	PrefsCacheKey:  fmt.Sprintf("locationReviewPrefs_%d", locationID),
-	// 	KeywordVariant: "location_keywords_v2_llr_order_30_en",
-	// 	InitialPrefs:   struct{}{},
-	// 	FilterCacheKey: nil,
-	// 	Prefs:          nil,
-	// }
-
 	requestVariables := Variables{
 		LocationID:           locationID,
 		Offset:               offset,

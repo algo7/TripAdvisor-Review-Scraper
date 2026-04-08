@@ -81,54 +81,6 @@ type Request struct {
 	Extensions Extensions `json:"extensions"`
 }
 
-// Requests is a slice of Request structs
-type Requests []Request
-
-// Photo is a struct that represents the photo object in the response body from TripAdvisor endpoints
-type Photo struct {
-	ID         int      `json:"id"`
-	Statuses   []string `json:"statuses"`
-	PhotoSizes []struct {
-		Width  int    `json:"width"`
-		Height int    `json:"height"`
-		URL    string `json:"url"`
-	} `json:"photoSizes"`
-}
-
-// Photos is a slice of Photo structs
-type Photos []Photo
-
-// UserProfile is a struct that represents the user profile object in the response body from TripAdvisor endpoints
-type UserProfile struct {
-	IsMe               bool `json:"isMe"`
-	IsVerified         bool `json:"isVerified"`
-	ContributionCounts struct {
-		SumAllUgc   int `json:"sumAllUgc"`
-		SumAllLikes int `json:"sumAllLikes"`
-	} `json:"contributionCounts"`
-	IsFollowing bool   `json:"isFollowing"`
-	ID          string `json:"id"`
-	UserID      string `json:"userId"`
-	DisplayName string `json:"displayName"`
-	Username    string `json:"username"`
-	Hometown    struct {
-		LocationID     any `json:"locationId"`
-		Location       any `json:"location"`
-		FallbackString any `json:"fallbackString"`
-	} `json:"hometown"`
-	Route struct {
-		URL string `json:"url"`
-	} `json:"route"`
-	Avatar struct {
-		ID         int `json:"id"`
-		PhotoSizes []struct {
-			Width  int    `json:"width"`
-			Height int    `json:"height"`
-			URL    string `json:"url"`
-		} `json:"photoSizes"`
-	} `json:"avatar"`
-}
-
 // Review is a struct that represents the review object in the response body from TripAdvisor endpoints
 type Review struct {
 	ID              int      `json:"id"`
@@ -188,29 +140,6 @@ type ReviewUserProfile struct {
 	ContributionCounts struct {
 		SumAllUgc int `json:"sumAllUgc"`
 	} `json:"contributionCounts"`
-}
-
-// ReviewSummary is a struct that represents the review summary object in the response body from TripAdvisor endpoints
-type ReviewSummary struct {
-	Rating float32 `json:"rating"`
-	Count  int     `json:"count"`
-}
-
-// ReviewAggregations is a struct that represents the review aggregations object in the response body from TripAdvisor endpoints
-type ReviewAggregations struct {
-	RatingCounts     []int          `json:"ratingCounts"`
-	LanguageCounts   map[string]int `json:"languageCounts"`
-	AlertStatusCount int            `json:"alertStatusCount"`
-}
-
-// Location is a struct that represents the location object in the response body from TripAdvisor endpoints
-type Location struct {
-	LocationID            int    `json:"locationId"`
-	ParentGeoID           int    `json:"parentGeoId"`
-	PlaceType             string `json:"placeType"`
-	ReviewSummary         ReviewSummary
-	AccommodationCategory string             `json:"accommodationCategory"`
-	ReviewAggregations    ReviewAggregations `json:"reviewAggregations"`
 }
 
 // Feedback is a struct that represents the feedback object in the response body from TripAdvisor endpoints
