@@ -98,6 +98,7 @@ func (r *RedisClient) SetLock(key string) bool {
 
 	result, err := r.Client.SetArgs(ctx, key, "1", redis.SetArgs{
 		Mode: "NX",
+		TTL:  time.Minute * 5, // Set a TTL of 5 minutes for the lock
 	}).Result()
 
 	if err != nil {

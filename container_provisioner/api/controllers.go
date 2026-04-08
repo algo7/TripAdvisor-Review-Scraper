@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -263,6 +264,7 @@ func (h *Handler) getDownloads(c *fiber.Ctx) error {
 	// Get the list of objects from the R2 bucket (without metadata)
 	r2Objs, err := h.Scraper.R2.ListObjects()
 	if err != nil {
+		log.Printf("Error listing objects from R2: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Error listing results from storage"})
 	}
 

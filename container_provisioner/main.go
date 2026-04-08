@@ -12,6 +12,7 @@ import (
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/database"
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/scrape"
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/storage"
+	"github.com/gofiber/fiber/v2"
 )
 
 const containerImage = "ghcr.io/algo7/tripadvisor-review-scraper/scraper:latest"
@@ -40,39 +41,41 @@ func main() {
 		log.Fatalf("fail to initialize container manager: %s", err)
 	}
 
-	// Try to acquire the lock for pullig container image
-	lockSuccess := r.SetLock(imageLockKey)
-	if !lockSuccess {
-		// If the lock is not acquired, another instance is already pulling the image
-		return
-	}
-
-	// Pull the scraper image
-	err = cm.PullImage()
-	if err != nil {
-		log.Fatalf("fail to pull the scraper image: %s", err)
-	}
-
-	// Set up signal handling to catch SIGINT and SIGTERM
-	sigCh := make(chan os.Signal, 1)
-	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
-
-	// Launch a goroutine that will perform cleanup when a signal is received
-	go func() {
-		sig := <-sigCh
-		err := cleanupScraperContainers(r, cm)
-		if err != nil {
-			log.Printf("cleanup failed: %v", err)
+	if !fiber.IsChild() {
+		// Try to acquire the lock for pullig container image
+		lockSuccess := r.SetLock(imageLockKey)
+		if !lockSuccess {
+			// If the lock is not acquired, another instance is already pulling the image
+			return
 		}
 
-		err = r.ReleaseLock(imageLockKey)
+		// Pull the scraper image
+		err = cm.PullImage()
 		if err != nil {
-			log.Printf("fail to release lock after cleanup for image %s: %v", containerImage, err)
-		} else {
-			log.Printf("successfully released lock after cleanup for image %s", containerImage)
+			log.Fatalf("fail to pull the scraper image: %s", err)
 		}
-		os.Exit(int(sig.(syscall.Signal)))
-	}()
+
+		// Set up signal handling to catch SIGINT and SIGTERM
+		sigCh := make(chan os.Signal, 1)
+		signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+
+		// Launch a goroutine that will perform cleanup when a signal is received
+		go func() {
+			sig := <-sigCh
+			err := cleanupScraperContainers(r, cm)
+			if err != nil {
+				log.Printf("cleanup failed: %v", err)
+			}
+			cm.Close()
+			err = r.ReleaseLock(imageLockKey)
+			if err != nil {
+				log.Printf("fail to release lock after cleanup for image %s: %v", containerImage, err)
+			} else {
+				log.Printf("successfully released lock after cleanup for image %s", containerImage)
+			}
+			os.Exit(int(sig.(syscall.Signal)))
+		}()
+	}
 
 	// Initialize the storage client
 	r2, err := storage.NewR2Service("./credentials/creds.json")

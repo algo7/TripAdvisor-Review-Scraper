@@ -48,7 +48,6 @@ func NewContainerManager(image string) (*ContainerManager, error) {
 	if err != nil {
 		return nil, fmt.Errorf("fail to create new container manager due to client initialization issues %w", err)
 	}
-	defer apiClient.Close()
 
 	return &ContainerManager{
 		Client: apiClient,
@@ -139,6 +138,10 @@ func (c *ContainerManager) CreateContainer(containerConfig *container.Config) (s
 	}
 
 	return ct.ID[:12], nil
+}
+
+func (c *ContainerManager) Close() error {
+	return c.Client.Close()
 }
 
 // Container information
