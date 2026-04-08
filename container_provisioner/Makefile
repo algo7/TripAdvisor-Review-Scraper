@@ -3,7 +3,7 @@
 
 
 build: ## Build the application only
-	CGO_ENABLED=0 go build -v -ldflags="-s -w" main.go
+	CGO_ENABLED=0 go build -trimpath -v -ldflags="-s -w" main.go
 
 run: ## Start the application in foreground
 	./main

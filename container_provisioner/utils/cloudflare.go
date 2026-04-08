@@ -34,7 +34,7 @@ type R2Obj struct {
 }
 
 // R2UploadObject upload an object to R2
-func R2UploadObject(fileName string, uploadIdentifier string, fileData io.Reader) {
+func R2UploadObject(fileName string, uploadIdentifier string, fileData io.Reader) error {
 
 	// Upload an object to R2
 	_, err := r2Client.PutObject(ctx, &r2.PutObjectInput{
@@ -45,13 +45,19 @@ func R2UploadObject(fileName string, uploadIdentifier string, fileData io.Reader
 			"uploadedby": uploadIdentifier,
 		},
 	})
-	ErrorHandler(err)
+	if err != nil {
+		return fmt.Errorf("fail to upload file %s to R2: %w", fileName, err)
+	}
 
 	log.Printf("File: %s uploaded", fileName)
 
 	// Remove the file from the local filesystem
 	err = os.Remove(fileName)
-	ErrorHandler(err)
+	if err != nil {
+		return fmt.Errorf("fail to remove the uploaded file %s from local filesystem: %w", fileName, err)
+	}
+
+	return nil
 }
 
 // R2ListObjects List objects in R2 and return a string slice of the file names
