@@ -20,13 +20,13 @@ type ProxyContainer struct {
 }
 
 type Scraper struct {
-	cm    containers.ContainerManager
-	r2    storage.R2Service
-	redis database.RedisClient
+	cm    *containers.ContainerManager
+	r2    *storage.R2Service
+	redis *database.RedisClient
 }
 
 // NewScraper creates a new Scraper instance with the given ContainerManager, R2Service, and RedisClient
-func NewScraper(cm containers.ContainerManager, r2 storage.R2Service, redis database.RedisClient) *Scraper {
+func NewScraper(cm *containers.ContainerManager, r2 *storage.R2Service, redis *database.RedisClient) *Scraper {
 	return &Scraper{
 		cm:    cm,
 		r2:    r2,

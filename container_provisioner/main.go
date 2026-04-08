@@ -10,6 +10,8 @@ import (
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/api"
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/containers"
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/database"
+	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/scrape"
+	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/storage"
 )
 
 const containerImage = "ghcr.io/algo7/tripadvisor-review-scraper/scraper:latest"
@@ -72,8 +74,17 @@ func main() {
 		os.Exit(int(sig.(syscall.Signal)))
 	}()
 
+	// Initialize the storage client
+	r2, err := storage.NewR2Service("./credentials/creds.json")
+	if err != nil {
+		log.Fatalf("fail to initialize R2 service: %v", err)
+	}
+
+	// Initialize the scraper
+	scraper := scrape.NewScraper(cm, r2, r)
+
 	// Load the API routes
-	api.Router()
+	api.Router(scraper)
 }
 
 // cleanupScraperContainers removes all the running scraper containers

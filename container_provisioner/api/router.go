@@ -1,9 +1,13 @@
 package api
 
-import "log"
+import (
+	"log"
+
+	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/scrape"
+)
 
 // Router is the main router for the API
-func Router() {
+func Router(scraper *scrape.Scraper) {
 
 	app := ServerInstantiate()
 
