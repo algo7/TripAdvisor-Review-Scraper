@@ -93,16 +93,35 @@ func MakeRequest(client *http.Client, queryID string, queryType string, language
 			})
 		}
 
-		// Batch both into a single request array
-		request = BatchRequests{
-			{
-				Variables:  requestVariables,
-				Extensions: requestExtensions,
-			},
-			{
-				Variables:  RoutesVariables{RoutesRequest: routes},
-				Extensions: Extensions{PreRegisteredQueryID: queryID},
-			},
+		if queryType == "RESTO" {
+			// Batch both into a single request array
+			request = BatchRequests{
+				{
+					Variables:  requestVariables,
+					Extensions: requestExtensions,
+				},
+				{
+					Variables:  RoutesVariables{RoutesRequest: routes},
+					Extensions: Extensions{PreRegisteredQueryID: queryID},
+				},
+				// Query for fetching Michelin reviews for restaurants
+				{
+					Variables:  MichelinVariables{IDs: []uint32{locationID}},
+					Extensions: Extensions{PreRegisteredQueryID: MichelinQueryID},
+				},
+			}
+		} else {
+			// Batch both into a single request array
+			request = BatchRequests{
+				{
+					Variables:  requestVariables,
+					Extensions: requestExtensions,
+				},
+				{
+					Variables:  RoutesVariables{RoutesRequest: routes},
+					Extensions: Extensions{PreRegisteredQueryID: queryID},
+				},
+			}
 		}
 	}
 	// Marshal the request body into JSON
@@ -188,8 +207,97 @@ func GetQueryID(queryType string) (queryID string) {
 	}
 }
 
-// FetchReviewCount is a function that fetches the review count for the given location ID and query type
-func FetchReviewCount(client *http.Client, locationID uint32, geoID uint32, queryType string, languages []string) (reviewCount int, err error) {
+// ExtractReviews extracts the review slice from API responses,
+// handling both the ReviewsProxy path (airlines) and the Locations path (hotels/restaurants/attractions).
+func ExtractReviews(responses *Responses) []Review {
+	if responses == nil {
+		return nil
+	}
+	for _, resp := range *responses {
+		if len(resp.Data.ReviewsProxy) > 0 {
+			return resp.Data.ReviewsProxy[0].Reviews
+		}
+		if len(resp.Data.Locations) > 0 {
+			return resp.Data.Locations[0].ReviewListPage.Reviews
+		}
+	}
+	return nil
+}
+
+// ExtractTotalCount extracts the total review count from API responses.
+func ExtractTotalCount(responses *Responses) int {
+	if responses == nil {
+		return 0
+	}
+	for _, resp := range *responses {
+		if len(resp.Data.ReviewsProxy) > 0 {
+			return resp.Data.ReviewsProxy[0].TotalCount
+		}
+		if len(resp.Data.Locations) > 0 {
+			return resp.Data.Locations[0].ReviewListPage.TotalCount
+		}
+	}
+	return 0
+}
+
+// ExtractMichelinInfo extracts Michelin star information from API responses.
+// Returns nil if no Michelin data is present.
+func ExtractMichelinInfo(responses *Responses) *MichelinInfo {
+	if responses == nil {
+		return nil
+	}
+	for _, resp := range *responses {
+		if len(resp.Data.Michelin) > 0 {
+			m := resp.Data.Michelin[0]
+			if m.AwardHeader != "" || len(m.Awards) > 0 {
+				return &MichelinInfo{
+					AwardHeader:   m.AwardHeader,
+					AwardReadMore: m.AwardReadMore,
+					Awards:        m.Awards,
+					Summaries:     m.Summaries,
+				}
+			}
+		}
+	}
+	return nil
+}
+
+// CSVHeaders returns the CSV column headers.
+// When includeMichelin is true, Michelin award columns are appended.
+func CSVHeaders(includeMichelin bool) []string {
+	headers := []string{"Location Name", "Title", "Text", "Rating", "Year", "Month", "Day"}
+	if includeMichelin {
+		headers = append(headers, "Michelin Award", "Michelin Year")
+	}
+	return headers
+}
+
+// ReviewToCSVRow converts a single Review into a CSV row.
+// When michelin is non-nil, Michelin award columns are appended.
+func ReviewToCSVRow(r Review, locationName string, michelin *MichelinInfo) []string {
+	row := []string{
+		locationName,
+		r.Title,
+		r.Text,
+		strconv.Itoa(r.Rating),
+		r.CreatedDate[0:4],
+		r.CreatedDate[5:7],
+		r.CreatedDate[8:10],
+	}
+	if michelin != nil {
+		names := make([]string, 0, len(michelin.Awards))
+		years := make([]string, 0, len(michelin.Awards))
+		for _, a := range michelin.Awards {
+			names = append(names, a.AwardName)
+			years = append(years, a.YearOfAward)
+		}
+		row = append(row, strings.Join(names, "; "), strings.Join(years, "; "))
+	}
+	return row
+}
+
+// FetchReviewCount fetches the review count for the given location ID and query type.
+func FetchReviewCount(client *http.Client, locationID uint32, geoID uint32, queryType string, languages []string) (int, error) {
 
 	// Get the query ID for the given query type.
 	queryID := GetQueryID(queryType)
@@ -200,20 +308,12 @@ func FetchReviewCount(client *http.Client, locationID uint32, geoID uint32, quer
 		return 0, fmt.Errorf("error making request: %w", err)
 	}
 
-	// Check if responses is nil before dereferencing
-	if responses == nil {
-		return 0, fmt.Errorf("received nil response for location ID %d", locationID)
+	count := ExtractTotalCount(responses)
+	if count == 0 {
+		return 0, fmt.Errorf("no reviews found for location ID %d", locationID)
 	}
 
-	// Now it's safe to dereference responses
-	response := *responses
-	if len(response) > 0 && len(response[0].Data.ReviewsProxy) > 0 {
-		return response[0].Data.ReviewsProxy[0].TotalCount, nil
-	} else if len(response) > 0 && len(response[0].Data.Locations) > 0 {
-		return response[0].Data.Locations[0].ReviewListPage.TotalCount, nil
-	}
-
-	return 0, fmt.Errorf("no reviews found for location ID %d", locationID)
+	return count, nil
 }
 
 // CalculateIterations is a function that calculates the number of iterations required to fetch all reviews
@@ -304,15 +404,11 @@ func ParseURL(url string, locationType string) (locationID uint32, geoID uint32,
 	}
 }
 
-func WriteReviewsToJSONFile(reviews []Review, fileHandle *os.File) error {
-	feedback := Feedback{
-		Reviews: reviews,
-	}
-	data, err := json.Marshal(feedback)
-	if err != nil {
-		return fmt.Errorf("could not marshal data: %w", err)
-	}
-	if _, err := fileHandle.Write(data); err != nil {
+// WriteScrapeResultToJSONFile writes a ScrapeResult (reviews + optional Michelin data) to a JSON file.
+func WriteScrapeResultToJSONFile(result *ScrapeResult, fileHandle *os.File) error {
+	encoder := json.NewEncoder(fileHandle)
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(result); err != nil {
 		return fmt.Errorf("could not write data to file: %w", err)
 	}
 	return nil

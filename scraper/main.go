@@ -7,7 +7,6 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/algo7/TripAdvisor-Review-Scraper/scraper/internal/config"
@@ -18,6 +17,7 @@ import (
 func main() {
 	// Scraper variables
 	var allReviews []tripadvisor.Review
+	var michelinInfo *tripadvisor.MichelinInfo
 
 	config, err := config.NewConfig()
 	if err != nil {
@@ -92,7 +92,7 @@ func main() {
 	// Scrape the reviews
 	for i := range iterations {
 
-		// Introduce random delay to avoid getting blocked. The delay is between 1 and 3 seconds
+		// Introduce random delay to avoid getting blocked. The delay is between 1 and 5 seconds
 		delay := rand.Intn(5) + 1
 		log.Printf("Iteration: %d. Delaying for %d seconds", i, delay)
 		time.Sleep(time.Duration(delay) * time.Second)
@@ -106,69 +106,50 @@ func main() {
 			log.Fatalf("Error making request at iteration %d: %v", i, err)
 		}
 
-		// Check if responses is nil before dereferencing
-		if resp == nil {
-			log.Fatalf("Received nil response for location ID %d at iteration: %d", locationID, i)
-		}
+		// Extract reviews using the shared helper (handles both ReviewsProxy and Locations paths)
+		reviews := tripadvisor.ExtractReviews(resp)
 
-		// Now it's safe to dereference responses
-		response := *resp
-
-		// Check if the response is not empty and if the response contains reviews
-
-		var reviews []tripadvisor.Review
-		if len(response) > 0 && len(response[0].Data.ReviewsProxy) > 0 {
-			reviews = response[0].Data.ReviewsProxy[0].Reviews
-		} else if len(response) > 0 && len(response[0].Data.Locations) > 0 {
-			reviews = response[0].Data.Locations[0].ReviewListPage.Reviews
+		// Extract Michelin info once from the first response that contains it
+		if michelinInfo == nil {
+			michelinInfo = tripadvisor.ExtractMichelinInfo(resp)
 		}
 
 		// Append the reviews to the allReviews slice
 		allReviews = append(allReviews, reviews...)
 
 		if config.FileType == "csv" {
-			// Iterating over the reviews
 			for _, r := range reviews {
-				row := []string{
-					locationName,
-					r.Title,
-					r.Text,
-					strconv.Itoa(r.Rating),
-					r.CreatedDate[0:4],
-					r.CreatedDate[5:7],
-					r.CreatedDate[8:10],
-				}
-				dataToWrite = append(dataToWrite, row)
+				dataToWrite = append(dataToWrite, tripadvisor.ReviewToCSVRow(r, locationName, michelinInfo))
 			}
 		}
-
 	}
 
 	if config.FileType == "csv" {
-		// Create a new csv writer. We are using writeAll so defer writer.Flush() is not required
 		writer := csv.NewWriter(fileHandle)
 
-		// Writing header to the CSV file
-		headers := []string{"Location Name", "Title", "Text", "Rating", "Year", "Month", "Day"}
-		err = writer.Write(headers)
-		if err != nil {
+		// Write CSV headers (includes Michelin columns when Michelin data is present)
+		if err := writer.Write(tripadvisor.CSVHeaders(michelinInfo != nil)); err != nil {
 			log.Fatalf("Error writing header to csv: %v", err)
 		}
-		// Write data to the CSV file
-		err = writer.WriteAll(dataToWrite)
-		if err != nil {
+
+		// Write all review rows
+		if err := writer.WriteAll(dataToWrite); err != nil {
 			log.Fatalf("Error writing data to csv: %v", err)
 		}
 	}
 
-	// If the file type is JSON, write the data to the file
+	// If the file type is JSON, write the complete scrape result (reviews + Michelin data)
 	if config.FileType == "json" {
 		tripadvisor.SortReviewsByDate(allReviews)
-		err := tripadvisor.WriteReviewsToJSONFile(allReviews, fileHandle)
-		if err != nil {
+		result := &tripadvisor.ScrapeResult{
+			Reviews:  allReviews,
+			Michelin: michelinInfo,
+		}
+		if err := tripadvisor.WriteScrapeResultToJSONFile(result, fileHandle); err != nil {
 			log.Fatalf("Error writing data to JSON file: %v", err)
 		}
 	}
+
 	log.Printf("Data written to %s", fileName)
-	log.Println("Scrapping completed")
+	log.Println("Scraping completed")
 }
