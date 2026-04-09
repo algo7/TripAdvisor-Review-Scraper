@@ -93,16 +93,35 @@ func MakeRequest(client *http.Client, queryID string, queryType string, language
 			})
 		}
 
-		// Batch both into a single request array
-		request = BatchRequests{
-			{
-				Variables:  requestVariables,
-				Extensions: requestExtensions,
-			},
-			{
-				Variables:  RoutesVariables{RoutesRequest: routes},
-				Extensions: Extensions{PreRegisteredQueryID: queryID},
-			},
+		if queryType == "RESTO" {
+			// Batch both into a single request array
+			request = BatchRequests{
+				{
+					Variables:  requestVariables,
+					Extensions: requestExtensions,
+				},
+				{
+					Variables:  RoutesVariables{RoutesRequest: routes},
+					Extensions: Extensions{PreRegisteredQueryID: queryID},
+				},
+				// Query for fetching Michelin reviews for restaurants
+				{
+					Variables:  MichelinVariables{IDs: []uint32{locationID}},
+					Extensions: Extensions{PreRegisteredQueryID: MichelinQueryID},
+				},
+			}
+		} else {
+			// Batch both into a single request array
+			request = BatchRequests{
+				{
+					Variables:  requestVariables,
+					Extensions: requestExtensions,
+				},
+				{
+					Variables:  RoutesVariables{RoutesRequest: routes},
+					Extensions: Extensions{PreRegisteredQueryID: queryID},
+				},
+			}
 		}
 	}
 	// Marshal the request body into JSON
@@ -305,10 +324,7 @@ func ParseURL(url string, locationType string) (locationID uint32, geoID uint32,
 }
 
 func WriteReviewsToJSONFile(reviews []Review, fileHandle *os.File) error {
-	feedback := Feedback{
-		Reviews: reviews,
-	}
-	data, err := json.Marshal(feedback)
+	data, err := json.Marshal(reviews)
 	if err != nil {
 		return fmt.Errorf("could not marshal data: %w", err)
 	}

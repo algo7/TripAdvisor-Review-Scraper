@@ -123,6 +123,9 @@ func main() {
 			reviews = response[0].Data.Locations[0].ReviewListPage.Reviews
 		}
 
+		if queryType == "RESTO" {
+		}
+
 		// Append the reviews to the allReviews slice
 		allReviews = append(allReviews, reviews...)
 

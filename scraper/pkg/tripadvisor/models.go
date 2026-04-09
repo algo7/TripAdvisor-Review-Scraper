@@ -16,6 +16,9 @@ const (
 	// AttractionQueryID is the pre-registered query ID for attraction reviews
 	AttractionQueryID string = "ef1a9f94012220d3"
 
+	// RestaurantQueryID is the pre-registered query ID for getting Michelin Star status of restaurants
+	MichelinQueryID string = "496720f897546a4e"
+
 	// ReviewLimit is the maximum number of reviews that can be fetched in a single request
 	ReviewLimit uint32 = 20
 )
@@ -36,6 +39,14 @@ type Filter struct {
 // Filters is a slice of Filter structs.
 type Filters []Filter
 
+// MichelinVariables is a struct that represents the variables object in the request body to get Michelin Star status of restaurants.
+type MichelinVariables struct {
+	// List of location IDs of the restaurants to get Michelin Star status for.
+	IDs []uint32 `json:"ids"`
+}
+
+// AirlineVariables is a struct that represents the variables object in the request body to get airline reviews.
+// It's different from the Variables struct used for other types of reviews because the airline reviews endpoint has different requirements for the variables object.
 type AirlineVariables struct {
 	LocationID     uint32   `json:"locationId"`
 	Offset         uint32   `json:"offset"`
@@ -88,42 +99,12 @@ type Extensions struct {
 	PreRegisteredQueryID string `json:"preRegisteredQueryId"`
 }
 
-// Request is a struct that represents the request body to query TripAdvisor endpoints
-type Request struct {
-	Variables  Variables  `json:"variables"`
-	Extensions Extensions `json:"extensions"`
-}
-
 type BatchRequest struct {
 	Variables  any        `json:"variables"`
 	Extensions Extensions `json:"extensions"`
 }
 
 type BatchRequests []BatchRequest
-
-// Review is a struct that represents the review object in the response body from TripAdvisor endpoints
-type Review struct {
-	ID              int      `json:"id"`
-	Status          string   `json:"status"`
-	CreatedDate     string   `json:"createdDate"`
-	PublishedDate   string   `json:"publishedDate"`
-	Rating          int      `json:"rating"`
-	PublishPlatform string   `json:"publishPlatform"`
-	Title           string   `json:"title"`
-	Language        string   `json:"language"`
-	Text            string   `json:"text"`
-	Username        string   `json:"username"`
-	LocationID      int      `json:"locationId"`
-	HelpfulVotes    int      `json:"helpfulVotes"`
-	Labels          []string `json:"labels"`
-	PhotoIds        []int    `json:"photoIds"`
-	TripInfo        struct {
-		StayDate string `json:"stayDate"`
-		TripType string `json:"tripType"`
-	} `json:"tripInfo"`
-	Location    ReviewLocation    `json:"location"`
-	UserProfile ReviewUserProfile `json:"userProfile"`
-}
 
 type ReviewLocation struct {
 	LocationID            int    `json:"locationId"`
@@ -162,9 +143,28 @@ type ReviewUserProfile struct {
 	} `json:"contributionCounts"`
 }
 
-// Feedback is a struct that represents the feedback object in the response body from TripAdvisor endpoints
-type Feedback struct {
-	Reviews []Review `json:"reviews"`
+// Review is a struct that represents the review object in the response body from TripAdvisor endpoints
+type Review struct {
+	ID              int      `json:"id"`
+	Status          string   `json:"status"`
+	CreatedDate     string   `json:"createdDate"`
+	PublishedDate   string   `json:"publishedDate"`
+	Rating          int      `json:"rating"`
+	PublishPlatform string   `json:"publishPlatform"`
+	Title           string   `json:"title"`
+	Language        string   `json:"language"`
+	Text            string   `json:"text"`
+	Username        string   `json:"username"`
+	LocationID      int      `json:"locationId"`
+	HelpfulVotes    int      `json:"helpfulVotes"`
+	Labels          []string `json:"labels"`
+	PhotoIds        []int    `json:"photoIds"`
+	TripInfo        struct {
+		StayDate string `json:"stayDate"`
+		TripType string `json:"tripType"`
+	} `json:"tripInfo"`
+	Location    ReviewLocation    `json:"location"`
+	UserProfile ReviewUserProfile `json:"userProfile"`
 }
 
 // Response is a struct that represents the response body from TripAdvisor endpoints
@@ -186,6 +186,16 @@ type Response struct {
 				Reviews    []Review `json:"reviews"`
 			} `json:"reviewListPage"`
 		} `json:"locations"`
+
+		Michelin struct {
+			AwardHeader   string `json:"awardHeader"`
+			AwardReadMore string `json:"awardReadMore"`
+			Awards        []struct {
+				AwardName   string `json:"award_name"`
+				AwardTitle  string `json:"award_title"`
+				YearOfAward string `json:"yearOfAward"`
+			} `json:"awards"`
+		} `json:"michelin"`
 	} `json:"data"`
 }
 
