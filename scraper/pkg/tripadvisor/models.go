@@ -167,6 +167,36 @@ type Review struct {
 	UserProfile ReviewUserProfile `json:"userProfile"`
 }
 
+// MichelinAward represents a single Michelin award for a restaurant.
+type MichelinAward struct {
+	AwardName    string `json:"award_name"`
+	AwardTitle   string `json:"award_title"`
+	YearOfAward  string `json:"yearOfAward"`
+	Description  string `json:"description,omitempty"`
+	AwardIconURL string `json:"awardIconUrl,omitempty"`
+}
+
+// MichelinSummary represents a summary link from the MICHELIN Guide.
+type MichelinSummary struct {
+	ExternalURL string `json:"externalUrl"`
+	Text        string `json:"text"`
+}
+
+// MichelinInfo holds Michelin star information for a restaurant.
+type MichelinInfo struct {
+	AwardHeader   string            `json:"awardHeader,omitempty"`
+	AwardReadMore string            `json:"awardReadMore,omitempty"`
+	Awards        []MichelinAward   `json:"awards,omitempty"`
+	Summaries     []MichelinSummary `json:"summaries,omitempty"`
+}
+
+// ScrapeResult holds the complete output of a scrape operation,
+// including reviews and optional Michelin data for restaurants.
+type ScrapeResult struct {
+	Reviews  []Review      `json:"reviews"`
+	Michelin *MichelinInfo `json:"michelin,omitempty"`
+}
+
 // Response is a struct that represents the response body from TripAdvisor endpoints
 type Response struct {
 	Data struct {
@@ -187,15 +217,7 @@ type Response struct {
 			} `json:"reviewListPage"`
 		} `json:"locations"`
 
-		Michelin struct {
-			AwardHeader   string `json:"awardHeader"`
-			AwardReadMore string `json:"awardReadMore"`
-			Awards        []struct {
-				AwardName   string `json:"award_name"`
-				AwardTitle  string `json:"award_title"`
-				YearOfAward string `json:"yearOfAward"`
-			} `json:"awards"`
-		} `json:"michelin"`
+		Michelin []MichelinInfo `json:"RestaurantAwards_getRestaurantAwards"`
 	} `json:"data"`
 }
 
