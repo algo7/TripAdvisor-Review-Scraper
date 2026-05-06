@@ -4,6 +4,6 @@ authors:
 - family-names: "Lo"
   given-names: "Aviv"
 title: "TripAdvisor-Review-Scraper"
-version: 1.0.0
-date-released: 2022-03-03
+version: 3.0.1
+date-released: 2026-05-06
 url: "https://github.com/algo7/TripAdvisor-Review-Scraper"
