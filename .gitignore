@@ -120,3 +120,6 @@ review.csv
 **.vscode
 reviews.csv
 reviews.json
+
+# AI
+.antigravitycli/**

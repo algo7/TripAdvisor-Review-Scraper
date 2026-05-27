@@ -1,0 +1,133 @@
+name: 🐛 Bug Report
+description: Report a bug or unexpected behavior
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the sections below so we can reproduce and fix the issue.
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      description: Which part of the project is affected?
+      options:
+        - Scraper (standalone binary)
+        - Container Provisioner (web UI / Docker orchestration)
+        - Proxy Pool (VPN worker / proxy containers)
+        - GitHub Actions / CI
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: location-type
+    attributes:
+      label: TripAdvisor Location Type
+      description: What type of TripAdvisor page were you scraping? Select "N/A" if not related to scraping.
+      options:
+        - Hotel
+        - Restaurant
+        - Airline
+        - Attraction
+        - N/A
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: |
+        e.g. "The scraper returns 0 reviews for a hotel that clearly has reviews on the TripAdvisor website."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Detailed steps to reproduce the behavior.
+      placeholder: |
+        1. Set LOCATION_URL to `https://www.tripadvisor.com/Hotel_Review-g...`
+        2. Run the scraper binary with `FILETYPE=json`
+        3. Observe the error in the terminal output
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened? Include error messages and log output if available.
+      render: shell
+    validations:
+      required: true
+
+  - type: input
+    id: tripadvisor-url
+    attributes:
+      label: TripAdvisor URL
+      description: |
+        The `LOCATION_URL` you used. Must be from `tripadvisor.com` (not `.fr`, `.de`, etc.).
+        Leave blank if not applicable.
+      placeholder: "https://www.tripadvisor.com/Hotel_Review-g...-d...-Reviews-..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Please provide the following details about your environment.
+      value: |
+        - **OS**: [e.g. Ubuntu 24.04, macOS 15, Windows 11]
+        - **Go version**: [e.g. 1.26.1]
+        - **Docker version** (if applicable): [e.g. 27.0.0]
+        - **Run method**: [Binary / Docker / Container Provisioner]
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Configuration
+      description: |
+        List the environment variables you used (redact any sensitive proxy credentials).
+      value: |
+        - `LOCATION_URL`: 
+        - `LANGUAGES`: [e.g. en, en|fr|de]
+        - `FILETYPE`: [csv / json]
+        - `PROXY_HOST`: [e.g. http://proxy:8080, or "not set"]
+      render: markdown
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Log Output
+      description: Paste any relevant log output or stack traces.
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or related issues.
+    validations:
+      required: false
