@@ -1,3 +1,0 @@
-env GOOS=linux GOARCH=amd64 go build -o setup.bin main.go
-env GOOS=windows GOARCH=amd64 go build -o setup.exe main.go
-env GOOS=darwin GOARCH=amd64 go build -o setup_mac.bin main.go
