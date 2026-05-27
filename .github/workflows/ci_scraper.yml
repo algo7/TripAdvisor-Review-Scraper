@@ -1,4 +1,5 @@
 name: Build & Push [Scraper]
+run-name: Build & Push Scraper triggered by ${{ github.actor }}
 on:
   push:
     branches:
@@ -36,6 +37,10 @@ jobs:
           go-version-file: './scraper/go.mod'
           cache-dependency-path: './scraper/go.sum'
       - run: go version
+
+      - name: Test Go Application
+        working-directory: './scraper'
+        run: make test
 
       - name: Build Go Application
         working-directory: './scraper'

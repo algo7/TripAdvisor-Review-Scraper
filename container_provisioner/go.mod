@@ -1,6 +1,6 @@
 module github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner
 
-go 1.26.1
+go 1.26.3
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.41.7
