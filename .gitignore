@@ -126,6 +126,7 @@ reviews.json
 
 # Binary files and folders
 *bin
+main
 
 # Code coverage profiles and other test artifacts
 *.out

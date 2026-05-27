@@ -32,6 +32,9 @@ bin:
 build: bin ## Build the application only
 	CGO_ENABLED=0 GOOS=${GOOS} GOARCH=${GOARCH} go build -trimpath -v -ldflags="-s -w" -o bin/${NAME}-${GOOS}-${GOARCH} main.go
 
+build-ci: ## Build the application for CI
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -v -ldflags="-s -w" -o main main.go
+
 run: build ## Start the application in foreground
 	./bin/${NAME}-${GOOS}-${GOARCH}
 
