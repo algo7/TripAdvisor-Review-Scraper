@@ -75,5 +75,5 @@ jobs:
           platforms: linux/amd64
           tags: ghcr.io/${{ github.actor }}/tripadvisor-review-scraper/scraper:latest
           push: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=scraper
+          cache-to: type=gha,mode=max,scope=scraper

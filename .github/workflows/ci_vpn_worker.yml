@@ -53,5 +53,5 @@ jobs:
           platforms: linux/amd64
           tags: ghcr.io/${{ github.actor }}/tripadvisor-review-scraper/vpn_worker:latest
           push: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=vpn_worker
+          cache-to: type=gha,mode=max,scope=vpn_worker
