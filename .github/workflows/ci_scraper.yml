@@ -42,6 +42,13 @@ jobs:
         working-directory: './scraper'
         run: make test
 
+      - name: Upload Test Coverage Report
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage
+          path: scraper/coverage.html
+          compression-level: 0
+
       - name: Build Go Application
         working-directory: './scraper'
         run: make build-ci
