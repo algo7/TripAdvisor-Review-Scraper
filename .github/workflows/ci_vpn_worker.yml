@@ -1,4 +1,6 @@
 name: Build & Push [VPN Worker]
+run-name: Build & Push VPN Worker triggered by ${{ github.actor }}
+
 on:
   push:
     branches:
