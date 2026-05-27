@@ -1,4 +1,5 @@
 name: Build & Push [Scraper]
+run-name: Build & Push Scraper triggered by ${{ github.actor }}
 on:
   push:
     branches:
@@ -28,7 +29,7 @@ jobs:
     steps:
       # Clone the repo
       - name: Check Out Repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Go
         uses: actions/setup-go@v6
@@ -37,19 +38,32 @@ jobs:
           cache-dependency-path: './scraper/go.sum'
       - run: go version
 
+      - name: Test Go Application
+        working-directory: './scraper'
+        run: make test
+
+      - name: Upload Test Coverage Report
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage
+          path: scraper/coverage.html
+          compression-level: 0
+
       - name: Build Go Application
         working-directory: './scraper'
-        run: make build
+        run: make build-ci
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
+        with:
+          cache-image: false
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       # Login to GitHub Container Registry
       - name: Registry Login
-        uses: docker/login-action@v3.6.0
+        uses: docker/login-action@v4.2.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -57,11 +71,11 @@ jobs:
           logout: true
 
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./scraper
           platforms: linux/amd64
           tags: ghcr.io/${{ github.actor }}/tripadvisor-review-scraper/scraper:latest
           push: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=scraper
+          cache-to: type=gha,mode=max,scope=scraper

@@ -7,7 +7,6 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/algo7/TripAdvisor-Review-Scraper/scraper/internal/config"
@@ -18,7 +17,7 @@ import (
 func main() {
 	// Scraper variables
 	var allReviews []tripadvisor.Review
-	var location tripadvisor.Location
+	var michelinInfo *tripadvisor.MichelinInfo
 
 	config, err := config.NewConfig()
 	if err != nil {
@@ -33,7 +32,7 @@ func main() {
 	log.Printf("Location Type: %s", queryType)
 
 	// Parse the location ID and location name from the URL
-	locationID, locationName, err := tripadvisor.ParseURL(config.LocationURL, queryType)
+	locationID, geoID, locationName, err := tripadvisor.ParseURL(config.LocationURL, queryType)
 	if err != nil {
 		log.Fatalf("Error parsing URL: %v", err)
 	}
@@ -42,9 +41,6 @@ func main() {
 
 	// Get the query ID for the given query type.
 	queryID := tripadvisor.GetQueryID(queryType)
-	if err != nil {
-		log.Fatal("The location ID must be a positive integer")
-	}
 
 	// The default HTTP client
 	client := &http.Client{
@@ -69,7 +65,7 @@ func main() {
 	}
 
 	// Fetch the review count for the given location ID
-	reviewCount, err := tripadvisor.FetchReviewCount(client, locationID, queryType, config.Languages)
+	reviewCount, err := tripadvisor.FetchReviewCount(client, locationID, geoID, queryType, config.Languages)
 	if err != nil {
 		log.Fatalf("Error fetching review count: %v", err)
 	}
@@ -105,81 +101,55 @@ func main() {
 		offset := tripadvisor.CalculateOffset(i)
 
 		// Make the request to the TripAdvisor GraphQL endpoint
-		resp, err := tripadvisor.MakeRequest(client, queryID, config.Languages, locationID, offset, 20)
+		resp, err := tripadvisor.MakeRequest(client, queryID, queryType, config.Languages, locationID, geoID, offset, 20)
 		if err != nil {
 			log.Fatalf("Error making request at iteration %d: %v", i, err)
 		}
 
-		// Check if responses is nil before dereferencing
-		if resp == nil {
-			log.Fatalf("Received nil response for location ID %d at iteration: %d", locationID, i)
+		// Extract reviews using the shared helper (handles both ReviewsProxy and Locations paths)
+		reviews := tripadvisor.ExtractReviews(resp)
+
+		// Extract Michelin info once from the first response that contains it
+		if michelinInfo == nil {
+			michelinInfo = tripadvisor.ExtractMichelinInfo(resp)
 		}
 
-		// Now it's safe to dereference responses
-		response := *resp
+		// Append the reviews to the allReviews slice
+		allReviews = append(allReviews, reviews...)
 
-		// Check if the response is not empty and if the response contains reviews
-		if len(response) > 0 && len(response[0].Data.Locations) > 0 {
-
-			// Get the reviews from the response
-			reviews := response[0].Data.Locations[0].ReviewListPage.Reviews
-
-			// Append the reviews to the allReviews slice
-			allReviews = append(allReviews, reviews...)
-
-			// Store the location data
-			location = response[0].Data.Locations[0].Location
-
-			if config.FileType == "csv" {
-				// Iterating over the reviews
-				for _, row := range reviews {
-					row := []string{
-						locationName,
-						row.Title,
-						row.Text,
-						strconv.Itoa(row.Rating),
-						row.CreatedDate[0:4],
-						row.CreatedDate[5:7],
-						row.CreatedDate[8:10],
-					}
-
-					// Append the row to the dataToWrite slice
-					dataToWrite = append(dataToWrite, row)
-				}
+		if config.FileType == "csv" {
+			for _, r := range reviews {
+				dataToWrite = append(dataToWrite, tripadvisor.ReviewToCSVRow(r, locationName, michelinInfo))
 			}
-
 		}
-
 	}
 
 	if config.FileType == "csv" {
-		// Create a new csv writer. We are using writeAll so defer writer.Flush() is not required
 		writer := csv.NewWriter(fileHandle)
 
-		// Writing header to the CSV file
-		headers := []string{"Location Name", "Title", "Text", "Rating", "Year", "Month", "Day"}
-		err = writer.Write(headers)
-		if err != nil {
+		// Write CSV headers (includes Michelin columns when Michelin data is present)
+		if err := writer.Write(tripadvisor.CSVHeaders(michelinInfo != nil)); err != nil {
 			log.Fatalf("Error writing header to csv: %v", err)
 		}
-		// Write data to the CSV file
-		err = writer.WriteAll(dataToWrite)
-		if err != nil {
+
+		// Write all review rows
+		if err := writer.WriteAll(dataToWrite); err != nil {
 			log.Fatalf("Error writing data to csv: %v", err)
 		}
 	}
 
-	// If the file type is JSON, write the data to the file
+	// If the file type is JSON, write the complete scrape result (reviews + Michelin data)
 	if config.FileType == "json" {
-		// Sort the reviews by date
 		tripadvisor.SortReviewsByDate(allReviews)
-
-		// Write the data to the JSON file
-		err := tripadvisor.WriteReviewsToJSONFile(allReviews, location, fileHandle)
-		if err != nil {
+		result := &tripadvisor.ScrapeResult{
+			Reviews:  allReviews,
+			Michelin: michelinInfo,
+		}
+		if err := tripadvisor.WriteScrapeResultToJSONFile(result, fileHandle); err != nil {
 			log.Fatalf("Error writing data to JSON file: %v", err)
 		}
 	}
+
 	log.Printf("Data written to %s", fileName)
-	log.Println("Scrapping completed")
+	log.Println("Scraping completed")
 }
