@@ -265,7 +265,7 @@ func ExtractMichelinInfo(responses *Responses) *MichelinInfo {
 // CSVHeaders returns the CSV column headers.
 // When includeMichelin is true, Michelin award columns are appended.
 func CSVHeaders(includeMichelin bool) []string {
-	headers := []string{"Location Name", "Title", "Text", "Rating", "Year", "Month", "Day"}
+	headers := []string{"Location Name", "Title", "Text", "Rating", "Year", "Month", "Day", "Trip Type", "Stay Date"}
 	if includeMichelin {
 		headers = append(headers, "Michelin Award", "Michelin Year")
 	}
@@ -283,6 +283,8 @@ func ReviewToCSVRow(r Review, locationName string, michelin *MichelinInfo) []str
 		r.CreatedDate[0:4],
 		r.CreatedDate[5:7],
 		r.CreatedDate[8:10],
+		r.TripInfo.TripType,
+		r.TripInfo.StayDate,
 	}
 	if michelin != nil {
 		names := make([]string, 0, len(michelin.Awards))
