@@ -44,7 +44,7 @@ jobs:
 
       - name: Build Go Application
         working-directory: './scraper'
-        run: make build
+        run: make build-ci
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
