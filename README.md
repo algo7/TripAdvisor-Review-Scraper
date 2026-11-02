@@ -1,5 +1,10 @@
 # TripAdvisor-Review-Scraper
 
+> [!CAUTION]
+> The scraper currently doesn't work due to recent changes in TA's GQL API. I will update the scraper to work with the new API soon.
+> However, due to personal reasons, I will not be able to commit as much time to this project as I would like to. If you would like to contribute, please feel free to do so. PRs are always welcomed.
+> For any updates, please check the [issues](https://github.com/algo7/TripAdvisor-Review-Scraper/issues/476)
+
 A simple scraper for TripAdvisor (Hotel, Restaurant, Airline) reviews.
 
 [![Build & Push [Container Provisioner]](https://github.com/algo7/TripAdvisor-Review-Scraper/actions/workflows/ci_container_provisioner.yml/badge.svg?branch=main)](https://github.com/algo7/TripAdvisor-Review-Scraper/actions/workflows/ci_container_provisioner.yml)
