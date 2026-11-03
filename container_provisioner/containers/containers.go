@@ -77,7 +77,6 @@ func (c *ContainerManager) RemoveContainer(containerID string) error {
 	// Remove the container
 	_, err := c.Client.ContainerRemove(context.Background(), containerID, client.ContainerRemoveOptions{
 		RemoveVolumes: true,
-		RemoveLinks:   true,
 		Force:         true,
 	})
 
