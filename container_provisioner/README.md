@@ -24,6 +24,8 @@ You will also have to set the `R2_URL` environment variable in the `docker-compo
 ## Run the container provisioner
 The `docker-compose.yml` for the provisioner is located in the `container_provisioner` folder.
 
+The provisioner needs Redis 8.4 or newer. The proxy locks use the `SET ... IFEQ` and `DELEX` commands.
+
 ## Visit the UI
 The UI is accessible at `http://localhost:3000`.
 
