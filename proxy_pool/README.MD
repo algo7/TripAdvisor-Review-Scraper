@@ -1,7 +1,7 @@
 # Proxy Pool
-Proxy Pool is a docker image that runs both HTTP and SOCKS5 Proxies over OpenVPN (config to be provided by the user via docker bind mounts). `sockd`, `squid`, and `openvpn` client are managed by `supervisord` in the container. The service integrates with the Container Provisioner to provide a pool of proxies for the scraper to use. The container provisioner uses `docker-compose labels` to distinguish between different proxies. At this moment, the container provisioner only supports connecting to the Proxy Pool using HTTP proxies. Each service in the `docker-compose.yml` file represents a single proxy in the pool. The `docker-compose.yml` file for the proxy pool is located in the `proxy_pool` folder.
+Proxy Pool is a docker image that runs both HTTP and SOCKS5 Proxies over OpenVPN (config to be provided by the user via docker bind mounts). `sockd`, `squid`, and `openvpn` client are managed by `supervisord` in the container. The service integrates with the Container Provisioner to provide a pool of proxies for the scraper to use. The container provisioner uses `docker-compose labels` to distinguish between different proxies. The container provisioner connects to the Proxy Pool using the SOCKS5 proxy only. The HTTP proxy is available for direct use. Each service in the `docker-compose.yml` file represents a single proxy in the pool. The `docker-compose.yml` file for the proxy pool is located in the `proxy_pool` folder.
 
-The Proxy Pool service can also be used directly with the scraper. Just make sure that the `PROXY_ADDRESS` environment variable is in the `docker-compose.yml` file for the scraper.
+The Proxy Pool service can also be used directly with the scraper. Set the scraper's `PROXY_HOST` environment variable to either proxy, e.g. `socks5://<proxy_host>:8881` (Dante) or `http://<proxy_host>:8888` (Squid).
 
 ## Running the Proxy Pool
 1. Pull the latest scraper Docker image
