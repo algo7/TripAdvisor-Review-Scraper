@@ -31,7 +31,7 @@ func (e transientError) Unwrap() error { return e.err }
 
 // isTransient reports whether err is worth retrying.
 func isTransient(err error) bool {
-	var transient transientError
+	transient := transientError{}
 	return errors.As(err, &transient)
 }
 
@@ -39,7 +39,7 @@ func isTransient(err error) bool {
 // language is a single language tag (e.g. "en"); an empty string requests reviews in all languages.
 // Transient failures (dropped connections, timeouts, 5xx responses) are retried up to MaxRequestAttempts times.
 // Rate limiting and GraphQL errors are returned straight away.
-func MakeRequest(client *http.Client, queryID string, queryType string, language string, locationID uint32, offset uint32, limit uint32) (responses *Responses, err error) {
+func MakeRequest(client *http.Client, queryID string, queryType string, language string, locationID uint32, offset uint32, limit uint32) (*Responses, error) {
 
 	request := BuildRequest(queryID, queryType, language, locationID, offset, limit)
 
@@ -51,7 +51,7 @@ func MakeRequest(client *http.Client, queryID string, queryType string, language
 
 	delay := retryBackoff
 	for attempt := 1; ; attempt++ {
-		responses, err = sendRequest(client, jsonPayload)
+		responses, err := sendRequest(client, jsonPayload)
 		if err == nil || !isTransient(err) {
 			return responses, err
 		}
