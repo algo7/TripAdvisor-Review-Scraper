@@ -7,7 +7,7 @@ on:
     paths:
       - 'container_provisioner/**'
       - '.github/workflows/ci_container_provisioner.yml'
-  # Run tests, govulncheck and the image build on PRs too. Images are only pushed from main
+  # Run govulncheck and the image build on PRs too. Images are only pushed from main
   pull_request:
     branches:
       - main
