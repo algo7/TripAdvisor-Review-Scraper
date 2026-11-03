@@ -6,6 +6,12 @@ on:
       - main
     paths:
       - 'container_provisioner/**'
+      - '.github/workflows/ci_container_provisioner.yml'
+  # Run govulncheck and the image build on PRs too. Images are only pushed from main
+  # No path filter on PRs: this check is required to merge, and a check skipped by a path filter would block every PR
+  pull_request:
+    branches:
+      - main
 
 # Global variables
 env:
@@ -37,6 +43,11 @@ jobs:
           cache-dependency-path: './container_provisioner/go.sum'
       - run: go version
 
+      # Fails the job when the code calls a function with a known vulnerability
+      - name: Check for Known Vulnerabilities
+        working-directory: './container_provisioner'
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
+
       - name: Build Go Application
         working-directory: './container_provisioner'
         run: make build
@@ -51,6 +62,7 @@ jobs:
 
       # Login to GitHub Container Registry
       - name: Registry Login
+        if: github.event_name == 'push'
         uses: docker/login-action@v4.7.0
         with:
           registry: ghcr.io
@@ -64,6 +76,6 @@ jobs:
           context: ./container_provisioner
           platforms: linux/amd64
           tags: ghcr.io/${{ github.actor }}/tripadvisor-review-scraper/container_provisioner:latest
-          push: true
+          push: ${{ github.event_name == 'push' }}
           cache-from: type=gha,scope=container_provisioner
-          cache-to: type=gha,mode=max,scope=container_provisioner
+          cache-to: ${{ github.event_name == 'push' && 'type=gha,mode=max,scope=container_provisioner' || '' }}
