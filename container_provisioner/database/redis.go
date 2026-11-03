@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -91,32 +92,66 @@ func (r *RedisClient) CheckConnection() (string, error) {
 
 }
 
-// SetLock sets a lock on the given key
-func (r *RedisClient) SetLock(key string) bool {
+// The lock scripts run atomically inside Redis, so no other client can change the lock
+// between the owner check and the renewal or deletion.
+var (
+	renewLockScript = redis.NewScript(`
+if redis.call("GET", KEYS[1]) == ARGV[1] then
+	return redis.call("PEXPIRE", KEYS[1], ARGV[2])
+end
+return 0`)
+
+	releaseLockScript = redis.NewScript(`
+if redis.call("GET", KEYS[1]) == ARGV[1] then
+	return redis.call("DEL", KEYS[1])
+end
+return 0`)
+)
+
+// AcquireLock takes the lock on key for owner if nobody holds it. The lock expires after ttl unless it is renewed.
+func (r *RedisClient) AcquireLock(key string, owner string, ttl time.Duration) (bool, error) {
 
 	ctx := context.Background()
 
-	result, err := r.Client.SetArgs(ctx, key, "1", redis.SetArgs{
+	err := r.Client.SetArgs(ctx, key, owner, redis.SetArgs{
 		Mode: "NX",
-		TTL:  time.Minute * 5, // Set a TTL of 5 minutes for the lock
-	}).Result()
+		TTL:  ttl,
+	}).Err()
 
+	// SET NX replies with nil when the key already exists
+	if errors.Is(err, redis.Nil) {
+		return false, nil
+	}
 	if err != nil {
-		return false
+		return false, fmt.Errorf("failed to acquire lock %s: %w", key, err)
 	}
 
-	return result == "OK"
+	return true, nil
 }
 
-// ReleaseLock releases the lock on the given key
-func (r *RedisClient) ReleaseLock(key string) error {
+// RenewLock resets the expiry of the lock on key to ttl if owner still holds it.
+// It returns false when the lock expired or now belongs to someone else.
+func (r *RedisClient) RenewLock(key string, owner string, ttl time.Duration) (bool, error) {
 
 	ctx := context.Background()
 
-	err := r.Client.Del(ctx, key).Err()
+	renewed, err := renewLockScript.Run(ctx, r.Client, []string{key}, owner, ttl.Milliseconds()).Int()
 	if err != nil {
-		return fmt.Errorf("failed to release lock: %w", err)
+		return false, fmt.Errorf("failed to renew lock %s: %w", key, err)
 	}
 
-	return nil
+	return renewed == 1, nil
+}
+
+// ReleaseLock deletes the lock on key if owner still holds it, so a lock taken over by someone else is left alone.
+func (r *RedisClient) ReleaseLock(key string, owner string) (bool, error) {
+
+	ctx := context.Background()
+
+	released, err := releaseLockScript.Run(ctx, r.Client, []string{key}, owner).Int()
+	if err != nil {
+		return false, fmt.Errorf("failed to release lock %s: %w", key, err)
+	}
+
+	return released == 1, nil
 }

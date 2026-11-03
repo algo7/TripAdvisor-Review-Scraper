@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/containers"
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/database"
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/storage"
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/utils"
+	"github.com/google/uuid"
 	"github.com/moby/moby/api/types/container"
 	"github.com/moby/moby/client"
 )
@@ -18,6 +20,8 @@ type ProxyContainer struct {
 	ContainerID  string
 	ProxyAddress string
 	VPNRegion    string
+	// lockToken identifies the scrape that holds the lock on this proxy container
+	lockToken string
 }
 
 type Scraper struct {
@@ -116,7 +120,19 @@ func (s *Scraper) Scrape(uploadIdentifier string, targetName string, containerID
 	return nil
 }
 
-// AcquireProxyContainer acquires a lock on a proxy container and returns its ID
+// proxyLockTTL is how long a proxy lock lasts without being renewed. It only runs out when
+// the provisioner stops renewing it, e.g. after a crash, so the proxy becomes free again.
+var proxyLockTTL = 2 * time.Minute
+
+// proxyLockRenewInterval is how often a running scrape renews its proxy lock. It is much shorter
+// than proxyLockTTL, so a few renewals can fail before the lock expires.
+var proxyLockRenewInterval = 30 * time.Second
+
+func proxyLockKey(containerID string) string {
+	return "proxy-usage:" + containerID
+}
+
+// AcquireProxyContainer locks a free proxy container for one scrape and returns it
 func (s *Scraper) AcquireProxyContainer() (ProxyContainer, error) {
 	availableProxies, err := s.CM.ListContainersByType("proxy")
 	if err != nil {
@@ -124,26 +140,68 @@ func (s *Scraper) AcquireProxyContainer() (ProxyContainer, error) {
 	}
 
 	for _, proxy := range availableProxies {
-		lockKey := "proxy-usage:" + *proxy.ContainerID
-		lockSuccess := s.Redis.SetLock(lockKey)
+		// Skip proxies that can't be used before locking them, so no lock is left behind
+		if *proxy.ProxySOCKSPort == "" || *proxy.IPAddress == "" {
+			continue
+		}
 
-		if lockSuccess && proxy.ProxySOCKSPort != nil && proxy.IPAddress != nil {
+		// A token unique to this scrape, so only this scrape can renew or release the lock
+		lockToken := uuid.NewString()
+		acquired, err := s.Redis.AcquireLock(proxyLockKey(*proxy.ContainerID), lockToken, proxyLockTTL)
+		if err != nil {
+			return ProxyContainer{}, err
+		}
+
+		if acquired {
 			return ProxyContainer{
 				ContainerID:  *proxy.ContainerID,
 				VPNRegion:    *proxy.VPNRegion,
 				ProxyAddress: fmt.Sprintf("socks5://%s:%s", *proxy.IPAddress, *proxy.ProxySOCKSPort),
+				lockToken:    lockToken,
 			}, nil
 		}
-		// If the lock is not successful, try the next proxy container
+		// The proxy is used by another scrape, try the next one
 	}
 
-	// If no proxy container could be locked, return an empty string
 	return ProxyContainer{}, fmt.Errorf("no available proxy container")
 }
 
-// ReleaseProxyContainer releases the lock on a proxy container
-func (s *Scraper) ReleaseProxyContainer(containerID string) {
-	lockKey := "proxy-usage:" + containerID
-	log.Printf("Releasing lock on proxy container %s", lockKey)
-	s.Redis.ReleaseLock(lockKey)
+// HoldProxyContainer renews the lock on the proxy container until ctx is cancelled,
+// so the lock lasts as long as the scrape does
+func (s *Scraper) HoldProxyContainer(ctx context.Context, proxy ProxyContainer) {
+	ticker := time.NewTicker(proxyLockRenewInterval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+
+		case <-ticker.C:
+			renewed, err := s.Redis.RenewLock(proxyLockKey(proxy.ContainerID), proxy.lockToken, proxyLockTTL)
+			if err != nil {
+				// Keep trying, the lock only expires after several failed renewals
+				log.Printf("fail to renew lock on proxy container %s: %v", proxy.ContainerID, err)
+				continue
+			}
+			if !renewed {
+				log.Printf("lost the lock on proxy container %s, another scrape may be using it", proxy.ContainerID)
+				return
+			}
+		}
+	}
+}
+
+// ReleaseProxyContainer releases the lock on a proxy container, if this scrape still holds it
+func (s *Scraper) ReleaseProxyContainer(proxy ProxyContainer) {
+	released, err := s.Redis.ReleaseLock(proxyLockKey(proxy.ContainerID), proxy.lockToken)
+	if err != nil {
+		log.Printf("fail to release lock on proxy container %s: %v", proxy.ContainerID, err)
+		return
+	}
+	if !released {
+		log.Printf("lock on proxy container %s was no longer held by this scrape", proxy.ContainerID)
+		return
+	}
+	log.Printf("released lock on proxy container %s", proxy.ContainerID)
 }
