@@ -31,6 +31,18 @@ jobs:
       packages: write
       contents: read
 
+    # Real Redis for the lock tests, the same image as production
+    services:
+      redis:
+        image: redis:8.10.3-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
     steps:
       # Clone the repo
       - name: Check Out Repo
@@ -47,6 +59,12 @@ jobs:
       - name: Check for Known Vulnerabilities
         working-directory: './container_provisioner'
         run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
+
+      - name: Test Go Application
+        working-directory: './container_provisioner'
+        env:
+          TEST_REDIS_ADDR: localhost:6379
+        run: go test -race ./...
 
       - name: Build Go Application
         working-directory: './container_provisioner'
