@@ -1,5 +1,5 @@
 # Base image
-FROM alpine:latest
+FROM alpine:3.24.3
 
 RUN apk add openvpn \
     openresolv \
