@@ -46,3 +46,13 @@ updates:
       interval: 'daily'
     assignees:
       - 'algo7'
+
+  - package-ecosystem: 'docker-compose'
+    # Images in every docker-compose file
+    directories:
+      - '/container_provisioner'
+      - '/proxy_pool'
+    schedule:
+      interval: 'daily'
+    assignees:
+      - 'algo7'
