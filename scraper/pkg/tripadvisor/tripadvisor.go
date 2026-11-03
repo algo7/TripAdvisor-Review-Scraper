@@ -16,114 +16,12 @@ import (
 	"github.com/algo7/TripAdvisor-Review-Scraper/scraper/pkg/utils"
 )
 
-// MakeRequest is a function that sends a POST request to the TripAdvisor GraphQL endpoint
-func MakeRequest(client *http.Client, queryID string, queryType string, language []string, locationID uint32, geoId uint32, offset uint32, limit uint32) (responses *Responses, err error) {
+// MakeRequest is a function that sends a POST request to the TripAdvisor GraphQL endpoint.
+// language is a single language tag (e.g. "en"); an empty string requests reviews in all languages.
+func MakeRequest(client *http.Client, queryID string, queryType string, language string, locationID uint32, offset uint32, limit uint32) (responses *Responses, err error) {
 
-	/*
-	* Prepare the request body
-	 */
-	requestFilter := Filter{
-		Axis:       "LANGUAGE",
-		Selections: language,
-	}
+	request := BuildRequest(queryID, queryType, language, locationID, offset, limit)
 
-	requestExtensions := Extensions{
-		PreRegisteredQueryID: queryID,
-	}
-
-	var request any
-
-	if queryType == "AIRLINE" {
-		request = BatchRequests{{
-			Variables: AirlineVariables{
-				LocationID:     locationID,
-				Offset:         offset,
-				Filters:        Filters{requestFilter},
-				Limit:          limit,
-				NeedKeywords:   true,
-				PrefsCacheKey:  fmt.Sprintf("locationReviewPrefs_%d", locationID),
-				KeywordVariant: "location_keywords_v2_llr_order_30_en",
-				InitialPrefs:   struct{}{},
-				FilterCacheKey: nil,
-				Prefs:          nil,
-			},
-			Extensions: requestExtensions,
-		}}
-
-	} else {
-		requestVariables := Variables{
-			LocationID:           locationID,
-			Offset:               offset,
-			Filters:              Filters{requestFilter},
-			Limit:                limit,
-			SortType:             nil,
-			SortBy:               "SERVER_DETERMINED",
-			Language:             language[0],
-			DoMachineTranslation: true,
-			PhotosPerReviewLimit: 7,
-		}
-
-		routeOffsets := []any{0} // first: number 0
-		for i := uint32(1); i <= 7; i++ {
-			routeOffsets = append(routeOffsets, fmt.Sprintf("r%d", i*ReviewLimit)) // rest: "r10", "r20"...
-		}
-
-		var pageName string
-		switch queryType {
-		case "HOTEL":
-			pageName = "Hotel_Review"
-		case "ATTRACTION":
-			pageName = "Attraction_Review"
-		case "RESTO":
-			pageName = "Restaurant_Review"
-		case "AIRLINE":
-			pageName = "Airline_Review"
-		}
-
-		var routes []RouteRequest
-		for _, off := range routeOffsets {
-			routes = append(routes, RouteRequest{
-				Fragment: "",
-				Page:     pageName, // adjust based on queryType
-				Params: RouteParams{
-					GeoID:    geoId, // you'll need geoId passed in or parsed from URL
-					DetailID: locationID,
-					Offset:   off,
-				},
-			})
-		}
-
-		if queryType == "RESTO" {
-			// Batch both into a single request array
-			request = BatchRequests{
-				{
-					Variables:  requestVariables,
-					Extensions: requestExtensions,
-				},
-				{
-					Variables:  RoutesVariables{RoutesRequest: routes},
-					Extensions: Extensions{PreRegisteredQueryID: queryID},
-				},
-				// Query for fetching Michelin reviews for restaurants
-				{
-					Variables:  MichelinVariables{IDs: []uint32{locationID}},
-					Extensions: Extensions{PreRegisteredQueryID: MichelinQueryID},
-				},
-			}
-		} else {
-			// Batch both into a single request array
-			request = BatchRequests{
-				{
-					Variables:  requestVariables,
-					Extensions: requestExtensions,
-				},
-				{
-					Variables:  RoutesVariables{RoutesRequest: routes},
-					Extensions: Extensions{PreRegisteredQueryID: queryID},
-				},
-			}
-		}
-	}
 	// Marshal the request body into JSON
 	jsonPayload, err := json.Marshal(request)
 	if err != nil {
@@ -175,6 +73,10 @@ func MakeRequest(client *http.Client, queryID string, queryType string, language
 		return nil, fmt.Errorf("error reading response body: %w", err)
 	}
 
+	if os.Getenv("DEBUG") == "true" {
+		fmt.Printf("Raw response:\n%s\n", string(responseBody))
+	}
+
 	// Marshal the response body into the Response struct
 	responseData := Responses{}
 
@@ -185,11 +87,89 @@ func MakeRequest(client *http.Client, queryID string, queryType string, language
 		return nil, fmt.Errorf("error unmarshalling response body: %w", err)
 	}
 
-	if os.Getenv("DEBUG") == "true" {
-		fmt.Printf("Raw respsone:\n%s\n", string(responseBody))
+	if err := ResponseError(&responseData); err != nil {
+		return nil, err
 	}
 
-	return &responseData, err
+	return &responseData, nil
+}
+
+// BuildRequest builds the batched GraphQL request body for the given location type.
+func BuildRequest(queryID string, queryType string, language string, locationID uint32, offset uint32, limit uint32) BatchRequests {
+
+	if queryType == "AIRLINE" {
+		selections := []string{}
+		if language != "" {
+			selections = append(selections, language)
+		}
+		return BatchRequests{{
+			Variables: AirlineVariables{
+				LocationID:     locationID,
+				Offset:         offset,
+				Filters:        Filters{{Axis: "LANGUAGE", Selections: selections}},
+				Limit:          limit,
+				NeedKeywords:   true,
+				PrefsCacheKey:  fmt.Sprintf("locationReviewPrefs_%d", locationID),
+				KeywordVariant: "location_keywords_v2_llr_order_30_en",
+				InitialPrefs:   struct{}{},
+				FilterCacheKey: nil,
+				Prefs:          nil,
+			},
+			Extensions: Extensions{PreRegisteredQueryID: queryID},
+		}}
+	}
+
+	filterOptions := FilterOptions{}
+	if language != "" {
+		filterOptions.Language = &LanguageFilter{LanguageTag: language}
+	}
+
+	request := BatchRequests{{
+		Variables: Variables{
+			ClientID:      GetClientID(queryType),
+			LocationID:    locationID,
+			SortBy:        "SERVER_DETERMINED",
+			Limit:         limit,
+			Offset:        offset,
+			FilterOptions: filterOptions,
+			Locale:        Locale,
+		},
+		Extensions: Extensions{PreRegisteredQueryID: queryID},
+	}}
+
+	// Query for fetching Michelin awards for restaurants
+	if queryType == "RESTO" {
+		request = append(request, BatchRequest{
+			Variables:  MichelinVariables{IDs: []uint32{locationID}},
+			Extensions: Extensions{PreRegisteredQueryID: MichelinQueryID},
+		})
+	}
+
+	return request
+}
+
+// ResponseError returns an error if any response in the batch carries a GraphQL error
+// (e.g. PersistedQueryNotFound when a query ID is retired) or a ReviewsProxy error
+// (e.g. INVALID_REQUEST). Without this check such failures look like "no reviews found".
+func ResponseError(responses *Responses) error {
+	if responses == nil {
+		return nil
+	}
+	for _, resp := range *responses {
+		if len(resp.Errors) > 0 {
+			msgs := make([]string, 0, len(resp.Errors))
+			for _, e := range resp.Errors {
+				msgs = append(msgs, e.Message)
+			}
+			return fmt.Errorf("graphql error: %s", strings.Join(msgs, "; "))
+		}
+		for _, rp := range resp.Data.ReviewsProxy {
+			if rp.Error != nil {
+				return fmt.Errorf("reviews API error: %s: %s", rp.Error.Reason, rp.Error.Details)
+			}
+		}
+	}
+	return nil
 }
 
 // GetQueryID is a function that returns the query ID for the given query type
@@ -202,26 +182,96 @@ func GetQueryID(queryType string) (queryID string) {
 		return AirlineQueryID
 	case "ATTRACTION":
 		return AttractionQueryID
+	case "RESTO":
+		return RestaurantQueryID
 	default:
 		return HotelQueryID
 	}
 }
 
+// GetClientID returns the clientId the review query expects for the given query type.
+func GetClientID(queryType string) string {
+	switch queryType {
+	case "ATTRACTION":
+		return AttractionClientID
+	case "RESTO":
+		return RestaurantClientID
+	default:
+		return HotelClientID
+	}
+}
+
 // ExtractReviews extracts the review slice from API responses,
-// handling both the ReviewsProxy path (airlines) and the Locations path (hotels/restaurants/attractions).
+// handling both the ReviewsProxy path (hotels/restaurants/attractions) and the Locations path (airlines).
+// Reviews from the ReviewsProxy path are normalized so CreatedDate, TripInfo.TripType and
+// TripInfo.StayDate are populated the same way as for airlines.
 func ExtractReviews(responses *Responses) []Review {
 	if responses == nil {
 		return nil
 	}
 	for _, resp := range *responses {
 		if len(resp.Data.ReviewsProxy) > 0 {
-			return resp.Data.ReviewsProxy[0].Reviews
+			reviews := resp.Data.ReviewsProxy[0].Result.Reviews
+			for i := range reviews {
+				NormalizeReview(&reviews[i])
+			}
+			return reviews
 		}
 		if len(resp.Data.Locations) > 0 {
 			return resp.Data.Locations[0].ReviewListPage.Reviews
 		}
 	}
 	return nil
+}
+
+// NormalizeReview fills the legacy fields (CreatedDate, TripInfo.TripType, TripInfo.StayDate)
+// from the fields returned by the ReviewsProxy_getPublishedReviewsForLocation query.
+// Fields that are already set are left untouched.
+func NormalizeReview(r *Review) {
+	if r.CreatedDate == "" && len(r.SubmittedDateTime) >= 10 {
+		r.CreatedDate = r.SubmittedDateTime[:10]
+	}
+	if r.TripInfo.TripType == "" {
+		r.TripInfo.TripType = r.TripInfo.PartyType
+		// The old API returned "NONE" when the reviewer gave trip details but no trip type;
+		// the new API returns a null partyType alongside the stay/visit date.
+		if r.TripInfo.TripType == "" && r.TripInfo.StayOrVisitDate != nil {
+			r.TripInfo.TripType = "NONE"
+		}
+	}
+	if r.TripInfo.StayDate == "" && r.TripInfo.StayOrVisitDate != nil {
+		d := r.TripInfo.StayOrVisitDate
+		if d.Year > 0 && d.Month > 0 {
+			if d.Day != nil && *d.Day > 0 {
+				r.TripInfo.StayDate = fmt.Sprintf("%04d-%02d-%02d", d.Year, d.Month, *d.Day)
+			} else {
+				r.TripInfo.StayDate = fmt.Sprintf("%04d-%02d", d.Year, d.Month)
+			}
+		}
+	}
+	if r.UserProfile.ID == "" {
+		r.UserProfile.ID = r.UserProfile.UserID
+	}
+	if r.Location.Name == "" && r.LocationNode != nil {
+		info := r.LocationNode.Detail.Info
+		r.Location.LocationID = r.LocationID
+		r.Location.Name = info.LocalizedName
+		r.Location.PlaceType = info.PlaceType
+		r.Location.URL = info.PrimaryRoute.URL
+	}
+}
+
+// DedupeReviews returns the reviews whose ID has not been seen yet and records their IDs in seen.
+func DedupeReviews(reviews []Review, seen map[int]struct{}) []Review {
+	unique := make([]Review, 0, len(reviews))
+	for _, r := range reviews {
+		if _, ok := seen[r.ID]; ok {
+			continue
+		}
+		seen[r.ID] = struct{}{}
+		unique = append(unique, r)
+	}
+	return unique
 }
 
 // ExtractTotalCount extracts the total review count from API responses.
@@ -231,7 +281,7 @@ func ExtractTotalCount(responses *Responses) int {
 	}
 	for _, resp := range *responses {
 		if len(resp.Data.ReviewsProxy) > 0 {
-			return resp.Data.ReviewsProxy[0].TotalCount
+			return resp.Data.ReviewsProxy[0].Result.TotalCount
 		}
 		if len(resp.Data.Locations) > 0 {
 			return resp.Data.Locations[0].ReviewListPage.TotalCount
@@ -275,14 +325,18 @@ func CSVHeaders(includeMichelin bool) []string {
 // ReviewToCSVRow converts a single Review into a CSV row.
 // When michelin is non-nil, Michelin award columns are appended.
 func ReviewToCSVRow(r Review, locationName string, michelin *MichelinInfo) []string {
+	var year, month, day string
+	if len(r.CreatedDate) >= 10 {
+		year, month, day = r.CreatedDate[0:4], r.CreatedDate[5:7], r.CreatedDate[8:10]
+	}
 	row := []string{
 		locationName,
 		r.Title,
 		r.Text,
 		strconv.Itoa(r.Rating),
-		r.CreatedDate[0:4],
-		r.CreatedDate[5:7],
-		r.CreatedDate[8:10],
+		year,
+		month,
+		day,
 		r.TripInfo.TripType,
 		r.TripInfo.StayDate,
 	}
@@ -298,24 +352,20 @@ func ReviewToCSVRow(r Review, locationName string, michelin *MichelinInfo) []str
 	return row
 }
 
-// FetchReviewCount fetches the review count for the given location ID and query type.
-func FetchReviewCount(client *http.Client, locationID uint32, geoID uint32, queryType string, languages []string) (int, error) {
+// FetchReviewCount fetches the review count for the given location ID, query type and language.
+// A count of 0 is not an error: a location can have no reviews in a given language.
+func FetchReviewCount(client *http.Client, locationID uint32, queryType string, language string) (int, error) {
 
 	// Get the query ID for the given query type.
 	queryID := GetQueryID(queryType)
 
 	// Make the request to the TripAdvisor GraphQL endpoint.
-	responses, err := MakeRequest(client, queryID, queryType, languages, locationID, geoID, 0, 1)
+	responses, err := MakeRequest(client, queryID, queryType, language, locationID, 0, 1)
 	if err != nil {
 		return 0, fmt.Errorf("error making request: %w", err)
 	}
 
-	count := ExtractTotalCount(responses)
-	if count == 0 {
-		return 0, fmt.Errorf("no reviews found for location ID %d", locationID)
-	}
-
-	return count, nil
+	return ExtractTotalCount(responses), nil
 }
 
 // CalculateIterations is a function that calculates the number of iterations required to fetch all reviews

@@ -32,7 +32,7 @@ func main() {
 	log.Printf("Location Type: %s", queryType)
 
 	// Parse the location ID and location name from the URL
-	locationID, geoID, locationName, err := tripadvisor.ParseURL(config.LocationURL, queryType)
+	locationID, _, locationName, err := tripadvisor.ParseURL(config.LocationURL, queryType)
 	if err != nil {
 		log.Fatalf("Error parsing URL: %v", err)
 	}
@@ -64,15 +64,70 @@ func main() {
 		log.Printf("Proxy IP: %s", ip)
 	}
 
-	// Fetch the review count for the given location ID
-	reviewCount, err := tripadvisor.FetchReviewCount(client, locationID, geoID, queryType, config.Languages)
-	if err != nil {
-		log.Fatalf("Error fetching review count: %v", err)
+	// Create a slice to store the data to be written to the CSV file
+	dataToWrite := [][]string{}
+
+	// The review API accepts a single language per request, so scrape each language separately.
+	// Each language also returns machine translations of reviews written in other languages,
+	// so reviews are deduplicated by ID, keeping the version from the first language listed.
+	seenReviews := make(map[int]struct{})
+	totalReviews := 0
+	for _, language := range config.Languages {
+
+		// Fetch the review count for the given location ID and language
+		reviewCount, err := tripadvisor.FetchReviewCount(client, locationID, queryType, language)
+		if err != nil {
+			log.Fatalf("Error fetching review count for language %q: %v", language, err)
+		}
+		log.Printf("Review count for language %q: %d", language, reviewCount)
+		if reviewCount == 0 {
+			continue
+		}
+		totalReviews += reviewCount
+
+		// Calculate the number of iterations required to fetch all reviews
+		iterations := tripadvisor.CalculateIterations(uint32(reviewCount))
+		log.Printf("Total Iterations for language %q: %d", language, iterations)
+
+		// Scrape the reviews
+		for i := range iterations {
+
+			// Introduce random delay to avoid getting blocked. The delay is between 1 and 5 seconds
+			delay := rand.Intn(5) + 1
+			log.Printf("Language %q, iteration: %d. Delaying for %d seconds", language, i, delay)
+			time.Sleep(time.Duration(delay) * time.Second)
+
+			// Calculate the offset for the current iteration
+			offset := tripadvisor.CalculateOffset(i)
+
+			// Make the request to the TripAdvisor GraphQL endpoint
+			resp, err := tripadvisor.MakeRequest(client, queryID, queryType, language, locationID, offset, tripadvisor.ReviewLimit)
+			if err != nil {
+				log.Fatalf("Error making request at iteration %d: %v", i, err)
+			}
+
+			// Extract reviews using the shared helper (handles both ReviewsProxy and Locations paths)
+			reviews := tripadvisor.DedupeReviews(tripadvisor.ExtractReviews(resp), seenReviews)
+
+			// Extract Michelin info once from the first response that contains it
+			if michelinInfo == nil {
+				michelinInfo = tripadvisor.ExtractMichelinInfo(resp)
+			}
+
+			// Append the reviews to the allReviews slice
+			allReviews = append(allReviews, reviews...)
+
+			if config.FileType == "csv" {
+				for _, r := range reviews {
+					dataToWrite = append(dataToWrite, tripadvisor.ReviewToCSVRow(r, locationName, michelinInfo))
+				}
+			}
+		}
 	}
-	if reviewCount == 0 {
-		log.Fatalf("No reviews found for location ID %d", locationID)
+
+	if totalReviews == 0 {
+		log.Fatalf("No reviews found for location ID %d in languages %v", locationID, config.Languages)
 	}
-	log.Printf("Review count: %d", reviewCount)
 
 	// Create a file to save the reviews data
 	fileName := fmt.Sprintf("reviews.%s", config.FileType)
@@ -81,48 +136,6 @@ func main() {
 		log.Fatalf("Error creating file %s: %v", fileName, err)
 	}
 	defer fileHandle.Close()
-
-	// Calculate the number of iterations required to fetch all reviews
-	iterations := tripadvisor.CalculateIterations(uint32(reviewCount))
-	log.Printf("Total Iterations: %d", iterations)
-
-	// Create a slice to store the data to be written to the CSV file
-	dataToWrite := make([][]string, 0, reviewCount)
-
-	// Scrape the reviews
-	for i := range iterations {
-
-		// Introduce random delay to avoid getting blocked. The delay is between 1 and 5 seconds
-		delay := rand.Intn(5) + 1
-		log.Printf("Iteration: %d. Delaying for %d seconds", i, delay)
-		time.Sleep(time.Duration(delay) * time.Second)
-
-		// Calculate the offset for the current iteration
-		offset := tripadvisor.CalculateOffset(i)
-
-		// Make the request to the TripAdvisor GraphQL endpoint
-		resp, err := tripadvisor.MakeRequest(client, queryID, queryType, config.Languages, locationID, geoID, offset, 20)
-		if err != nil {
-			log.Fatalf("Error making request at iteration %d: %v", i, err)
-		}
-
-		// Extract reviews using the shared helper (handles both ReviewsProxy and Locations paths)
-		reviews := tripadvisor.ExtractReviews(resp)
-
-		// Extract Michelin info once from the first response that contains it
-		if michelinInfo == nil {
-			michelinInfo = tripadvisor.ExtractMichelinInfo(resp)
-		}
-
-		// Append the reviews to the allReviews slice
-		allReviews = append(allReviews, reviews...)
-
-		if config.FileType == "csv" {
-			for _, r := range reviews {
-				dataToWrite = append(dataToWrite, tripadvisor.ReviewToCSVRow(r, locationName, michelinInfo))
-			}
-		}
-	}
 
 	if config.FileType == "csv" {
 		writer := csv.NewWriter(fileHandle)
@@ -150,6 +163,6 @@ func main() {
 		}
 	}
 
-	log.Printf("Data written to %s", fileName)
+	log.Printf("%d unique reviews written to %s", len(allReviews), fileName)
 	log.Println("Scraping completed")
 }
