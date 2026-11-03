@@ -133,3 +133,6 @@ main
 coverage.*
 *.coverprofile
 profile.cov
+
+# Build artifacts
+builds/
