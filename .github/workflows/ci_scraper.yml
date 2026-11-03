@@ -38,6 +38,11 @@ jobs:
           cache-dependency-path: './scraper/go.sum'
       - run: go version
 
+      # Fails the job when the code calls a function with a known vulnerability
+      - name: Check for Known Vulnerabilities
+        working-directory: './scraper'
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
+
       - name: Test Go Application
         working-directory: './scraper'
         run: make test

@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'container_provisioner/**'
+      - '.github/workflows/ci_container_provisioner.yml'
 
 # Global variables
 env:
@@ -36,6 +37,11 @@ jobs:
           go-version-file: './container_provisioner/go.mod'
           cache-dependency-path: './container_provisioner/go.sum'
       - run: go version
+
+      # Fails the job when the code calls a function with a known vulnerability
+      - name: Check for Known Vulnerabilities
+        working-directory: './container_provisioner'
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
 
       - name: Build Go Application
         working-directory: './container_provisioner'
