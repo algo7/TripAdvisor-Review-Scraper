@@ -12,7 +12,6 @@ import (
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/database"
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/scrape"
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/storage"
-	"github.com/gofiber/fiber/v2"
 )
 
 const containerImage = "ghcr.io/algo7/tripadvisor-review-scraper/scraper:latest"
@@ -53,36 +52,34 @@ func main() {
 	// Load the API routes
 	app := api.Router(scraper)
 
-	if !fiber.IsChild() {
-		// Try to acquire the lock for pullig container image
-		lockSuccess := r.SetLock(imageLockKey)
-		if lockSuccess {
-			err = cm.PullImage()
-			r.ReleaseLock(imageLockKey)
-			if err != nil {
-				log.Fatalf("fail to pull the scraper image: %s", err)
-			}
-		} else {
-			log.Println("image pull lock not acquired, skipping pull")
+	// Try to acquire the lock for pullig container image
+	lockSuccess := r.SetLock(imageLockKey)
+	if lockSuccess {
+		err = cm.PullImage()
+		r.ReleaseLock(imageLockKey)
+		if err != nil {
+			log.Fatalf("fail to pull the scraper image: %s", err)
 		}
-
-		// Set up signal handling to catch SIGINT and SIGTERM
-		sigCh := make(chan os.Signal, 1)
-		signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
-
-		// Launch a goroutine that will perform cleanup when a signal is received
-		go func() {
-			// sig := <-sigCh
-			<-sigCh
-			err := cleanupScraperContainers(r, cm)
-			if err != nil {
-				log.Printf("cleanup failed: %v", err)
-			}
-			cm.Close()
-			app.Shutdown() // gracefully stops the listener
-			// os.Exit(int(sig.(syscall.Signal)))
-		}()
+	} else {
+		log.Println("image pull lock not acquired, skipping pull")
 	}
+
+	// Set up signal handling to catch SIGINT and SIGTERM
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+
+	// Launch a goroutine that will perform cleanup when a signal is received
+	go func() {
+		// sig := <-sigCh
+		<-sigCh
+		err := cleanupScraperContainers(r, cm)
+		if err != nil {
+			log.Printf("cleanup failed: %v", err)
+		}
+		cm.Close()
+		app.Shutdown() // gracefully stops the listener
+		// os.Exit(int(sig.(syscall.Signal)))
+	}()
 
 	err = app.Listen(":3000")
 	if err != nil {

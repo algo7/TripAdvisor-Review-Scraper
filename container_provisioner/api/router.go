@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/scrape"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 // Router is the main router for the API

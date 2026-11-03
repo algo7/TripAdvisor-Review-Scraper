@@ -1,9 +1,9 @@
 package api
 
 import (
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/healthcheck"
-	"github.com/gofiber/template/html/v2"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/healthcheck"
+	"github.com/gofiber/template/html/v3"
 )
 
 // ServerInstantiate is a function to instantiate the web server
@@ -20,7 +20,6 @@ func ServerInstantiate() *fiber.App {
 	engine.Reload(false)
 	// Custom config
 	app := fiber.New(fiber.Config{
-		Prefork:       true,
 		CaseSensitive: true,
 		StrictRouting: true,
 		ServerHeader:  "Algo7 TripAdvisor Scraper",
@@ -28,8 +27,9 @@ func ServerInstantiate() *fiber.App {
 		Views:         engine,
 	})
 
-	// Healthcheck middleware /livez and /readyz routes
-	app.Use(healthcheck.New())
+	// Healthcheck /livez and /readyz routes
+	app.Get(healthcheck.LivenessEndpoint, healthcheck.New())
+	app.Get(healthcheck.ReadinessEndpoint, healthcheck.New())
 
 	return app
 }
