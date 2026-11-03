@@ -2,7 +2,7 @@
 
 ## Build Instructions
 
-This scraper is written in Go and requires Go +v1.21 to build.
+This scraper is written in Go and requires Go v1.27+ to build.
 
 You can build the project in 2 ways:
 

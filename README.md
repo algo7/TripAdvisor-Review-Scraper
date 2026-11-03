@@ -27,7 +27,7 @@ A simple scraper for TripAdvisor (Hotel, Restaurant, Airline) reviews.
 
 ## Requirements
 
-1. Go v1.26+
+1. Go v1.27+
 2. Make [Optional]
 3. Docker [Optional]
 4. Docker Compose [Optional]
