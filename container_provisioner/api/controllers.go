@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -136,6 +137,8 @@ func (h *Handler) postProvision(c fiber.Ctx) error {
 	// Create the container
 	containerID, err := h.Scraper.CM.CreateContainer(scrapeConfig)
 	if err != nil {
+		// No scrape will run, so free the proxy container for the next request
+		h.Scraper.ReleaseProxyContainer(proxyContainers)
 
 		return c.Render("submission", fiber.Map{
 			"Title":      "Algo7 TripAdvisor Scraper",
@@ -146,8 +149,14 @@ func (h *Handler) postProvision(c fiber.Ctx) error {
 
 	// Start the scraping container via goroutine
 	go func() {
+		// Keep the proxy container locked for as long as the scrape runs
+		ctx, stopHolding := context.WithCancel(context.Background())
+		go h.Scraper.HoldProxyContainer(ctx, proxyContainers)
+
 		h.Scraper.Scrape(uploadIdentifier, locationName, containerID)
-		h.Scraper.ReleaseProxyContainer(proxyContainers.ContainerID)
+
+		stopHolding()
+		h.Scraper.ReleaseProxyContainer(proxyContainers)
 	}()
 
 	return c.Render("submission", fiber.Map{

@@ -16,8 +16,6 @@ import (
 
 const containerImage = "ghcr.io/algo7/tripadvisor-review-scraper/scraper:latest"
 
-var imageLockKey = fmt.Sprintf("image-pull:%s", containerImage)
-
 func main() {
 
 	// Check if the R2_URL environment variable is set
@@ -52,16 +50,10 @@ func main() {
 	// Load the API routes
 	app := api.Router(scraper)
 
-	// Try to acquire the lock for pullig container image
-	lockSuccess := r.SetLock(imageLockKey)
-	if lockSuccess {
-		err = cm.PullImage()
-		r.ReleaseLock(imageLockKey)
-		if err != nil {
-			log.Fatalf("fail to pull the scraper image: %s", err)
-		}
-	} else {
-		log.Println("image pull lock not acquired, skipping pull")
+	// Pull the scraper image
+	err = cm.PullImage()
+	if err != nil {
+		log.Fatalf("fail to pull the scraper image: %s", err)
 	}
 
 	// Set up signal handling to catch SIGINT and SIGTERM
@@ -72,7 +64,7 @@ func main() {
 	go func() {
 		// sig := <-sigCh
 		<-sigCh
-		err := cleanupScraperContainers(r, cm)
+		err := cleanupScraperContainers(cm)
 		if err != nil {
 			log.Printf("cleanup failed: %v", err)
 		}
@@ -88,7 +80,7 @@ func main() {
 }
 
 // cleanupScraperContainers removes all the running scraper containers
-func cleanupScraperContainers(r *database.RedisClient, c *containers.ContainerManager) error {
+func cleanupScraperContainers(c *containers.ContainerManager) error {
 
 	runningScrapers, err := c.ListContainersByType("scraper")
 	if err != nil {
@@ -96,28 +88,12 @@ func cleanupScraperContainers(r *database.RedisClient, c *containers.ContainerMa
 	}
 
 	for _, container := range runningScrapers {
-
-		lockKey := "container-cleanup:" + *container.ContainerID
-		lockSuccess := r.SetLock(lockKey)
-		if !lockSuccess {
-			continue // skip to the next iteration of the loop
-		}
-		// If lockSuccess is true, we have the lock, so we can proceed with the cleanup
 		err := c.RemoveContainer(*container.ContainerID)
 		if err != nil {
 			log.Printf("fail to remove container %s: %v", *container.ContainerID, err)
 		} else {
 			log.Printf("successfully removed container %s", *container.ContainerID)
 		}
-
-		// Release the lock after cleanup
-		err = r.ReleaseLock(lockKey)
-		if err != nil {
-			log.Printf("fail to release lock for container %s: %v", *container.ContainerID, err)
-		} else {
-			log.Printf("successfully released lock for container %s", *container.ContainerID)
-		}
-
 	}
 
 	return nil

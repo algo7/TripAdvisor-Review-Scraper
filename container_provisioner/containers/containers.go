@@ -202,7 +202,13 @@ func (c *ContainerManager) ListContainersByType(containerType string) ([]Contain
 			// If the container type is "proxy", only list proxy containers
 		case "proxy":
 			if taskOwner == "PROXY" {
-				ipAddress := containerInfo.NetworkSettings.Networks["scraper_vpn"].IPAddress.String()
+				// Empty when the proxy isn't attached to the scraper_vpn network
+				ipAddress := ""
+				if containerInfo.NetworkSettings != nil {
+					if endpoint := containerInfo.NetworkSettings.Networks["scraper_vpn"]; endpoint != nil && endpoint.IPAddress.IsValid() {
+						ipAddress = endpoint.IPAddress.String()
+					}
+				}
 				containers = append(containers, Container{
 					ContainerID:    &containerID,
 					VPNRegion:      &vpnRegion,
