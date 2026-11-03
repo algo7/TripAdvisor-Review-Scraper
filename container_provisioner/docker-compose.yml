@@ -37,7 +37,7 @@ services:
   # Service name
   redis:
     # Image name
-    image: redis:alpine
+    image: redis:8.10.3-alpine
     # Map the ports | bind to localhost
     ports:
       # Port in the container
