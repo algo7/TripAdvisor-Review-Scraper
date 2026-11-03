@@ -33,6 +33,7 @@ The scraper needs a single environment variable to run: `LOCATION_URL`, which is
 Note that the URL has to be from  `https://www.tripadvisor.com` and not other TripAdvisor domains such as `.fr`, `.ch`, `.de`, etc.
 
 The scraper may use a `LANGUAGES` environment variable to specify the languages in which to scrape the reviews. The languages should be | and in the format `en|fr|de|es|pt`. If the `LANGUAGES` environment variable is not set, the scraper will default to English.
+Each language is scraped separately. TripAdvisor also returns machine translations of reviews written in other languages, so a review may be available in several of the selected languages; it is only written once, in the first language listed that contains it (check `translationInfo` in the JSON output for the original language). Not every review has a translation, so with several languages the output can mix languages.
 
 The scraper may use a `FILETYPE` environment variable to specify the file type in which to save the scraped data. The file type should be `json` or `csv`. If the `FILETYPE` environment variable is not set, the scraper will default to `csv`.  
 The json filetype will be more verbose and will contain all the data scraped from the TripAdvisor page. The csv filetype will contain only the review text and the review rating.

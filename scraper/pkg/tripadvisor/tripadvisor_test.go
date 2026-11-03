@@ -1,6 +1,7 @@
 package tripadvisor
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -157,6 +158,11 @@ func TestGetQueryID(t *testing.T) {
 			expected:  AttractionQueryID,
 		},
 		{
+			name:      "restaurant returns restaurant query ID",
+			queryType: "RESTO",
+			expected:  RestaurantQueryID,
+		},
+		{
 			name:      "unknown type defaults to hotel query ID",
 			queryType: "UNKNOWN",
 			expected:  HotelQueryID,
@@ -294,10 +300,7 @@ func TestReviewToCSVRow(t *testing.T) {
 				Text:        "Loved it",
 				Rating:      5,
 				CreatedDate: "2025-06-15",
-				TripInfo: struct {
-					StayDate string `json:"stayDate"`
-					TripType string `json:"tripType"`
-				}{
+				TripInfo: TripInfo{
 					StayDate: "2025-06-01",
 					TripType: "COUPLES",
 				},
@@ -313,10 +316,7 @@ func TestReviewToCSVRow(t *testing.T) {
 				Text:        "Excellent food",
 				Rating:      4,
 				CreatedDate: "2024-12-25",
-				TripInfo: struct {
-					StayDate string `json:"stayDate"`
-					TripType string `json:"tripType"`
-				}{
+				TripInfo: TripInfo{
 					StayDate: "2024-12-20",
 					TripType: "FAMILY",
 				},
@@ -336,10 +336,7 @@ func TestReviewToCSVRow(t *testing.T) {
 				Text:        "Best meal ever",
 				Rating:      5,
 				CreatedDate: "2025-01-10",
-				TripInfo: struct {
-					StayDate string `json:"stayDate"`
-					TripType string `json:"tripType"`
-				}{
+				TripInfo: TripInfo{
 					StayDate: "2025-01-05",
 					TripType: "SOLO",
 				},
@@ -367,6 +364,19 @@ func TestReviewToCSVRow(t *testing.T) {
 		},
 	}
 
+	tests = append(tests, struct {
+		name         string
+		review       Review
+		locationName string
+		michelin     *MichelinInfo
+		expected     []string
+	}{
+		name:         "review with missing date does not panic",
+		review:       Review{Title: "No date", Text: "x", Rating: 2},
+		locationName: "Hotel",
+		expected:     []string{"Hotel", "No date", "x", "2", "", "", "", "", ""},
+	})
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := ReviewToCSVRow(tt.review, tt.locationName, tt.michelin)
@@ -375,7 +385,31 @@ func TestReviewToCSVRow(t *testing.T) {
 	}
 }
 
+func TestGetClientID(t *testing.T) {
+	assert.Equal(t, HotelClientID, GetClientID("HOTEL"))
+	assert.Equal(t, AttractionClientID, GetClientID("ATTRACTION"))
+	assert.Equal(t, RestaurantClientID, GetClientID("RESTO"))
+	assert.Equal(t, HotelClientID, GetClientID(""))
+}
+
+// reviewsProxyResponse builds a Response carrying a ReviewsProxy_getPublishedReviewsForLocation result.
+func reviewsProxyResponse(total int, reviews ...Review) Response {
+	rp := ReviewsProxyResult{}
+	rp.Result.TotalCount = total
+	rp.Result.Reviews = reviews
+	return Response{Data: ResponseData{ReviewsProxy: []ReviewsProxyResult{rp}}}
+}
+
+// locationsResponse builds a Response carrying an airline locations result.
+func locationsResponse(total int, reviews ...Review) Response {
+	loc := LocationReviews{LocationID: 12345}
+	loc.ReviewListPage.TotalCount = total
+	loc.ReviewListPage.Reviews = reviews
+	return Response{Data: ResponseData{Locations: []LocationReviews{loc}}}
+}
+
 func TestExtractReviews(t *testing.T) {
+	day := 7
 	tests := []struct {
 		name      string
 		responses *Responses
@@ -392,91 +426,35 @@ func TestExtractReviews(t *testing.T) {
 			expected:  nil,
 		},
 		{
-			name: "extracts from Locations path",
-			responses: &Responses{
-				{
-					Data: struct {
-						ReviewsProxy []struct {
-							TotalCount        int      `json:"totalCount"`
-							Reviews           []Review `json:"reviews"`
-							ReviewListOptions struct {
-								SortType string `json:"sortType"`
-								SortBy   string `json:"sortBy"`
-							} `json:"reviewListOptions"`
-						} `json:"ReviewsProxy_getReviewListPageForLocation"`
-						Locations []struct {
-							LocationID     int `json:"locationId"`
-							ReviewListPage struct {
-								TotalCount int      `json:"totalCount"`
-								Reviews    []Review `json:"reviews"`
-							} `json:"reviewListPage"`
-						} `json:"locations"`
-						Michelin []MichelinInfo `json:"RestaurantAwards_getRestaurantAwards"`
-					}{
-						Locations: []struct {
-							LocationID     int `json:"locationId"`
-							ReviewListPage struct {
-								TotalCount int      `json:"totalCount"`
-								Reviews    []Review `json:"reviews"`
-							} `json:"reviewListPage"`
-						}{
-							{
-								LocationID: 12345,
-								ReviewListPage: struct {
-									TotalCount int      `json:"totalCount"`
-									Reviews    []Review `json:"reviews"`
-								}{
-									Reviews: []Review{
-										{ID: 1, Title: "Test Review"},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			expected: []Review{{ID: 1, Title: "Test Review"}},
+			name:      "extracts from Locations path (airline) unchanged",
+			responses: &Responses{locationsResponse(1, Review{ID: 1, Title: "Test Review", CreatedDate: "2026-10-26"})},
+			expected:  []Review{{ID: 1, Title: "Test Review", CreatedDate: "2026-10-26"}},
 		},
 		{
-			name: "extracts from ReviewsProxy path",
+			name: "extracts from ReviewsProxy path and normalizes fields",
+			responses: &Responses{reviewsProxyResponse(1, Review{
+				ID:                100,
+				Title:             "Hotel Review",
+				SubmittedDateTime: "2026-10-29T16:03:54.298Z",
+				TripInfo:          TripInfo{PartyType: "FRIENDS", StayOrVisitDate: &StayOrVisitDate{Year: 2026, Month: 10, Day: &day}},
+				UserProfile:       ReviewUserProfile{UserID: "abc"},
+			})},
+			expected: []Review{{
+				ID:                100,
+				Title:             "Hotel Review",
+				CreatedDate:       "2026-10-29",
+				SubmittedDateTime: "2026-10-29T16:03:54.298Z",
+				TripInfo:          TripInfo{TripType: "FRIENDS", StayDate: "2026-10-07", PartyType: "FRIENDS", StayOrVisitDate: &StayOrVisitDate{Year: 2026, Month: 10, Day: &day}},
+				UserProfile:       ReviewUserProfile{ID: "abc", UserID: "abc"},
+			}},
+		},
+		{
+			name: "ReviewsProxy is found in a later batch entry (after Michelin)",
 			responses: &Responses{
-				{
-					Data: struct {
-						ReviewsProxy []struct {
-							TotalCount        int      `json:"totalCount"`
-							Reviews           []Review `json:"reviews"`
-							ReviewListOptions struct {
-								SortType string `json:"sortType"`
-								SortBy   string `json:"sortBy"`
-							} `json:"reviewListOptions"`
-						} `json:"ReviewsProxy_getReviewListPageForLocation"`
-						Locations []struct {
-							LocationID     int `json:"locationId"`
-							ReviewListPage struct {
-								TotalCount int      `json:"totalCount"`
-								Reviews    []Review `json:"reviews"`
-							} `json:"reviewListPage"`
-						} `json:"locations"`
-						Michelin []MichelinInfo `json:"RestaurantAwards_getRestaurantAwards"`
-					}{
-						ReviewsProxy: []struct {
-							TotalCount        int      `json:"totalCount"`
-							Reviews           []Review `json:"reviews"`
-							ReviewListOptions struct {
-								SortType string `json:"sortType"`
-								SortBy   string `json:"sortBy"`
-							} `json:"reviewListOptions"`
-						}{
-							{
-								Reviews: []Review{
-									{ID: 100, Title: "Airline Review"},
-								},
-							},
-						},
-					},
-				},
+				{Data: ResponseData{Michelin: []MichelinInfo{{}}}},
+				reviewsProxyResponse(1, Review{ID: 5, SubmittedDateTime: "2025-01-02T00:00:00Z"}),
 			},
-			expected: []Review{{ID: 100, Title: "Airline Review"}},
+			expected: []Review{{ID: 5, CreatedDate: "2025-01-02", SubmittedDateTime: "2025-01-02T00:00:00Z"}},
 		},
 	}
 
@@ -486,6 +464,42 @@ func TestExtractReviews(t *testing.T) {
 			assert.Equal(t, tt.expected, result)
 		})
 	}
+}
+
+func TestNormalizeReview(t *testing.T) {
+	t.Run("stay date without day", func(t *testing.T) {
+		r := Review{TripInfo: TripInfo{StayOrVisitDate: &StayOrVisitDate{Year: 2026, Month: 3}}}
+		NormalizeReview(&r)
+		assert.Equal(t, "2026-03", r.TripInfo.StayDate)
+	})
+	t.Run("null party type with trip details maps to NONE like the old API", func(t *testing.T) {
+		r := Review{TripInfo: TripInfo{StayOrVisitDate: &StayOrVisitDate{Year: 2026, Month: 3}}}
+		NormalizeReview(&r)
+		assert.Equal(t, "NONE", r.TripInfo.TripType)
+	})
+	t.Run("missing fields stay empty", func(t *testing.T) {
+		r := Review{}
+		NormalizeReview(&r)
+		assert.Equal(t, "", r.CreatedDate)
+		assert.Equal(t, "", r.TripInfo.StayDate)
+		assert.Equal(t, "", r.TripInfo.TripType)
+	})
+	t.Run("existing legacy fields are not overwritten", func(t *testing.T) {
+		r := Review{CreatedDate: "2020-01-01", SubmittedDateTime: "2026-10-29T16:03:54.298Z", TripInfo: TripInfo{TripType: "SOLO", PartyType: "FAMILY"}}
+		NormalizeReview(&r)
+		assert.Equal(t, "2020-01-01", r.CreatedDate)
+		assert.Equal(t, "SOLO", r.TripInfo.TripType)
+	})
+}
+
+func TestDedupeReviews(t *testing.T) {
+	seen := map[int]struct{}{}
+	first := DedupeReviews([]Review{{ID: 1, Language: "en"}, {ID: 2, Language: "en"}}, seen)
+	assert.Equal(t, []int{1, 2}, []int{first[0].ID, first[1].ID})
+
+	// The fr page returns review 1 again (machine translated) plus a new review 3
+	second := DedupeReviews([]Review{{ID: 1, Language: "fr"}, {ID: 3, Language: "fr"}}, seen)
+	assert.Equal(t, []Review{{ID: 3, Language: "fr"}}, second)
 }
 
 func TestExtractTotalCount(t *testing.T) {
@@ -505,84 +519,14 @@ func TestExtractTotalCount(t *testing.T) {
 			expected:  0,
 		},
 		{
-			name: "extracts count from Locations path",
-			responses: &Responses{
-				{
-					Data: struct {
-						ReviewsProxy []struct {
-							TotalCount        int      `json:"totalCount"`
-							Reviews           []Review `json:"reviews"`
-							ReviewListOptions struct {
-								SortType string `json:"sortType"`
-								SortBy   string `json:"sortBy"`
-							} `json:"reviewListOptions"`
-						} `json:"ReviewsProxy_getReviewListPageForLocation"`
-						Locations []struct {
-							LocationID     int `json:"locationId"`
-							ReviewListPage struct {
-								TotalCount int      `json:"totalCount"`
-								Reviews    []Review `json:"reviews"`
-							} `json:"reviewListPage"`
-						} `json:"locations"`
-						Michelin []MichelinInfo `json:"RestaurantAwards_getRestaurantAwards"`
-					}{
-						Locations: []struct {
-							LocationID     int `json:"locationId"`
-							ReviewListPage struct {
-								TotalCount int      `json:"totalCount"`
-								Reviews    []Review `json:"reviews"`
-							} `json:"reviewListPage"`
-						}{
-							{
-								ReviewListPage: struct {
-									TotalCount int      `json:"totalCount"`
-									Reviews    []Review `json:"reviews"`
-								}{
-									TotalCount: 42,
-								},
-							},
-						},
-					},
-				},
-			},
-			expected: 42,
+			name:      "extracts count from Locations path",
+			responses: &Responses{locationsResponse(42)},
+			expected:  42,
 		},
 		{
-			name: "extracts count from ReviewsProxy path",
-			responses: &Responses{
-				{
-					Data: struct {
-						ReviewsProxy []struct {
-							TotalCount        int      `json:"totalCount"`
-							Reviews           []Review `json:"reviews"`
-							ReviewListOptions struct {
-								SortType string `json:"sortType"`
-								SortBy   string `json:"sortBy"`
-							} `json:"reviewListOptions"`
-						} `json:"ReviewsProxy_getReviewListPageForLocation"`
-						Locations []struct {
-							LocationID     int `json:"locationId"`
-							ReviewListPage struct {
-								TotalCount int      `json:"totalCount"`
-								Reviews    []Review `json:"reviews"`
-							} `json:"reviewListPage"`
-						} `json:"locations"`
-						Michelin []MichelinInfo `json:"RestaurantAwards_getRestaurantAwards"`
-					}{
-						ReviewsProxy: []struct {
-							TotalCount        int      `json:"totalCount"`
-							Reviews           []Review `json:"reviews"`
-							ReviewListOptions struct {
-								SortType string `json:"sortType"`
-								SortBy   string `json:"sortBy"`
-							} `json:"reviewListOptions"`
-						}{
-							{TotalCount: 99},
-						},
-					},
-				},
-			},
-			expected: 99,
+			name:      "extracts count from ReviewsProxy path",
+			responses: &Responses{reviewsProxyResponse(99)},
+			expected:  99,
 		},
 	}
 
@@ -592,6 +536,66 @@ func TestExtractTotalCount(t *testing.T) {
 			assert.Equal(t, tt.expected, result)
 		})
 	}
+}
+
+func TestResponseError(t *testing.T) {
+	assert.NoError(t, ResponseError(nil))
+	assert.NoError(t, ResponseError(&Responses{reviewsProxyResponse(1)}))
+
+	persisted := &Responses{{Errors: []GraphQLError{{Message: "PersistedQueryNotFound"}}}}
+	err := ResponseError(persisted)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "PersistedQueryNotFound")
+
+	invalid := &Responses{{Data: ResponseData{ReviewsProxy: []ReviewsProxyResult{{Error: &ReviewsProxyError{Reason: "INVALID_REQUEST", Details: "limit must be between 1 and 20"}}}}}}
+	err = ResponseError(invalid)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "limit must be between 1 and 20")
+}
+
+func TestResponseUnmarshal(t *testing.T) {
+	// Trimmed-down real response of ReviewsProxy_getPublishedReviewsForLocation (query 3b6e3b9a31d4be70)
+	body := `[{"data":{"ReviewsProxy_getPublishedReviewsForLocation":[{"error":null,"result":{"totalCount":3570,"sortBy":"MOST_RECENT","reviews":[{"id":1083670442,"locationId":19587144,"title":"Memorable experience","text":"Great trek","rating":5,"language":"en","helpfulVotes":0,"submittedDateTime":"2026-10-29T16:03:54.298Z","tripInfo":{"partyType":"FRIENDS","stayOrVisitDate":{"year":2026,"month":10,"day":null}},"userProfile":{"userId":"ABC","displayName":"Jo","username":"jo1"},"locationNode":{"detail":{"info":{"localizedName":"Gokyo Valley Trek","placeType":"ATTRACTION_PRODUCT","primaryRoute":{"url":"/x"}}}}}]}}]}}]`
+	var responses Responses
+	assert.NoError(t, json.Unmarshal([]byte(body), &responses))
+	assert.NoError(t, ResponseError(&responses))
+	assert.Equal(t, 3570, ExtractTotalCount(&responses))
+
+	reviews := ExtractReviews(&responses)
+	assert.Len(t, reviews, 1)
+	r := reviews[0]
+	assert.Equal(t, "2026-10-29", r.CreatedDate)
+	assert.Equal(t, "FRIENDS", r.TripInfo.TripType)
+	assert.Equal(t, "2026-10", r.TripInfo.StayDate)
+	assert.Equal(t, "Gokyo Valley Trek", r.LocationNode.Detail.Info.LocalizedName)
+	assert.Equal(t, ReviewLocation{LocationID: 19587144, Name: "Gokyo Valley Trek", PlaceType: "ATTRACTION_PRODUCT", URL: "/x"}, r.Location)
+	assert.Equal(t, []string{"Jo", "Memorable experience", "Great trek", "5", "2026", "10", "29", "FRIENDS", "2026-10"}, ReviewToCSVRow(r, "Jo", nil))
+}
+
+func TestBuildRequest(t *testing.T) {
+	t.Run("hotel request matches the web app contract", func(t *testing.T) {
+		req := BuildRequest(HotelQueryID, "HOTEL", "en", 231860, 20, 20)
+		b, err := json.Marshal(req)
+		assert.NoError(t, err)
+		assert.JSONEq(t, `[{"variables":{"clientId":"HOTEL_DETAIL_LIST","locationId":231860,"sortBy":"SERVER_DETERMINED","limit":20,"offset":20,"filterOptions":{"language":{"languageTag":"en"}},"locale":"en-US"},"extensions":{"preRegisteredQueryId":"3b6e3b9a31d4be70"}}]`, string(b))
+	})
+	t.Run("empty language omits the language filter", func(t *testing.T) {
+		b, _ := json.Marshal(BuildRequest(AttractionQueryID, "ATTRACTION", "", 1, 0, 1))
+		assert.Contains(t, string(b), `"filterOptions":{}`)
+		assert.Contains(t, string(b), `"clientId":"ATTRACTION_DETAIL_LIST"`)
+	})
+	t.Run("restaurant request batches the Michelin query", func(t *testing.T) {
+		req := BuildRequest(RestaurantQueryID, "RESTO", "en", 11827759, 0, 1)
+		assert.Len(t, req, 2)
+		assert.Equal(t, MichelinQueryID, req[1].Extensions.PreRegisteredQueryID)
+		assert.Equal(t, RestaurantClientID, req[0].Variables.(Variables).ClientID)
+	})
+	t.Run("airline request uses the legacy filter shape", func(t *testing.T) {
+		req := BuildRequest(AirlineQueryID, "AIRLINE", "fr", 8728979, 0, 1)
+		assert.Len(t, req, 1)
+		v := req[0].Variables.(AirlineVariables)
+		assert.Equal(t, Filters{{Axis: "LANGUAGE", Selections: []string{"fr"}}}, v.Filters)
+	})
 }
 
 func TestExtractMichelinInfo(t *testing.T) {
@@ -612,37 +616,10 @@ func TestExtractMichelinInfo(t *testing.T) {
 		},
 		{
 			name: "extracts Michelin info with awards",
-			responses: &Responses{
-				{
-					Data: struct {
-						ReviewsProxy []struct {
-							TotalCount        int      `json:"totalCount"`
-							Reviews           []Review `json:"reviews"`
-							ReviewListOptions struct {
-								SortType string `json:"sortType"`
-								SortBy   string `json:"sortBy"`
-							} `json:"reviewListOptions"`
-						} `json:"ReviewsProxy_getReviewListPageForLocation"`
-						Locations []struct {
-							LocationID     int `json:"locationId"`
-							ReviewListPage struct {
-								TotalCount int      `json:"totalCount"`
-								Reviews    []Review `json:"reviews"`
-							} `json:"reviewListPage"`
-						} `json:"locations"`
-						Michelin []MichelinInfo `json:"RestaurantAwards_getRestaurantAwards"`
-					}{
-						Michelin: []MichelinInfo{
-							{
-								AwardHeader: "MICHELIN Guide",
-								Awards: []MichelinAward{
-									{AwardName: "1 Star", YearOfAward: "2024"},
-								},
-							},
-						},
-					},
-				},
-			},
+			responses: &Responses{{Data: ResponseData{Michelin: []MichelinInfo{{
+				AwardHeader: "MICHELIN Guide",
+				Awards:      []MichelinAward{{AwardName: "1 Star", YearOfAward: "2024"}},
+			}}}}},
 			expected: &MichelinInfo{
 				AwardHeader: "MICHELIN Guide",
 				Awards: []MichelinAward{
@@ -651,34 +628,9 @@ func TestExtractMichelinInfo(t *testing.T) {
 			},
 		},
 		{
-			name: "returns nil when Michelin data has no header and no awards",
-			responses: &Responses{
-				{
-					Data: struct {
-						ReviewsProxy []struct {
-							TotalCount        int      `json:"totalCount"`
-							Reviews           []Review `json:"reviews"`
-							ReviewListOptions struct {
-								SortType string `json:"sortType"`
-								SortBy   string `json:"sortBy"`
-							} `json:"reviewListOptions"`
-						} `json:"ReviewsProxy_getReviewListPageForLocation"`
-						Locations []struct {
-							LocationID     int `json:"locationId"`
-							ReviewListPage struct {
-								TotalCount int      `json:"totalCount"`
-								Reviews    []Review `json:"reviews"`
-							} `json:"reviewListPage"`
-						} `json:"locations"`
-						Michelin []MichelinInfo `json:"RestaurantAwards_getRestaurantAwards"`
-					}{
-						Michelin: []MichelinInfo{
-							{},
-						},
-					},
-				},
-			},
-			expected: nil,
+			name:      "returns nil when Michelin data has no header and no awards",
+			responses: &Responses{{Data: ResponseData{Michelin: []MichelinInfo{{}}}}},
+			expected:  nil,
 		},
 	}
 
