@@ -3,7 +3,7 @@ package containers
 import (
 	"fmt"
 
-	"github.com/docker/docker/api/types/container"
+	"github.com/moby/moby/api/types/container"
 )
 
 // ContainerConfigGenerator generates the container config depending on the scrape target
