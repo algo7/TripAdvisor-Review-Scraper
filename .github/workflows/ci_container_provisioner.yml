@@ -7,6 +7,13 @@ on:
     paths:
       - 'container_provisioner/**'
       - '.github/workflows/ci_container_provisioner.yml'
+  # Run tests, govulncheck and the image build on PRs too. Images are only pushed from main
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'container_provisioner/**'
+      - '.github/workflows/ci_container_provisioner.yml'
 
 # Global variables
 env:
@@ -57,6 +64,7 @@ jobs:
 
       # Login to GitHub Container Registry
       - name: Registry Login
+        if: github.event_name == 'push'
         uses: docker/login-action@v4.7.0
         with:
           registry: ghcr.io
@@ -70,6 +78,6 @@ jobs:
           context: ./container_provisioner
           platforms: linux/amd64
           tags: ghcr.io/${{ github.actor }}/tripadvisor-review-scraper/container_provisioner:latest
-          push: true
+          push: ${{ github.event_name == 'push' }}
           cache-from: type=gha,scope=container_provisioner
-          cache-to: type=gha,mode=max,scope=container_provisioner
+          cache-to: ${{ github.event_name == 'push' && 'type=gha,mode=max,scope=container_provisioner' || '' }}
