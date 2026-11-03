@@ -20,7 +20,6 @@ func ServerInstantiate() *fiber.App {
 	engine.Reload(false)
 	// Custom config
 	app := fiber.New(fiber.Config{
-		Prefork:       true,
 		CaseSensitive: true,
 		StrictRouting: true,
 		ServerHeader:  "Algo7 TripAdvisor Scraper",

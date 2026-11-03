@@ -6,8 +6,7 @@ LABEL org.opencontainers.image.source="https://github.com/algo7/TripAdvisor-Revi
 
 WORKDIR /go/src/app
 
-# Install dumb-init to prevent go fiber from exiting
-# https://github.com/gofiber/fiber/issues/1036#issuecomment-841763449
+# Install dumb-init to run as PID 1, forward signals to the provisioner and reap zombie processes
 RUN apk add dumb-init
 
 # Copy the views folder
