@@ -8,12 +8,10 @@ on:
       - 'scraper/**'
       - '.github/workflows/ci_scraper.yml'
   # Run tests, govulncheck and the image build on PRs too. Images are only pushed from main
+  # No path filter on PRs: this check is required to merge, and a check skipped by a path filter would block every PR
   pull_request:
     branches:
       - main
-    paths:
-      - 'scraper/**'
-      - '.github/workflows/ci_scraper.yml'
 
 # Global variables
 env:

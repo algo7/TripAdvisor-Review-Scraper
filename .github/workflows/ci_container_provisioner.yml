@@ -8,12 +8,10 @@ on:
       - 'container_provisioner/**'
       - '.github/workflows/ci_container_provisioner.yml'
   # Run govulncheck and the image build on PRs too. Images are only pushed from main
+  # No path filter on PRs: this check is required to merge, and a check skipped by a path filter would block every PR
   pull_request:
     branches:
       - main
-    paths:
-      - 'container_provisioner/**'
-      - '.github/workflows/ci_container_provisioner.yml'
 
 # Global variables
 env:
