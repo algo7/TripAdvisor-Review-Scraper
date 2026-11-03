@@ -1,10 +1,5 @@
 # TripAdvisor-Review-Scraper
 
-> [!CAUTION]
-> The scraper currently doesn't work due to recent changes in TA's GQL API. I will update the scraper to work with the new API soon.
-> However, due to personal reasons, I will not be able to commit as much time to this project as I would like to. If you would like to contribute, please feel free to do so. PRs are always welcomed.
-> For any updates, please check the [issues](https://github.com/algo7/TripAdvisor-Review-Scraper/issues/476)
-
 A simple scraper for TripAdvisor (Hotel, Restaurant, Airline) reviews.
 
 [![Build & Push [Container Provisioner]](https://github.com/algo7/TripAdvisor-Review-Scraper/actions/workflows/ci_container_provisioner.yml/badge.svg?branch=main)](https://github.com/algo7/TripAdvisor-Review-Scraper/actions/workflows/ci_container_provisioner.yml)
@@ -28,6 +23,7 @@ A simple scraper for TripAdvisor (Hotel, Restaurant, Airline) reviews.
     - [Scraper](#scraper)
     - [Container Provisioner](#container-provisioner)
     - [Proxy Pool](#proxy-pool)
+  - [AI Use Disclaimer (Starting November 3, 2026)](#ai-use-disclaimer-starting-november-3-2026)
 
 ## Requirements
 
@@ -59,3 +55,11 @@ Please read more about the container provisioner [here](https://github.com/algo7
 Provides a pool of proxies for the scraper to use.
 
 Please read more about the proxy pool [here](https://github.com/algo7/TripAdvisor-Review-Scraper/tree/main/proxy_pool)
+
+## AI Use Disclaimer (Starting November 3, 2026)
+
+Starting **November 3, 2026**, I use AI tools to help maintain this project.
+
+I have a full-time job and I work on this project in my spare time. TripAdvisor's API is not documented anywhere. TA also does a lot to hide how it works and to stop people from figuring it out. The API only accepts opaque pre-registered query IDs, and those IDs change without warning. The API schema changes also seem to target tools like this without adding actual new features.
+
+So fixing the scraper is not a just-read-doc-and-write-code type of trivial task. Every time TA changes something, I have to dig through the website manually to identify the changes. That usually takes a few evenings or a whole weekend. To cut down on that time, I decided to use AI tools to help me debug and fix these issues.
