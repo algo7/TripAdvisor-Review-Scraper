@@ -35,3 +35,14 @@ updates:
           - 'golang.org*'
     assignees:
       - 'algo7'
+
+  - package-ecosystem: 'docker'
+    # Base images in every Dockerfile
+    directories:
+      - '/container_provisioner'
+      - '/proxy_pool'
+      - '/scraper'
+    schedule:
+      interval: 'daily'
+    assignees:
+      - 'algo7'
