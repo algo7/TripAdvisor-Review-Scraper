@@ -7,6 +7,14 @@ on:
       - main
     paths:
       - 'proxy_pool/**'
+      - '.github/workflows/ci_vpn_worker.yml'
+  # Build the image on PRs too. Images are only pushed from main
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'proxy_pool/**'
+      - '.github/workflows/ci_vpn_worker.yml'
 
 # Global variables
 env:
@@ -41,6 +49,7 @@ jobs:
 
       # Login to GitHub Container Registry
       - name: Registry Login
+        if: github.event_name == 'push'
         uses: docker/login-action@v4.7.0
         with:
           registry: ghcr.io
@@ -54,6 +63,6 @@ jobs:
           context: ./proxy_pool
           platforms: linux/amd64
           tags: ghcr.io/${{ github.actor }}/tripadvisor-review-scraper/vpn_worker:latest
-          push: true
+          push: ${{ github.event_name == 'push' }}
           cache-from: type=gha,scope=vpn_worker
-          cache-to: type=gha,mode=max,scope=vpn_worker
+          cache-to: ${{ github.event_name == 'push' && 'type=gha,mode=max,scope=vpn_worker' || '' }}

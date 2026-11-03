@@ -7,6 +7,11 @@ on:
     paths:
       - 'scraper/**'
       - '.github/workflows/ci_scraper.yml'
+  # Run tests, govulncheck and the image build on PRs too. Images are only pushed from main
+  # No path filter on PRs: this check is required to merge, and a check skipped by a path filter would block every PR
+  pull_request:
+    branches:
+      - main
 
 # Global variables
 env:
@@ -38,6 +43,11 @@ jobs:
           cache-dependency-path: './scraper/go.sum'
       - run: go version
 
+      # Fails the job when the code calls a function with a known vulnerability
+      - name: Check for Known Vulnerabilities
+        working-directory: './scraper'
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
+
       - name: Test Go Application
         working-directory: './scraper'
         run: make test
@@ -63,6 +73,7 @@ jobs:
 
       # Login to GitHub Container Registry
       - name: Registry Login
+        if: github.event_name == 'push'
         uses: docker/login-action@v4.7.0
         with:
           registry: ghcr.io
@@ -76,6 +87,6 @@ jobs:
           context: ./scraper
           platforms: linux/amd64
           tags: ghcr.io/${{ github.actor }}/tripadvisor-review-scraper/scraper:latest
-          push: true
+          push: ${{ github.event_name == 'push' }}
           cache-from: type=gha,scope=scraper
-          cache-to: type=gha,mode=max,scope=scraper
+          cache-to: ${{ github.event_name == 'push' && 'type=gha,mode=max,scope=scraper' || '' }}
