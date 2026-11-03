@@ -29,3 +29,11 @@ The UI is accessible at `http://localhost:3000`.
 
 ## Live Demo
 A live demo of the container provisioner is available at [https://scraper.algo7.tools](https://scraper.algo7.tools).
+
+## Run the tests
+Some tests need a real Redis server. Without one they are skipped (in CI they fail instead).
+```bash
+docker run --rm -d --name redis-test -p 6379:6379 redis:8.10.3-alpine
+TEST_REDIS_ADDR=localhost:6379 go test -race ./...
+docker stop redis-test
+```
