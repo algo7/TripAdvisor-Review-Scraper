@@ -11,7 +11,7 @@ import (
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/scrape"
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/utils"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 // The URL of the R2 bucket
@@ -29,7 +29,7 @@ type Handler struct {
 }
 
 // getMain renders the main page
-func (h *Handler) getMain(c *fiber.Ctx) error {
+func (h *Handler) getMain(c fiber.Ctx) error {
 	runningContainers, _ := h.Scraper.CM.ListContainersByType("scraper")
 	return c.Render("main", fiber.Map{
 		"Title":             "Algo7 TripAdvisor Scraper",
@@ -38,7 +38,7 @@ func (h *Handler) getMain(c *fiber.Ctx) error {
 }
 
 // postProvision is the handler for the form submission
-func (h *Handler) postProvision(c *fiber.Ctx) error {
+func (h *Handler) postProvision(c fiber.Ctx) error {
 
 	// Get the URL from the form
 	url := c.FormValue("url")
@@ -165,12 +165,12 @@ func (h *Handler) postProvision(c *fiber.Ctx) error {
 }
 
 // getLogsViewer renders the logs viewer page
-func (h *Handler) getLogsViewer(c *fiber.Ctx) error {
+func (h *Handler) getLogsViewer(c fiber.Ctx) error {
 	return c.SendFile("./views/logs.html")
 }
 
 // getLogs returns the logs for a given container
-func (h *Handler) getLogs(c *fiber.Ctx) error {
+func (h *Handler) getLogs(c fiber.Ctx) error {
 	containerID := c.Params("id")
 	if containerID == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Container ID is required"})
@@ -211,7 +211,7 @@ func (h *Handler) getLogs(c *fiber.Ctx) error {
 }
 
 // getRunningJobs renders a table of running containers
-func (h *Handler) getRunningTasks(c *fiber.Ctx) error {
+func (h *Handler) getRunningTasks(c fiber.Ctx) error {
 
 	// Get ids of all running containers
 	runningContainers, err := h.Scraper.CM.ListContainersByType("scraper")
@@ -234,7 +234,7 @@ func (h *Handler) getRunningTasks(c *fiber.Ctx) error {
 }
 
 // getDownloads renders the downloads page
-func (h *Handler) getDownloads(c *fiber.Ctx) error {
+func (h *Handler) getDownloads(c fiber.Ctx) error {
 
 	// Check if the R2 objects list is cached
 	cachedObjectsList, err := h.Scraper.Redis.CacheLookUp("r2StorageObjectsList")
