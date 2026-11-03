@@ -7,11 +7,9 @@ import (
 	"io"
 	"os"
 
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/image"
-	"github.com/docker/docker/api/types/network"
-	"github.com/docker/docker/client"
-	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/moby/moby/api/types/container"
+	"github.com/moby/moby/api/types/network"
+	"github.com/moby/moby/client"
 )
 
 const (
@@ -24,15 +22,15 @@ var (
 )
 
 type ContainerClient interface {
-	ImagePull(ctx context.Context, refStr string, options image.PullOptions) (io.ReadCloser, error)
-	ContainerRemove(ctx context.Context, containerID string, options container.RemoveOptions) error
-	ContainerLogs(ctx context.Context, containerID string, options container.LogsOptions) (io.ReadCloser, error)
-	ContainerCreate(ctx context.Context, config *container.Config, hostConfig *container.HostConfig, networkingConfig *network.NetworkingConfig, platform *v1.Platform, containerName string) (container.CreateResponse, error)
-	ContainerStart(ctx context.Context, containerID string, options container.StartOptions) error
-	CopyFromContainer(ctx context.Context, containerID string, srcPath string) (io.ReadCloser, container.PathStat, error)
-	ContainerList(ctx context.Context, options container.ListOptions) ([]container.Summary, error)
-	ContainerStatPath(ctx context.Context, containerID string, path string) (container.PathStat, error)
-	ContainerWait(ctx context.Context, containerID string, condition container.WaitCondition) (<-chan container.WaitResponse, <-chan error)
+	ImagePull(ctx context.Context, refStr string, options client.ImagePullOptions) (client.ImagePullResponse, error)
+	ContainerRemove(ctx context.Context, containerID string, options client.ContainerRemoveOptions) (client.ContainerRemoveResult, error)
+	ContainerLogs(ctx context.Context, containerID string, options client.ContainerLogsOptions) (client.ContainerLogsResult, error)
+	ContainerCreate(ctx context.Context, options client.ContainerCreateOptions) (client.ContainerCreateResult, error)
+	ContainerStart(ctx context.Context, containerID string, options client.ContainerStartOptions) (client.ContainerStartResult, error)
+	CopyFromContainer(ctx context.Context, containerID string, options client.CopyFromContainerOptions) (client.CopyFromContainerResult, error)
+	ContainerList(ctx context.Context, options client.ContainerListOptions) (client.ContainerListResult, error)
+	ContainerStatPath(ctx context.Context, containerID string, options client.ContainerStatPathOptions) (client.ContainerStatPathResult, error)
+	ContainerWait(ctx context.Context, containerID string, options client.ContainerWaitOptions) client.ContainerWaitResult
 	Close() error
 }
 
@@ -44,7 +42,7 @@ type ContainerManager struct {
 // NewContainerManager creates a new instance of ContainerManager
 func NewContainerManager(image string) (*ContainerManager, error) {
 	// Create a new Docker API Client
-	apiClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	apiClient, err := client.New(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return nil, fmt.Errorf("fail to create new container manager due to client initialization issues %w", err)
 	}
@@ -58,7 +56,7 @@ func NewContainerManager(image string) (*ContainerManager, error) {
 // PullImage pulls the scraper container image
 func (c *ContainerManager) PullImage() error {
 
-	reader, err := c.Client.ImagePull(context.Background(), c.image, image.PullOptions{})
+	reader, err := c.Client.ImagePull(context.Background(), c.image, client.ImagePullOptions{})
 	if err != nil {
 		return fmt.Errorf("fail to pull the scraper image: %w", err)
 	}
@@ -77,7 +75,7 @@ func (c *ContainerManager) PullImage() error {
 func (c *ContainerManager) RemoveContainer(containerID string) error {
 
 	// Remove the container
-	err := c.Client.ContainerRemove(context.Background(), containerID, container.RemoveOptions{
+	_, err := c.Client.ContainerRemove(context.Background(), containerID, client.ContainerRemoveOptions{
 		RemoveVolumes: true,
 		RemoveLinks:   true,
 		Force:         true,
@@ -94,7 +92,7 @@ func (c *ContainerManager) RemoveContainer(containerID string) error {
 func (c *ContainerManager) TailLog(containerID string) (io.Reader, error) {
 
 	// Print the logs of the container
-	out, err := c.Client.ContainerLogs(context.Background(), containerID, container.LogsOptions{
+	out, err := c.Client.ContainerLogs(context.Background(), containerID, client.ContainerLogsOptions{
 		ShowStdout: true,
 		Details:    true,
 		ShowStderr: true,
@@ -116,22 +114,19 @@ func (c *ContainerManager) TailLog(containerID string) (io.Reader, error) {
 func (c *ContainerManager) CreateContainer(containerConfig *container.Config) (string, error) {
 
 	// Create the container. Container.ID contains the ID of the container
-	ct, err := c.Client.ContainerCreate(context.Background(),
-		containerConfig,
-		&container.HostConfig{
+	ct, err := c.Client.ContainerCreate(context.Background(), client.ContainerCreateOptions{
+		Config: containerConfig,
+		HostConfig: &container.HostConfig{
 			AutoRemove: false, // Cant set to true otherwise the container got deleted before copying the file
 		},
-		// NetworkConfig
-		&network.NetworkingConfig{
+		NetworkingConfig: &network.NetworkingConfig{
 			EndpointsConfig: map[string]*network.EndpointSettings{
 				"scraper_vpn": {
 					NetworkID: "scraper_vpn",
 				},
 			},
 		},
-		nil, // Platform
-		"",  // Container name
-	)
+	})
 
 	if err != nil {
 		return "", fmt.Errorf("fail to create container: %w", err)
@@ -168,7 +163,7 @@ type Container struct {
 func (c *ContainerManager) ListContainersByType(containerType string) ([]Container, error) {
 
 	// List all containers
-	containersInfo, err := c.Client.ContainerList(context.Background(), container.ListOptions{All: false})
+	containersInfo, err := c.Client.ContainerList(context.Background(), client.ContainerListOptions{All: false})
 	if err != nil {
 		return nil, fmt.Errorf("fail to list %s containers: %w", containerType, err)
 	}
@@ -177,7 +172,7 @@ func (c *ContainerManager) ListContainersByType(containerType string) ([]Contain
 	containers := []Container{}
 
 	// Iterate through the containers and append them to the slice
-	for _, containerInfo := range containersInfo {
+	for _, containerInfo := range containersInfo.Items {
 
 		// Extract fields from the container info and map them to the Container struct
 		containerID := containerInfo.ID[:12]
@@ -208,10 +203,11 @@ func (c *ContainerManager) ListContainersByType(containerType string) ([]Contain
 			// If the container type is "proxy", only list proxy containers
 		case "proxy":
 			if taskOwner == "PROXY" {
+				ipAddress := containerInfo.NetworkSettings.Networks["scraper_vpn"].IPAddress.String()
 				containers = append(containers, Container{
 					ContainerID:    &containerID,
 					VPNRegion:      &vpnRegion,
-					IPAddress:      &containerInfo.NetworkSettings.Networks["scraper_vpn"].IPAddress,
+					IPAddress:      &ipAddress,
 					ProxySOCKSPort: &vpnSOCKSPort,
 					ProxyHTTPPort:  &vpnHTTPPort,
 				})

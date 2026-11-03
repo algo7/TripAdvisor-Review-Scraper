@@ -9,7 +9,8 @@ import (
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/database"
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/storage"
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/utils"
-	"github.com/docker/docker/api/types/container"
+	"github.com/moby/moby/api/types/container"
+	"github.com/moby/moby/client"
 )
 
 // ProxyContainer information
@@ -38,22 +39,22 @@ func NewScraper(cm *containers.ContainerManager, r2 *storage.R2Service, redis *d
 func (s *Scraper) Scrape(uploadIdentifier string, targetName string, containerID string) error {
 
 	// Start the container
-	err := s.CM.Client.ContainerStart(context.Background(), containerID, container.StartOptions{})
+	_, err := s.CM.Client.ContainerStart(context.Background(), containerID, client.ContainerStartOptions{})
 	if err != nil {
 		return fmt.Errorf("fail to start container %s: %w", containerID, err)
 	}
 
 	// Wait for the container to exit
-	statusCh, errCh := s.CM.Client.ContainerWait(context.Background(), containerID, container.WaitConditionNotRunning)
+	wait := s.CM.Client.ContainerWait(context.Background(), containerID, client.ContainerWaitOptions{Condition: container.WaitConditionNotRunning})
 
 	// ContainerWait returns 2 channels. One for the status and one for the wait error (not execution error)
 	select {
-	case err := <-errCh:
+	case err := <-wait.Error:
 		if err != nil {
 			return fmt.Errorf("container exited due to %w", err)
 		}
 
-	case status := <-statusCh:
+	case status := <-wait.Result:
 		// If the container exited with non-zero status code, remove the container and return an error
 		if status.StatusCode != 0 {
 			log.Printf("container %s exited with status code %d", containerID, status.StatusCode)
@@ -71,18 +72,19 @@ func (s *Scraper) Scrape(uploadIdentifier string, targetName string, containerID
 
 	// Get the file size in the container
 	// 	// Log the file size in the container
-	containerFileInfo, err := s.CM.Client.ContainerStatPath(context.Background(), containerID, filePathInContainer)
+	containerFileInfo, err := s.CM.Client.ContainerStatPath(context.Background(), containerID, client.ContainerStatPathOptions{Path: filePathInContainer})
 	if err != nil {
 		return fmt.Errorf("error getting csv file size in container: %w", err)
 	} else {
-		log.Printf("file size in container: %d bytes", containerFileInfo.Size)
+		log.Printf("file size in container: %d bytes", containerFileInfo.Stat.Size)
 	}
 
 	// Read the file from the container as a reader interface of a tar stream
-	fileReader, _, err := s.CM.Client.CopyFromContainer(context.Background(), containerID, filePathInContainer)
+	copied, err := s.CM.Client.CopyFromContainer(context.Background(), containerID, client.CopyFromContainerOptions{SourcePath: filePathInContainer})
 	if err != nil {
 		return fmt.Errorf("fail to copy file from container %s: %w", containerID, err)
 	}
+	fileReader := copied.Content
 
 	// Generate a random file prefix
 	fileSuffix := utils.GenerateUUID()
