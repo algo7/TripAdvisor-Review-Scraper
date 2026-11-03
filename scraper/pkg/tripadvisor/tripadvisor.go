@@ -3,6 +3,7 @@ package tripadvisor
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -16,8 +17,28 @@ import (
 	"github.com/algo7/TripAdvisor-Review-Scraper/scraper/pkg/utils"
 )
 
+// MaxRequestAttempts is how many times a request is sent before giving up on a transient failure.
+const MaxRequestAttempts = 3
+
+// retryBackoff is the wait before the first retry. It doubles for every further retry.
+var retryBackoff = 2 * time.Second
+
+// transientError marks a failure that may succeed on a new attempt, such as a dropped connection or a 5xx response.
+type transientError struct{ err error }
+
+func (e transientError) Error() string { return e.err.Error() }
+func (e transientError) Unwrap() error { return e.err }
+
+// isTransient reports whether err is worth retrying.
+func isTransient(err error) bool {
+	var transient transientError
+	return errors.As(err, &transient)
+}
+
 // MakeRequest is a function that sends a POST request to the TripAdvisor GraphQL endpoint.
 // language is a single language tag (e.g. "en"); an empty string requests reviews in all languages.
+// Transient failures (dropped connections, timeouts, 5xx responses) are retried up to MaxRequestAttempts times.
+// Rate limiting and GraphQL errors are returned straight away.
 func MakeRequest(client *http.Client, queryID string, queryType string, language string, locationID uint32, offset uint32, limit uint32) (responses *Responses, err error) {
 
 	request := BuildRequest(queryID, queryType, language, locationID, offset, limit)
@@ -28,8 +49,27 @@ func MakeRequest(client *http.Client, queryID string, queryType string, language
 		log.Fatal("error marshalling request body: ", err)
 	}
 
-	// Create a new request using http.NewRequest, setting the method to POST
-	req, err := http.NewRequest(http.MethodPost, EndPointURL, bytes.NewBuffer(jsonPayload))
+	delay := retryBackoff
+	for attempt := 1; ; attempt++ {
+		responses, err = sendRequest(client, jsonPayload)
+		if err == nil || !isTransient(err) {
+			return responses, err
+		}
+		if attempt == MaxRequestAttempts {
+			return nil, fmt.Errorf("giving up after %d attempts: %w", attempt, err)
+		}
+		log.Printf("Request attempt %d/%d failed: %v. Retrying in %v", attempt, MaxRequestAttempts, err, delay)
+		time.Sleep(delay)
+		delay *= 2
+	}
+}
+
+// sendRequest sends the GraphQL request once. Failures worth retrying are wrapped in transientError.
+func sendRequest(client *http.Client, jsonPayload []byte) (*Responses, error) {
+
+	// Create a new request using http.NewRequest, setting the method to POST.
+	// A new reader is used on every call so a retry sends the full body again.
+	req, err := http.NewRequest(http.MethodPost, EndPointURL, bytes.NewReader(jsonPayload))
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %w", err)
 	}
@@ -54,7 +94,7 @@ func MakeRequest(client *http.Client, queryID string, queryType string, language
 	// Send the request
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("error sending request: %w", err)
+		return nil, transientError{fmt.Errorf("error sending request: %w", err)}
 	}
 	defer resp.Body.Close()
 
@@ -64,13 +104,17 @@ func MakeRequest(client *http.Client, queryID string, queryType string, language
 		if resp.StatusCode == http.StatusTooManyRequests {
 			return nil, fmt.Errorf("rate Limit Detected: %d", resp.StatusCode)
 		}
+		// Server errors are usually temporary, other client errors are not
+		if resp.StatusCode >= http.StatusInternalServerError {
+			return nil, transientError{fmt.Errorf("error response status code: %d", resp.StatusCode)}
+		}
 		return nil, fmt.Errorf("error response status code: %d", resp.StatusCode)
 	}
 
 	// Read the response body
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("error reading response body: %w", err)
+		return nil, transientError{fmt.Errorf("error reading response body: %w", err)}
 	}
 
 	if os.Getenv("DEBUG") == "true" {
