@@ -22,13 +22,32 @@
     logsElement.textContent = '';
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
+
+    // Each log line gets its own element, so a long line wraps under its message (see app.css).
+    // Text after the last line break is kept until the rest of that line arrives.
+    let unfinishedLine = '';
+    const addLines = (text) => {
+      const lines = (unfinishedLine + text).split(/\r?\n/);
+      unfinishedLine = lines.pop();
+      for (const line of lines) {
+        const lineElement = document.createElement('span');
+        lineElement.textContent = line;
+        logsElement.append(lineElement);
+      }
+      logsElement.scrollTop = logsElement.scrollHeight;
+    };
+
     while (true) {
       const { done, value } = await reader.read();
       if (done) {
         break;
       }
-      logsElement.textContent += decoder.decode(value, { stream: true });
-      logsElement.scrollTop = logsElement.scrollHeight;
+      addLines(decoder.decode(value, { stream: true }));
+    }
+    // Show a last line that didn't end with a line break
+    unfinishedLine += decoder.decode();
+    if (unfinishedLine !== '') {
+      addLines('\n');
     }
   };
 

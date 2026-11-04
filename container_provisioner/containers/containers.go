@@ -93,7 +93,6 @@ func (c *ContainerManager) TailLog(containerID string) (io.Reader, error) {
 	// Print the logs of the container
 	out, err := c.Client.ContainerLogs(context.Background(), containerID, client.ContainerLogsOptions{
 		ShowStdout: true,
-		Details:    true,
 		ShowStderr: true,
 		Timestamps: false,
 		Follow:     true})
