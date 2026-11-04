@@ -99,7 +99,8 @@ func TestAcquireProxyContainerHandsOutEachProxyOnce(t *testing.T) {
 		t.Fatalf("second acquire = %q, %v, want %s", second.ContainerID, err, b.containerID())
 	}
 
-	if _, err := s.AcquireProxyContainer(); err == nil {
+	_, err = s.AcquireProxyContainer()
+	if err == nil {
 		t.Fatal("third acquire succeeded, want an error with both proxies in use")
 	}
 
@@ -141,10 +142,12 @@ func TestHoldProxyContainerKeepsLockPastTTL(t *testing.T) {
 	// Several lock lifetimes pass. Without renewals the lock would have expired.
 	time.Sleep(4 * proxyLockTTL)
 
-	if owner := s.lockOwner(t, proxy.ContainerID); owner != proxy.lockToken {
+	owner := s.lockOwner(t, proxy.ContainerID)
+	if owner != proxy.lockToken {
 		t.Fatalf("lock owner = %q, want the holding scrape's token", owner)
 	}
-	if _, err := s.AcquireProxyContainer(); err == nil {
+	_, err = s.AcquireProxyContainer()
+	if err == nil {
 		t.Fatal("another scrape got the proxy while it was held")
 	}
 }
@@ -168,7 +171,8 @@ func TestReleaseProxyContainerLeavesNewOwnerAlone(t *testing.T) {
 
 	s.ReleaseProxyContainer(stale)
 
-	if owner := s.lockOwner(t, current.ContainerID); owner != current.lockToken {
+	owner := s.lockOwner(t, current.ContainerID)
+	if owner != current.lockToken {
 		t.Fatalf("lock owner after stale release = %q, want the second scrape's token", owner)
 	}
 }
@@ -199,7 +203,8 @@ func TestHoldProxyContainerStopsWhenLockIsLost(t *testing.T) {
 	case <-time.After(time.Second):
 		t.Fatal("hold kept running after losing the lock")
 	}
-	if owner := s.lockOwner(t, current.ContainerID); owner != current.lockToken {
+	owner := s.lockOwner(t, current.ContainerID)
+	if owner != current.lockToken {
 		t.Fatal("the stale hold changed the new owner's lock")
 	}
 }

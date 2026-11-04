@@ -22,10 +22,12 @@ func TestAcquireLockIsExclusive(t *testing.T) {
 		t.Fatalf("second acquire: acquired=%v err=%v, want false", acquired, err)
 	}
 
-	if owner := r.Client.Get(t.Context(), key).Val(); owner != "a" {
+	owner := r.Client.Get(t.Context(), key).Val()
+	if owner != "a" {
 		t.Fatalf("owner = %q, want %q", owner, "a")
 	}
-	if ttl := r.Client.PTTL(t.Context(), key).Val(); ttl <= 50*time.Second || ttl > time.Minute {
+	ttl := r.Client.PTTL(t.Context(), key).Val()
+	if ttl <= 50*time.Second || ttl > time.Minute {
 		t.Fatalf("ttl = %v, want close to 1m", ttl)
 	}
 }
@@ -42,7 +44,8 @@ func TestRenewLockOnlyByOwner(t *testing.T) {
 	if err != nil || renewed {
 		t.Fatalf("renew by non-owner: renewed=%v err=%v, want false", renewed, err)
 	}
-	if ttl := r.Client.PTTL(t.Context(), key).Val(); ttl > 800*time.Millisecond {
+	ttl := r.Client.PTTL(t.Context(), key).Val()
+	if ttl > 800*time.Millisecond {
 		t.Fatalf("ttl after renew by non-owner = %v, want it unchanged (under 800ms)", ttl)
 	}
 
@@ -50,7 +53,8 @@ func TestRenewLockOnlyByOwner(t *testing.T) {
 	if err != nil || !renewed {
 		t.Fatalf("renew by owner: renewed=%v err=%v, want true", renewed, err)
 	}
-	if ttl := r.Client.PTTL(t.Context(), key).Val(); ttl <= 50*time.Second {
+	ttl = r.Client.PTTL(t.Context(), key).Val()
+	if ttl <= 50*time.Second {
 		t.Fatalf("ttl after renew by owner = %v, want close to 1m", ttl)
 	}
 }
