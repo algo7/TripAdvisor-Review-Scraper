@@ -12,11 +12,12 @@ import (
 	"github.com/google/uuid"
 )
 
-// Compile the regular expression and store it in a package-level variable
+// The TripAdvisor URL patterns the scraper accepts. Keep them in sync with scraper/pkg/tripadvisor/models.go.
 var (
 	tripAdvisorHotelURLRegexp   = regexp.MustCompile(`^https:\/\/www\.tripadvisor\.com\/Hotel_Review-g\d{6,10}-d\d{1,10}-Reviews-[\w-]{1,255}\.html$`)
 	tripAdvisorRestaurantRegexp = regexp.MustCompile(`^https:\/\/www\.tripadvisor\.com\/Restaurant_Review-g\d{6,10}-d\d{1,10}-Reviews-[\w-]{1,255}\.html$`)
 	tripAdvisorAirlineRegexp    = regexp.MustCompile(`^https:\/\/www\.tripadvisor\.com\/Airline_Review-d\d{6,10}-Reviews-[\w-]{1,255}$`)
+	tripAdvisorAttractionRegexp = regexp.MustCompile(`^https:\/\/www\.tripadvisor\.com\/Attraction_Review-g\d{6,10}-d\d{1,10}-Reviews-[\w-]{1,255}\.html$`)
 )
 
 // WriteToFileFromTarStream writes a file to disk
@@ -88,7 +89,7 @@ func GetLocationNameFromURL(url string, scrapOption string) string {
 	splitURL := strings.Split(url, "-")
 
 	switch scrapOption {
-	case "HOTEL", "RESTO":
+	case "HOTEL", "RESTO", "ATTRACTION":
 		return splitURL[4]
 	case "AIRLINE":
 		return strings.Join(splitURL[3:], "_")
@@ -97,18 +98,36 @@ func GetLocationNameFromURL(url string, scrapOption string) string {
 	}
 }
 
-// ValidateTripAdvisorURL validates the TripAdvisor URLs
-func ValidateTripAdvisorURL(url string, scrapOption string) bool {
-	switch scrapOption {
-	case "HOTEL":
-		return tripAdvisorHotelURLRegexp.MatchString(url)
-	case "RESTO":
-		return tripAdvisorRestaurantRegexp.MatchString(url)
-	case "AIRLINE":
-		return tripAdvisorAirlineRegexp.MatchString(url)
+// CleanTripAdvisorURL removes what is often copied along with a TripAdvisor link: surrounding spaces,
+// and the query string or fragment (e.g. #REVIEWS) that the scraper doesn't accept
+func CleanTripAdvisorURL(url string) string {
+	cleaned := strings.TrimSpace(url)
+	cleaned, _, _ = strings.Cut(cleaned, "#")
+	cleaned, _, _ = strings.Cut(cleaned, "?")
+	return cleaned
+}
+
+// DetectScrapeType returns the scrape type of a TripAdvisor URL: HOTEL, RESTO, AIRLINE or ATTRACTION.
+// It returns an empty string for any other URL.
+func DetectScrapeType(url string) string {
+	switch {
+	case tripAdvisorHotelURLRegexp.MatchString(url):
+		return "HOTEL"
+	case tripAdvisorRestaurantRegexp.MatchString(url):
+		return "RESTO"
+	case tripAdvisorAirlineRegexp.MatchString(url):
+		return "AIRLINE"
+	case tripAdvisorAttractionRegexp.MatchString(url):
+		return "ATTRACTION"
 	default:
-		return false
+		return ""
 	}
+}
+
+// IsTripAdvisorCountrySite reports whether the URL points to a country site such as tripadvisor.fr
+// or tripadvisor.co.uk instead of tripadvisor.com
+func IsTripAdvisorCountrySite(url string) bool {
+	return strings.Contains(url, "tripadvisor.") && !strings.Contains(url, "tripadvisor.com/")
 }
 
 // ValidateEmailAddress validates the EHL email address

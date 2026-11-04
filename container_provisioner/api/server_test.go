@@ -95,19 +95,95 @@ func TestUnknownPageShowsTheErrorPage(t *testing.T) {
 	}
 }
 
-func TestSubmitWithAnInvalidURLExplainsTheProblem(t *testing.T) {
+// submit posts the form and returns the status code and the body
+func submit(t *testing.T, link string, uploadIdentifier string) (int, string) {
+	t.Helper()
 	form := url.Values{
-		"url":               {"https://www.tripadvisor.fr/Hotel_Review-g1-d2-Reviews-X-Y.html"},
-		"upload_identifier": {"test"},
-		"scrape_option":     {"HOTEL"},
+		"url":               {link},
+		"upload_identifier": {uploadIdentifier},
 	}
 	req := httptest.NewRequest(http.MethodPost, "/submit", strings.NewReader(form.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	status, _, body := send(t, newTestApp(), req)
+	return status, body
+}
 
-	if status != http.StatusOK || !strings.Contains(body, "The scrape didn't start") || !strings.Contains(body, "Invalid HOTEL URL") {
-		t.Errorf("status %d, want the submission error page with the reason:\n%s", status, body)
+func TestFormHasNoTypeDropdown(t *testing.T) {
+	_, _, body := send(t, newTestApp(), httptest.NewRequest(http.MethodGet, "/", nil))
+
+	if strings.Contains(body, "<select") || strings.Contains(body, "scrape_option") {
+		t.Error("the form still asks for the scrape type")
+	}
+}
+
+func TestSubmitProblemsAreShownOnTheForm(t *testing.T) {
+	tests := []struct {
+		name             string
+		link             string
+		uploadIdentifier string
+		wantStatus       int
+		wantText         string
+		wantInvalid      string
+	}{
+		{
+			name:             "country site",
+			link:             "https://www.tripadvisor.fr/Hotel_Review-g188107-d231860-Reviews-Beau_Rivage_Palace-Lausanne.html",
+			uploadIdentifier: "rocket_fox",
+			wantStatus:       http.StatusUnprocessableEntity,
+			wantText:         "Country sites like tripadvisor.fr",
+			wantInvalid:      "url",
+		},
+		{
+			name:             "not a supported page",
+			link:             "https://www.tripadvisor.com/Search?q=lausanne",
+			uploadIdentifier: "rocket_fox",
+			wantStatus:       http.StatusUnprocessableEntity,
+			wantText:         "isn&#39;t a TripAdvisor hotel, restaurant, attraction or airline page",
+			wantInvalid:      "url",
+		},
+		{
+			name:             "missing upload ID",
+			link:             "https://www.tripadvisor.com/Airline_Review-d8729113-Reviews-Lufthansa",
+			uploadIdentifier: "   ",
+			wantStatus:       http.StatusUnprocessableEntity,
+			wantText:         "Enter an upload ID",
+			wantInvalid:      "upload_identifier",
+		},
+		{
+			// The attraction link passes validation. The test app has no proxies, so the scrape doesn't start.
+			name:             "attraction link is accepted",
+			link:             "https://www.tripadvisor.com/Attraction_Review-g187261-d1008501-Reviews-Les_Ailes_du_Mont_Blanc-Chamonix.html#REVIEWS",
+			uploadIdentifier: "rocket_fox",
+			wantStatus:       http.StatusServiceUnavailable,
+			wantText:         "All proxies are busy",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			status, body := submit(t, tt.link, tt.uploadIdentifier)
+
+			if status != tt.wantStatus {
+				t.Errorf("status %d, want %d", status, tt.wantStatus)
+			}
+			for _, want := range []string{"The scrape didn't start.", tt.wantText, "Start scraping"} {
+				if !strings.Contains(body, want) {
+					t.Errorf("page is missing %q", want)
+				}
+			}
+			// The typed upload ID is kept
+			if strings.TrimSpace(tt.uploadIdentifier) != "" && !strings.Contains(body, `value="`+tt.uploadIdentifier+`"`) {
+				t.Errorf("the upload ID %q wasn't kept in the form", tt.uploadIdentifier)
+			}
+			invalidInputs := strings.Count(body, `aria-invalid="true"`)
+			if tt.wantInvalid == "" && invalidInputs != 0 {
+				t.Errorf("%d fields are marked invalid, want none", invalidInputs)
+			}
+			if tt.wantInvalid != "" && (invalidInputs != 1 || !strings.Contains(body, `name="`+tt.wantInvalid+`"`)) {
+				t.Errorf("%d fields are marked invalid, want only %s", invalidInputs, tt.wantInvalid)
+			}
+		})
 	}
 }
 

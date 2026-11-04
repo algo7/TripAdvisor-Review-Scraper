@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/scrape"
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/utils"
@@ -30,99 +31,81 @@ type Handler struct {
 
 // getMain renders the main page
 func (h *Handler) getMain(c fiber.Ctx) error {
+	return h.showForm(c, fiber.StatusOK, "", "", "", "")
+}
+
+// showForm renders the main page with the form. When the scrape didn't start, formError says why,
+// errorField names the field to fix, and the submitted values are kept.
+func (h *Handler) showForm(c fiber.Ctx, status int, formError string, errorField string, url string, uploadIdentifier string) error {
 	runningContainers, _ := h.Scraper.CM.ListContainersByType("scraper")
-	return c.Render("main", fiber.Map{
+	return c.Status(status).Render("main", fiber.Map{
 		"Title":             appTitle,
 		"RunningContainers": len(runningContainers),
+		"Error":             formError,
+		"ErrorField":        errorField,
+		"URL":               url,
+		"UploadID":          uploadIdentifier,
 	})
 }
 
 // postProvision is the handler for the form submission
 func (h *Handler) postProvision(c fiber.Ctx) error {
 
-	// Get the URL from the form
-	url := c.FormValue("url")
+	// Get the URL from the form. The scrape type comes from the URL.
+	url := utils.CleanTripAdvisorURL(c.FormValue("url"))
 
 	// Get the upload id from the form
-	uploadIdentifier := c.FormValue("upload_identifier")
+	uploadIdentifier := strings.TrimSpace(c.FormValue("upload_identifier"))
 
-	// Get the scrape mode from the form
-	scrapeMode := c.FormValue("scrape_option")
-
-	// Define valid scrape modes
-	validChoices := map[string]bool{
-		"HOTEL":   true,
-		"RESTO":   true,
-		"AIRLINE": true,
+	// Check that the URL is a page the scraper supports
+	scrapeMode := utils.DetectScrapeType(url)
+	if scrapeMode == "" && utils.IsTripAdvisorCountrySite(url) {
+		return h.showForm(c, fiber.StatusUnprocessableEntity,
+			"Use the page on tripadvisor.com. Country sites like tripadvisor.fr or tripadvisor.co.uk don't work.",
+			"url", url, uploadIdentifier)
 	}
-
-	_, exists := validChoices[scrapeMode]
-
-	// Validate the scrape mode
-	if !exists {
-		return c.Render("submission", fiber.Map{
-			"Title":      appTitle,
-			"Message1":   "Invalid Scrape Target",
-			"ReturnHome": true,
-		})
-	}
-
-	// Check if the URL is valid
-	if !utils.ValidateTripAdvisorURL(url, scrapeMode) {
-		return c.Render("submission", fiber.Map{
-			"Title":      appTitle,
-			"Message1":   fmt.Sprintf("Invalid %s URL", scrapeMode),
-			"ReturnHome": true,
-		})
+	if scrapeMode == "" {
+		return h.showForm(c, fiber.StatusUnprocessableEntity,
+			"That isn't a TripAdvisor hotel, restaurant, attraction or airline page. Open the page on tripadvisor.com and copy the link from the address bar.",
+			"url", url, uploadIdentifier)
 	}
 
 	// Validate the uploadIdentifier field
-	if uploadIdentifier == "" || len(uploadIdentifier) > 20 {
-		return c.Render("submission", fiber.Map{
-			"Title":      appTitle,
-			"Message1":   "Please provide a valid identifier",
-			"ReturnHome": true,
-		})
+	uploadIdentifierLength := utf8.RuneCountInString(uploadIdentifier)
+	if uploadIdentifierLength == 0 || uploadIdentifierLength > 20 {
+		return h.showForm(c, fiber.StatusUnprocessableEntity,
+			"Enter an upload ID of up to 20 characters.",
+			"upload_identifier", url, uploadIdentifier)
 	}
 
 	// Get the number of running containers
 	scraperContainers, err := h.Scraper.CM.ListContainersByType("scraper")
 	if err != nil {
-		return c.Render("submission", fiber.Map{
-			"Title":      appTitle,
-			"Message1":   "Error checking running containers",
-			"ReturnHome": true,
-		})
+		return h.showForm(c, fiber.StatusInternalServerError,
+			"Could not check the running scrapes. Please try again in a moment.",
+			"", url, uploadIdentifier)
 	}
 
-	runningContainers := len(scraperContainers)
-
-	if runningContainers >= 5 {
-		return c.Render("submission", fiber.Map{
-			"Title":      appTitle,
-			"Message1":   "Sorry, we are currently busy. Please try again later",
-			"ReturnHome": true,
-		})
+	if len(scraperContainers) >= 5 {
+		return h.showForm(c, fiber.StatusServiceUnavailable,
+			"All 5 scrapes are busy right now. Please try again in a few minutes.",
+			"", url, uploadIdentifier)
 	}
 
 	// Get the location name
 	locationName := utils.GetLocationNameFromURL(url, scrapeMode)
 	if locationName == "" {
-		return c.Render("submission", fiber.Map{
-			"Title":      appTitle,
-			"Message1":   "Invalid URL",
-			"ReturnHome": true,
-		})
+		return h.showForm(c, fiber.StatusUnprocessableEntity,
+			"That link doesn't contain the place's name. Open the page on tripadvisor.com and copy the link from the address bar.",
+			"url", url, uploadIdentifier)
 	}
 
 	// Get the proxy container info
 	proxyContainers, err := h.Scraper.AcquireProxyContainer()
 	if err != nil {
-		return c.Render("submission", fiber.Map{
-			"Title":      appTitle,
-			"Message1":   "Sorry, we are currently busy. Please try again later",
-			"ReturnHome": true,
-		})
+		return h.showForm(c, fiber.StatusServiceUnavailable,
+			"All proxies are busy right now. Please try again in a few minutes.",
+			"", url, uploadIdentifier)
 	}
 
 	// Generate the container config
@@ -139,11 +122,9 @@ func (h *Handler) postProvision(c fiber.Ctx) error {
 		// No scrape will run, so free the proxy container for the next request
 		h.Scraper.ReleaseProxyContainer(proxyContainers)
 
-		return c.Render("submission", fiber.Map{
-			"Title":      appTitle,
-			"Message1":   "Error creating scrape task",
-			"ReturnHome": true,
-		})
+		return h.showForm(c, fiber.StatusInternalServerError,
+			"Could not start the scrape. Please try again in a moment.",
+			"", url, uploadIdentifier)
 	}
 
 	// Start the scraping container via goroutine
@@ -170,7 +151,6 @@ func (h *Handler) postProvision(c fiber.Ctx) error {
 		"Message3":    "When it's done, download the file from the Downloads page.",
 		"ContainerId": containerID,
 		"UploadID":    fmt.Sprintf("Your Upload ID: %s", uploadIdentifier),
-		"ReturnHome":  false,
 		// "URL":      r2Url + fileSuffix + "-" + "0" + "_" + hotelName + ".csv",
 
 	})

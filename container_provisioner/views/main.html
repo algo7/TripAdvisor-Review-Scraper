@@ -3,31 +3,41 @@
   <a href="/tasks">{{.RunningContainers}} of 5</a> scrapes are running. When all 5 are busy, try again a bit later.
 </p>
 
+{{if .Error}}
+<article>
+  <strong>The scrape didn't start.</strong>
+  {{.Error}}
+</article>
+{{end}}
+
 <form action="/submit" method="post">
   <label>
-    TripAdvisor URL
+    TripAdvisor link
     <input
       type="url"
       name="url"
+      value="{{.URL}}"
       placeholder="https://www.tripadvisor.com/Hotel_Review-g188107-d11761198-Reviews-Hotel_des_Patients-Lausanne_Canton_of_Vaud.html"
       required
+      {{if eq .ErrorField "url"}}aria-invalid="true"{{end}}
     />
-    <small>Must be a tripadvisor.com link, not .fr, .de or another country site.</small>
+    <small>
+      Open a hotel, restaurant, attraction or airline on tripadvisor.com and copy the link from the address bar.
+    </small>
   </label>
 
   <label>
     Upload ID
-    <input type="text" name="upload_identifier" placeholder="rocket_fox" maxlength="20" required />
+    <input
+      type="text"
+      name="upload_identifier"
+      value="{{.UploadID}}"
+      placeholder="rocket_fox"
+      maxlength="20"
+      required
+      {{if eq .ErrorField "upload_identifier"}}aria-invalid="true"{{end}}
+    />
     <small>Any name, up to 20 characters. It helps you find your file on the Downloads page.</small>
-  </label>
-
-  <label>
-    Type
-    <select name="scrape_option">
-      <option value="HOTEL">Hotel</option>
-      <option value="RESTO">Restaurant</option>
-      <option value="AIRLINE">Airline</option>
-    </select>
   </label>
 
   <button type="submit">Start scraping</button>
