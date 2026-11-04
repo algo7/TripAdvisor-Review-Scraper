@@ -1,3 +1,21 @@
+<!-- The log box styles are here, not in app.css: the page and its styles then always come from the same
+     deploy, even when a browser or Cloudflare still has an older app.css cached. -->
+<style>
+  #logs {
+    max-height: 60vh;
+    overflow-y: auto;
+    white-space: pre-wrap;
+  }
+
+  /* One log line. A long line wraps under its message, after the 20-character timestamp
+     ("2026/11/04 00:56:57 "). */
+  #logs > span {
+    display: block;
+    padding-left: 20ch;
+    text-indent: -20ch;
+  }
+</style>
+
 <h1>Scrape progress</h1>
 <p>The log below updates while the scrape runs. When it's done, the file shows up on the <a href="/downloads">Downloads</a> page.</p>
 <pre id="logs">Loading…</pre>
@@ -23,7 +41,8 @@
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
 
-    // Each log line gets its own element, so a long line wraps under its message (see app.css).
+    // Each log line gets its own element, so a long line wraps under its message (see the style above).
+    // The line keeps its line break, so the log still reads line by line if the styles are missing.
     // Text after the last line break is kept until the rest of that line arrives.
     let unfinishedLine = '';
     const addLines = (text) => {
@@ -31,7 +50,7 @@
       unfinishedLine = lines.pop();
       for (const line of lines) {
         const lineElement = document.createElement('span');
-        lineElement.textContent = line;
+        lineElement.textContent = line + '\n';
         logsElement.append(lineElement);
       }
       logsElement.scrollTop = logsElement.scrollHeight;
