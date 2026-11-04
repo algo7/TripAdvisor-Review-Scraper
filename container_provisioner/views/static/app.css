@@ -15,18 +15,3 @@ td:first-child {
   overflow-wrap: anywhere;
   min-width: 12ch;
 }
-
-/* Live scraper log */
-#logs {
-  max-height: 60vh;
-  overflow-y: auto;
-  white-space: pre-wrap;
-}
-
-/* One log line. A long line wraps under its message, after the 20-character timestamp
-   ("2026/11/04 00:56:57 "). */
-#logs > span {
-  display: block;
-  padding-left: 20ch;
-  text-indent: -20ch;
-}
