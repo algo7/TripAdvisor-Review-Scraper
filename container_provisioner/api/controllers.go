@@ -153,7 +153,11 @@ func (h *Handler) postProvision(c fiber.Ctx) error {
 		ctx, stopHolding := context.WithCancel(context.Background())
 		go h.Scraper.HoldProxyContainer(ctx, proxyContainers)
 
-		h.Scraper.Scrape(uploadIdentifier, locationName, containerID)
+		// Nobody else receives the error: the request that started the scrape finished long ago
+		err := h.Scraper.Scrape(uploadIdentifier, locationName, containerID)
+		if err != nil {
+			log.Printf("scrape %s (container %s) failed: %v", uploadIdentifier, containerID, err)
+		}
 
 		stopHolding()
 		h.Scraper.ReleaseProxyContainer(proxyContainers)

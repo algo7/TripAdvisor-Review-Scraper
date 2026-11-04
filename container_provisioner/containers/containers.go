@@ -205,7 +205,8 @@ func (c *ContainerManager) ListContainersByType(containerType string) ([]Contain
 				// Empty when the proxy isn't attached to the scraper_vpn network
 				ipAddress := ""
 				if containerInfo.NetworkSettings != nil {
-					if endpoint := containerInfo.NetworkSettings.Networks["scraper_vpn"]; endpoint != nil && endpoint.IPAddress.IsValid() {
+					endpoint := containerInfo.NetworkSettings.Networks["scraper_vpn"]
+					if endpoint != nil && endpoint.IPAddress.IsValid() {
 						ipAddress = endpoint.IPAddress.String()
 					}
 				}

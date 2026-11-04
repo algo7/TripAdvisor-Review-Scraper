@@ -59,15 +59,9 @@ func (s *Scraper) Scrape(uploadIdentifier string, targetName string, containerID
 		}
 
 	case status := <-wait.Result:
-		// If the container exited with non-zero status code, remove the container and return an error
+		// The scrape failed. Keep the container, so its logs and file system can be inspected.
 		if status.StatusCode != 0 {
-			log.Printf("container %s exited with status code %d", containerID, status.StatusCode)
-			// Dont remove the container so we can debug the issue by looking into the container logs and file system
-			// err := s.CM.RemoveContainer(containerID)
-			// if err != nil {
-			// 	return fmt.Errorf("fail to container %s: %w", containerID, err)
-			// }
-			return nil
+			return fmt.Errorf("scraper container %s exited with status code %d", containerID, status.StatusCode)
 		}
 	}
 

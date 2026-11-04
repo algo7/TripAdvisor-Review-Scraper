@@ -29,7 +29,8 @@ func New(t *testing.T) *database.RedisClient {
 	r := database.NewRedisClient()
 	t.Cleanup(func() { r.Client.Close() })
 
-	if _, err := r.CheckConnection(); err != nil {
+	_, err := r.CheckConnection()
+	if err != nil {
 		t.Fatalf("Redis at %s: %v", addr, err)
 	}
 
@@ -42,7 +43,8 @@ func UniqueID(t *testing.T) string {
 	t.Helper()
 
 	b := make([]byte, 8)
-	if _, err := rand.Read(b); err != nil {
+	_, err := rand.Read(b)
+	if err != nil {
 		t.Fatal(err)
 	}
 

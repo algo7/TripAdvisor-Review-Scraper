@@ -2,6 +2,7 @@ package scrape
 
 import (
 	"context"
+	"errors"
 	"net/netip"
 	"testing"
 	"time"
@@ -99,7 +100,8 @@ func TestAcquireProxyContainerHandsOutEachProxyOnce(t *testing.T) {
 		t.Fatalf("second acquire = %q, %v, want %s", second.ContainerID, err, b.containerID())
 	}
 
-	if _, err := s.AcquireProxyContainer(); err == nil {
+	_, err = s.AcquireProxyContainer()
+	if err == nil {
 		t.Fatal("third acquire succeeded, want an error with both proxies in use")
 	}
 
@@ -136,15 +138,24 @@ func TestHoldProxyContainerKeepsLockPastTTL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	go s.HoldProxyContainer(t.Context(), proxy)
+	held := make(chan struct{})
+	go func() {
+		s.HoldProxyContainer(t.Context(), proxy)
+		close(held)
+	}()
+	// t.Context() is cancelled when the test ends. Wait for the hold to stop before the earlier
+	// cleanups restore the lock timing and close the Redis client, which it still reads.
+	t.Cleanup(func() { <-held })
 
 	// Several lock lifetimes pass. Without renewals the lock would have expired.
 	time.Sleep(4 * proxyLockTTL)
 
-	if owner := s.lockOwner(t, proxy.ContainerID); owner != proxy.lockToken {
+	owner := s.lockOwner(t, proxy.ContainerID)
+	if owner != proxy.lockToken {
 		t.Fatalf("lock owner = %q, want the holding scrape's token", owner)
 	}
-	if _, err := s.AcquireProxyContainer(); err == nil {
+	_, err = s.AcquireProxyContainer()
+	if err == nil {
 		t.Fatal("another scrape got the proxy while it was held")
 	}
 }
@@ -168,7 +179,8 @@ func TestReleaseProxyContainerLeavesNewOwnerAlone(t *testing.T) {
 
 	s.ReleaseProxyContainer(stale)
 
-	if owner := s.lockOwner(t, current.ContainerID); owner != current.lockToken {
+	owner := s.lockOwner(t, current.ContainerID)
+	if owner != current.lockToken {
 		t.Fatalf("lock owner after stale release = %q, want the second scrape's token", owner)
 	}
 }
@@ -199,7 +211,67 @@ func TestHoldProxyContainerStopsWhenLockIsLost(t *testing.T) {
 	case <-time.After(time.Second):
 		t.Fatal("hold kept running after losing the lock")
 	}
-	if owner := s.lockOwner(t, current.ContainerID); owner != current.lockToken {
+	owner := s.lockOwner(t, current.ContainerID)
+	if owner != current.lockToken {
 		t.Fatal("the stale hold changed the new owner's lock")
+	}
+}
+
+// scrapeDocker plays one scraper container run. Calls the test doesn't expect, such as removing
+// the container, panic, because the embedded interface is nil.
+type scrapeDocker struct {
+	containers.ContainerClient
+	startErr error
+	exitCode int64
+	statErr  error
+}
+
+func (f *scrapeDocker) ContainerStart(_ context.Context, _ string, _ client.ContainerStartOptions) (client.ContainerStartResult, error) {
+	return client.ContainerStartResult{}, f.startErr
+}
+
+func (f *scrapeDocker) ContainerWait(_ context.Context, _ string, _ client.ContainerWaitOptions) client.ContainerWaitResult {
+	result := make(chan container.WaitResponse, 1)
+	result <- container.WaitResponse{StatusCode: f.exitCode}
+	return client.ContainerWaitResult{Result: result, Error: make(chan error)}
+}
+
+func (f *scrapeDocker) ContainerStatPath(_ context.Context, _ string, _ client.ContainerStatPathOptions) (client.ContainerStatPathResult, error) {
+	return client.ContainerStatPathResult{}, f.statErr
+}
+
+func TestScrapeReturnsErrors(t *testing.T) {
+	tests := []struct {
+		name    string
+		docker  *scrapeDocker
+		wantErr string
+	}{
+		{
+			name:    "container fails to start",
+			docker:  &scrapeDocker{startErr: errors.New("no such image")},
+			wantErr: "fail to start container scraper1: no such image",
+		},
+		{
+			name:    "scraper exits non-zero and the container is kept",
+			docker:  &scrapeDocker{exitCode: 1},
+			wantErr: "scraper container scraper1 exited with status code 1",
+		},
+		{
+			name:    "scraper exits 0 without writing reviews.csv",
+			docker:  &scrapeDocker{statErr: errors.New("no such file")},
+			wantErr: "error getting csv file size in container: no such file",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := NewScraper(&containers.ContainerManager{Client: tt.docker}, nil, nil)
+
+			err := s.Scrape("upload1", "Hotel", "scraper1")
+
+			if err == nil || err.Error() != tt.wantErr {
+				t.Fatalf("Scrape() error = %v, want %q", err, tt.wantErr)
+			}
+		})
 	}
 }
