@@ -99,10 +99,10 @@ func (s *Scraper) Scrape(uploadIdentifier string, targetName string, containerID
 		return fmt.Errorf("fail to read exported file %s: %w", exportedFileName, err)
 	}
 
-	// Upload the file to R2
+	// Upload the file to R2. The error already names the file and the failed step, so it isn't wrapped again.
 	err = s.R2.UploadObject(exportedFileName, uploadIdentifier, file)
 	if err != nil {
-		return fmt.Errorf("fail to upload file %s to R2: %w", exportedFileName, err)
+		return err
 	}
 
 	// Remove the container

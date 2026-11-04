@@ -8,8 +8,7 @@ LABEL org.opencontainers.image.source="https://github.com/algo7/TripAdvisor-Revi
 # The compose file mounts the R2 credentials into /go/src/app/credentials, and exported CSV files are written here
 WORKDIR /go/src/app
 
-# Copy the views folder
-COPY ./views ./views
+# The templates and stylesheets are compiled into the binary
 COPY main .
 
 # Open port 3000

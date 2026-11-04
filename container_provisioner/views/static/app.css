@@ -1,0 +1,24 @@
+/* Additions to Pico CSS (pico.classless.min.css, v2.1.1). Keep this file small. */
+
+/* Tables scroll sideways on narrow screens instead of breaking the page */
+figure {
+  overflow-x: auto;
+}
+
+/* Cells stay on one line, except the first column (file or target name), which wraps */
+td {
+  white-space: nowrap;
+}
+
+td:first-child {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  min-width: 12ch;
+}
+
+/* Live scraper log */
+#logs {
+  max-height: 60vh;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
