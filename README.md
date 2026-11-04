@@ -1,6 +1,6 @@
 # TripAdvisor-Review-Scraper
 
-A simple scraper for TripAdvisor (Hotel, Restaurant, Airline) reviews.
+A simple scraper for TripAdvisor (Hotel, Restaurant, Attraction, Airline) reviews.
 
 [![Build & Push [Container Provisioner]](https://github.com/algo7/TripAdvisor-Review-Scraper/actions/workflows/ci_container_provisioner.yml/badge.svg?branch=main)](https://github.com/algo7/TripAdvisor-Review-Scraper/actions/workflows/ci_container_provisioner.yml)
 

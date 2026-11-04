@@ -23,7 +23,7 @@ docker build -t <image_name>:<tag> .
 
 ## Usage Instructions
 
-The scraper needs a single environment variable to run: `LOCATION_URL`, which is the URL of the TripAdvisor page of the hotel/restaurant/airline you want to scrape. The URL should be in the following format:
+The scraper needs a single environment variable to run: `LOCATION_URL`, which is the URL of the TripAdvisor page of the hotel/restaurant/attraction/airline you want to scrape. The URL should be in the following format:
 
 1. Airline: `https://www.tripadvisor.com/Airline_Review-d8729113-Reviews-Lufthansa`
 2. Hotel: `https://www.tripadvisor.com/Hotel_Review-g188107-d231860-Reviews-Beau_Rivage_Palace-Lausanne_Canton_of_Vaud.html`
