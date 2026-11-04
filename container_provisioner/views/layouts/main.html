@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="/static/pico.classless.min.css" />
+    <link rel="stylesheet" href="/static/app.css" />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <ul>
+          <li><strong><a href="/">TripAdvisor Scraper</a></strong></li>
+        </ul>
+        <ul>
+          <li><a href="/tasks">Running</a></li>
+          <li><a href="/downloads">Downloads</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      {{embed}}
+    </main>
+    <footer>
+      <small>
+        Bugs or problems? Email
+        <a href="mailto:support@algo7.tools?subject=Scraper%20Bugs">support@algo7.tools</a>
+        · <a href="https://github.com/algo7/TripAdvisor-Review-Scraper">Source code</a>
+      </small>
+    </footer>
+  </body>
+</html>
