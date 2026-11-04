@@ -15,6 +15,7 @@ func TestDetectScrapeType(t *testing.T) {
 		want string
 	}{
 		{url: hotelURL, want: "HOTEL"},
+		{url: "https://www.tripadvisor.com/Hotel_Review-g60763-d93450-Reviews-The_Plaza-New_York_City_New_York.html", want: "HOTEL"},
 		{url: restaurantURL, want: "RESTO"},
 		{url: airlineURL, want: "AIRLINE"},
 		{url: attractionURL, want: "ATTRACTION"},

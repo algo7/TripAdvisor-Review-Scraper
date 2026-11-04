@@ -19,6 +19,12 @@ func TestGetURLType(t *testing.T) {
 			expected: "HOTEL",
 		},
 		{
+			// Many US places have geo IDs shorter than 6 digits
+			name:     "valid hotel URL with a 5-digit geo ID",
+			url:      "https://www.tripadvisor.com/Hotel_Review-g60763-d93450-Reviews-The_Plaza-New_York_City_New_York.html",
+			expected: "HOTEL",
+		},
+		{
 			name:     "valid restaurant URL",
 			url:      "https://www.tripadvisor.com/Restaurant_Review-g187265-d11827759-Reviews-La_Terrasse-Lyon_Rhone_Auvergne_Rhone_Alpes.html",
 			expected: "RESTO",
@@ -80,6 +86,14 @@ func TestParseURL(t *testing.T) {
 			expectedLocID:   231860,
 			expectedGeoID:   188107,
 			expectedLocName: "Beau_Rivage_Palace",
+		},
+		{
+			name:            "parse hotel URL with a 5-digit geo ID",
+			url:             "https://www.tripadvisor.com/Hotel_Review-g60763-d93450-Reviews-The_Plaza-New_York_City_New_York.html",
+			locationType:    "HOTEL",
+			expectedLocID:   93450,
+			expectedGeoID:   60763,
+			expectedLocName: "The_Plaza",
 		},
 		{
 			name:            "parse restaurant URL",
