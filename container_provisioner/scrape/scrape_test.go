@@ -138,7 +138,14 @@ func TestHoldProxyContainerKeepsLockPastTTL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	go s.HoldProxyContainer(t.Context(), proxy)
+	held := make(chan struct{})
+	go func() {
+		s.HoldProxyContainer(t.Context(), proxy)
+		close(held)
+	}()
+	// t.Context() is cancelled when the test ends. Wait for the hold to stop before the earlier
+	// cleanups restore the lock timing and close the Redis client, which it still reads.
+	t.Cleanup(func() { <-held })
 
 	// Several lock lifetimes pass. Without renewals the lock would have expired.
 	time.Sleep(4 * proxyLockTTL)
