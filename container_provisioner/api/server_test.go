@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+	"testing/fstest"
 
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/containers"
 	"github.com/algo7/TripAdvisor-Review-Scraper/container_provisioner/scrape"
@@ -64,7 +65,7 @@ func TestPagesRenderInsideTheLayout(t *testing.T) {
 			if status != http.StatusOK || !strings.HasPrefix(contentType, "text/html") {
 				t.Fatalf("status %d, content type %q, want 200 text/html", status, contentType)
 			}
-			for _, want := range []string{tt.wantText, `href="/static/pico.classless.min.css"`, `name="viewport"`} {
+			for _, want := range []string{tt.wantText, `href="/static/pico.classless.min.css?v=`, `name="viewport"`} {
 				if !strings.Contains(body, want) {
 					t.Errorf("page is missing %q", want)
 				}
@@ -90,7 +91,7 @@ func TestUnknownPageShowsTheErrorPage(t *testing.T) {
 	if status != http.StatusNotFound || !strings.HasPrefix(contentType, "text/html") {
 		t.Fatalf("status %d, content type %q, want 404 text/html", status, contentType)
 	}
-	if !strings.Contains(body, "Page not found") || !strings.Contains(body, `href="/static/pico.classless.min.css"`) {
+	if !strings.Contains(body, "Page not found") || !strings.Contains(body, `href="/static/pico.classless.min.css?v=`) {
 		t.Errorf("404 page isn't the error page inside the layout:\n%s", body)
 	}
 }
@@ -192,5 +193,30 @@ func TestLogsOfAFinishedScrapeExplainWhereTheFileIs(t *testing.T) {
 
 	if status != http.StatusBadRequest || !strings.HasPrefix(contentType, "application/json") || !strings.Contains(body, "Downloads page") {
 		t.Errorf("status %d, content type %q, body %s, want a 400 JSON error pointing to Downloads", status, contentType, body)
+	}
+}
+
+func TestStaticURLsChangeWithTheContent(t *testing.T) {
+	before, err := staticURLs(fstest.MapFS{"app.css": {Data: []byte("a { color: red; }")}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	after, err := staticURLs(fstest.MapFS{"app.css": {Data: []byte("a { color: blue; }")}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	again, err := staticURLs(fstest.MapFS{"app.css": {Data: []byte("a { color: blue; }")}})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !strings.HasPrefix(after["app.css"], "/static/app.css?v=") {
+		t.Fatalf("URL %q, want /static/app.css?v=<hash>", after["app.css"])
+	}
+	if before["app.css"] == after["app.css"] {
+		t.Error("the URL stayed the same after the file changed, browsers would keep the old copy")
+	}
+	if after["app.css"] != again["app.css"] {
+		t.Error("the URL changed although the file didn't, browsers would load it again for nothing")
 	}
 }

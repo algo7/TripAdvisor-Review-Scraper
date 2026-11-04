@@ -1,7 +1,10 @@
 package api
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
+	"fmt"
 	"io/fs"
 	"log"
 	"net/http"
@@ -19,8 +22,27 @@ const appTitle = "Algo7 TripAdvisor Scraper"
 // ServerInstantiate is a function to instantiate the web server
 func ServerInstantiate() *fiber.App {
 
+	// The stylesheets are compiled into the binary, see the views package
+	staticFiles, err := fs.Sub(views.Files, "static")
+	if err != nil {
+		log.Fatalf("fail to load the static files: %v", err)
+	}
+	urls, err := staticURLs(staticFiles)
+	if err != nil {
+		log.Fatalf("fail to hash the static files: %v", err)
+	}
+
 	// The templates are compiled into the binary, see the views package
 	engine := html.NewFileSystem(http.FS(views.Files), ".html")
+
+	// {{static "app.css"}} returns the file's URL with a hash of its content
+	engine.AddFunc("static", func(name string) (string, error) {
+		url, ok := urls[name]
+		if !ok {
+			return "", fmt.Errorf("unknown static file %q", name)
+		}
+		return url, nil
+	})
 
 	// Layout defines the variable name that is used to yield templates within layouts
 	engine.Layout("embed") // Optional. Default: "embed"
@@ -45,15 +67,12 @@ func ServerInstantiate() *fiber.App {
 	app.Get(healthcheck.LivenessEndpoint, healthcheck.New())
 	app.Get(healthcheck.ReadinessEndpoint, healthcheck.New())
 
-	// Stylesheets, compressed and cached by the browser for an hour
-	staticFiles, err := fs.Sub(views.Files, "static")
-	if err != nil {
-		log.Fatalf("fail to load the static files: %v", err)
-	}
+	// Stylesheets, compressed. Pages link them with a content hash in the URL, so browsers can keep them
+	// for a year: a changed file gets a new URL.
 	app.Use("/static", static.New("", static.Config{
 		FS:       staticFiles,
 		Compress: true,
-		MaxAge:   int(time.Hour.Seconds()),
+		MaxAge:   int((365 * 24 * time.Hour).Seconds()),
 	}))
 
 	return app
@@ -90,4 +109,30 @@ func errorPage(c fiber.Ctx, err error) error {
 	}
 
 	return nil
+}
+
+// staticURLs returns the URL of every static file with a hash of its content, e.g. /static/app.css?v=3f9c1a2b4d5e.
+// Browsers cache files by URL, so a changed file is loaded again instead of an older cached copy being used.
+func staticURLs(files fs.FS) (map[string]string, error) {
+	urls := map[string]string{}
+
+	err := fs.WalkDir(files, ".", func(path string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if entry.IsDir() {
+			return nil
+		}
+
+		content, err := fs.ReadFile(files, path)
+		if err != nil {
+			return err
+		}
+		hash := sha256.Sum256(content)
+		urls[path] = "/static/" + path + "?v=" + hex.EncodeToString(hash[:])[:12]
+
+		return nil
+	})
+
+	return urls, err
 }
