@@ -2,6 +2,7 @@ package scrape
 
 import (
 	"context"
+	"errors"
 	"net/netip"
 	"testing"
 	"time"
@@ -206,5 +207,64 @@ func TestHoldProxyContainerStopsWhenLockIsLost(t *testing.T) {
 	owner := s.lockOwner(t, current.ContainerID)
 	if owner != current.lockToken {
 		t.Fatal("the stale hold changed the new owner's lock")
+	}
+}
+
+// scrapeDocker plays one scraper container run. Calls the test doesn't expect, such as removing
+// the container, panic, because the embedded interface is nil.
+type scrapeDocker struct {
+	containers.ContainerClient
+	startErr error
+	exitCode int64
+	statErr  error
+}
+
+func (f *scrapeDocker) ContainerStart(_ context.Context, _ string, _ client.ContainerStartOptions) (client.ContainerStartResult, error) {
+	return client.ContainerStartResult{}, f.startErr
+}
+
+func (f *scrapeDocker) ContainerWait(_ context.Context, _ string, _ client.ContainerWaitOptions) client.ContainerWaitResult {
+	result := make(chan container.WaitResponse, 1)
+	result <- container.WaitResponse{StatusCode: f.exitCode}
+	return client.ContainerWaitResult{Result: result, Error: make(chan error)}
+}
+
+func (f *scrapeDocker) ContainerStatPath(_ context.Context, _ string, _ client.ContainerStatPathOptions) (client.ContainerStatPathResult, error) {
+	return client.ContainerStatPathResult{}, f.statErr
+}
+
+func TestScrapeReturnsErrors(t *testing.T) {
+	tests := []struct {
+		name    string
+		docker  *scrapeDocker
+		wantErr string
+	}{
+		{
+			name:    "container fails to start",
+			docker:  &scrapeDocker{startErr: errors.New("no such image")},
+			wantErr: "fail to start container scraper1: no such image",
+		},
+		{
+			name:    "scraper exits non-zero and the container is kept",
+			docker:  &scrapeDocker{exitCode: 1},
+			wantErr: "scraper container scraper1 exited with status code 1",
+		},
+		{
+			name:    "scraper exits 0 without writing reviews.csv",
+			docker:  &scrapeDocker{statErr: errors.New("no such file")},
+			wantErr: "error getting csv file size in container: no such file",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := NewScraper(&containers.ContainerManager{Client: tt.docker}, nil, nil)
+
+			err := s.Scrape("upload1", "Hotel", "scraper1")
+
+			if err == nil || err.Error() != tt.wantErr {
+				t.Fatalf("Scrape() error = %v, want %q", err, tt.wantErr)
+			}
+		})
 	}
 }
