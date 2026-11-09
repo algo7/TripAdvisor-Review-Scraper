@@ -69,7 +69,7 @@ jobs:
       # Login to GitHub Container Registry
       - name: Registry Login
         if: github.event_name == 'push'
-        uses: docker/login-action@v4.7.0
+        uses: docker/login-action@v4.8.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
